@@ -125,7 +125,6 @@
             </div>
 
             <div class="space-y-4">
-              <!-- TAMBAHAN: FIELD TANGGAL -->
               <div>
                 <label class="text-sm font-semibold text-gray-600 ml-1">Tanggal</label>
                 <input type="date" id="inputTanggal" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-main-400 outline-none font-bold text-gray-800">
@@ -145,6 +144,29 @@
               </div>
               
               <button onclick="simpanTransaksi()" id="btnSimpan" class="w-full mt-2 bg-main-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-main-500/30 hover:bg-main-600 transition active:scale-95">Simpan Data</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: HUTANG (BARU) -->
+        <div id="tab-hutang" class="hide px-6 space-y-6">
+          <div class="glass rounded-3xl p-6 shadow-xl relative overflow-hidden">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Daftar Hutang Aktif 💳</h3>
+            
+            <div id="listHutang" class="space-y-3 mb-6 max-h-60 overflow-y-auto pr-1">
+              <!-- Dirender via Javascript -->
+            </div>
+
+            <hr class="border-gray-200 mb-4">
+            <h4 class="font-bold text-gray-800 mb-3 text-sm">Catat Hutang Baru</h4>
+            <div class="space-y-4">
+              <div>
+                <input type="text" id="inputNamaHutang" placeholder="Nama Hutang (Cth: Paylater Lebaran)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-main-400 outline-none font-semibold text-gray-700">
+              </div>
+              <div>
+                <input type="number" id="inputNominalHutang" placeholder="Total Hutang (Rp)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-main-400 outline-none font-bold text-gray-800">
+              </div>
+              <button onclick="simpanHutangBaru()" id="btnSimpanHutang" class="w-full bg-accent-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-accent-500/30 hover:bg-accent-600 transition active:scale-95">Catat Hutang Baru</button>
             </div>
           </div>
         </div>
@@ -184,13 +206,16 @@
 
     <!-- Bottom Navigation -->
     <nav id="bottomNav" class="hide absolute bottom-0 left-0 w-full glass border-t border-gray-100 rounded-t-3xl flex justify-around p-3 text-gray-400 z-50">
-      <button onclick="switchTab('dashboard')" class="flex flex-col items-center w-16 text-main-500" id="nav-dashboard">
+      <button onclick="switchTab('dashboard')" class="flex flex-col items-center w-14 text-main-500" id="nav-dashboard">
         <i class="fa-solid fa-house text-2xl mb-1"></i><span class="text-[10px] font-bold">Beranda</span>
       </button>
-      <button onclick="switchTab('catat')" class="flex flex-col items-center w-16 hover:text-main-400 transition" id="nav-catat">
+      <button onclick="switchTab('catat')" class="flex flex-col items-center w-14 hover:text-main-400 transition" id="nav-catat">
         <i class="fa-solid fa-pen-to-square text-2xl mb-1"></i><span class="text-[10px] font-bold">Catat</span>
       </button>
-      <button onclick="switchTab('rekap')" class="flex flex-col items-center w-16 hover:text-main-400 transition" id="nav-rekap">
+      <button onclick="switchTab('hutang')" class="flex flex-col items-center w-14 hover:text-main-400 transition" id="nav-hutang">
+        <i class="fa-solid fa-credit-card text-2xl mb-1"></i><span class="text-[10px] font-bold">Hutang</span>
+      </button>
+      <button onclick="switchTab('rekap')" class="flex flex-col items-center w-14 hover:text-main-400 transition" id="nav-rekap">
         <i class="fa-solid fa-chart-simple text-2xl mb-1"></i><span class="text-[10px] font-bold">Rekap</span>
       </button>
     </nav>
@@ -198,7 +223,7 @@
   </div>
 
   <script>
-    // URL Web App Apps Script (REST API Endpoint)
+    // URL Web App Apps Script
     const API_URL = "https://script.google.com/macros/s/AKfycbzufhYyOQwVmj0qEPWd_vZwYHh-nnGo5iKNQrZFMXBHJcoFOvECMkr1qg0Y-VB7kpGf/exec";
 
     async function callAPI(action, payload = {}) {
@@ -226,7 +251,6 @@
 
     const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
 
-    // Set Default Tanggal ke Hari Ini secara global saat halaman dimuat
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById('inputTanggal').value = new Date().toISOString().split('T')[0];
     });
@@ -273,6 +297,9 @@
       document.getElementById('tabSimpanan').innerText = formatRp(res.tabungan['Simpanan'] || 0);
       document.getElementById('tabLiburan').innerText = formatRp(res.tabungan['Liburan'] || 0);
 
+      // Render Daftar Hutang di Tab Hutang
+      if(res.daftarHutang) renderHutang(res.daftarHutang);
+
       const totalTabungan = (res.tabungan['Simpanan'] || 0) + (res.tabungan['Liburan'] || 0) + (res.tabungan['Keperluan Lainnya'] || 0);
       const sisaTarget = Math.max(0, res.targetTabungan - totalTabungan);
 
@@ -313,6 +340,74 @@
         },
         options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false } } }
       });
+    }
+
+    function renderHutang(daftarHutang) {
+      const listUi = document.getElementById('listHutang');
+      listUi.innerHTML = '';
+      
+      const hutangAktif = daftarHutang.filter(h => h.status === 'Aktif');
+      
+      if(hutangAktif.length === 0) {
+        listUi.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">Yeay! Tidak ada hutang yang belum lunas. 🎉</p>';
+        return;
+      }
+
+      hutangAktif.forEach(h => {
+        listUi.innerHTML += `
+          <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
+            <div>
+              <p class="font-bold text-gray-800 text-sm">${h.namaHutang}</p>
+              <p class="text-[10px] text-gray-400">Sisa: <span class="font-bold text-accent-500 text-xs">${formatRp(h.sisaHutang)}</span> <br>(Total awal: ${formatRp(h.totalAwal)})</p>
+            </div>
+            <button onclick="bayarHutang('${h.id}', ${h.sisaHutang}, '${h.namaHutang}')" class="bg-main-50 text-main-500 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-main-100 border border-main-100 transition active:scale-95">Bayar</button>
+          </div>
+        `;
+      });
+    }
+
+    async function simpanHutangBaru() {
+      const nama = document.getElementById('inputNamaHutang').value;
+      const nominal = document.getElementById('inputNominalHutang').value;
+      
+      if(!nama || !nominal) return alert('Nama dan Total Hutang wajib diisi!');
+      
+      const btn = document.getElementById('btnSimpanHutang');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+      btn.disabled = true;
+      
+      const res = await callAPI('tambahHutang', { 
+        form: { tanggal: new Date().toISOString().split('T')[0], oleh: activeUser, namaHutang: nama, nominal: nominal }
+      });
+      
+      if (res && res.sukses) {
+        alert("Hutang baru berhasil dicatat! ✨");
+        document.getElementById('inputNamaHutang').value = '';
+        document.getElementById('inputNominalHutang').value = '';
+        loadDataDashboard(); 
+      } else {
+        alert("Gagal mencatat hutang.");
+      }
+      btn.innerHTML = 'Catat Hutang Baru';
+      btn.disabled = false;
+    }
+
+    async function bayarHutang(idHutang, sisaSekarang, namaHutang) {
+      const input = prompt(`Bayar cicilan untuk "${namaHutang}"\n(Sisa saat ini: ${formatRp(sisaSekarang)})\n\nMasukkan nominal pembayaran:`);
+      
+      if (input && !isNaN(input) && Number(input) > 0) {
+        const nominalBayar = Number(input);
+        if (nominalBayar > sisaSekarang) return alert("Gagal. Nominal bayar melebihi sisa hutang!");
+        
+        const res = await callAPI('bayarHutang', { idHutang: idHutang, nominalBayar: nominalBayar, oleh: activeUser });
+        
+        if (res && res.sukses) {
+          alert("Pembayaran berhasil dicatat & otomatis memotong Saldo Utama! ✨");
+          loadDataDashboard(); 
+        } else {
+          alert("Gagal memproses pembayaran cicilan.");
+        }
+      }
     }
 
     async function loadKategori() {
@@ -391,12 +486,9 @@
         const res = await callAPI('scanStruk', { base64: base64, mimeType: file.type });
         if(res.sukses) {
           setTipe('Pengeluaran');
-          
-          // Mengisi tanggal dari hasil AI, jika kosong tetap gunakan default (hari ini)
           document.getElementById('inputTanggal').value = res.hasil.tanggal || new Date().toISOString().split('T')[0];
           document.getElementById('inputNominal').value = res.hasil.nominal;
           document.getElementById('inputCatatan').value = res.hasil.catatan;
-          
           alert("Struk terbaca AI! ✨ Periksa kembali tanggal & angkanya.");
         } else {
           alert("Gagal membaca struk.");
@@ -408,7 +500,7 @@
 
     async function simpanTransaksi() {
       const form = {
-        tanggal: document.getElementById('inputTanggal').value, // Menggunakan tanggal dari form
+        tanggal: document.getElementById('inputTanggal').value,
         oleh: activeUser,
         tipe: tipeAktif,
         kategori: document.getElementById('inputKategori').value,
@@ -436,8 +528,6 @@
         document.getElementById('inputNominal').value = '';
         document.getElementById('inputCatatan').value = '';
         document.getElementById('inputKategori').value = '';
-        
-        // Reset tanggal kembali ke hari ini setelah berhasil tersimpan
         document.getElementById('inputTanggal').value = new Date().toISOString().split('T')[0];
         
         loadDataDashboard();
@@ -452,10 +542,12 @@
     function switchTab(tabId) {
       document.getElementById('tab-dashboard').classList.add('hide');
       document.getElementById('tab-catat').classList.add('hide');
+      document.getElementById('tab-hutang').classList.add('hide');
       document.getElementById('tab-rekap').classList.add('hide');
       
       document.getElementById('nav-dashboard').classList.replace('text-main-500', 'text-gray-400');
       document.getElementById('nav-catat').classList.replace('text-main-500', 'text-gray-400');
+      document.getElementById('nav-hutang').classList.replace('text-main-500', 'text-gray-400');
       document.getElementById('nav-rekap').classList.replace('text-main-500', 'text-gray-400');
       
       document.getElementById('tab-' + tabId).classList.remove('hide');
