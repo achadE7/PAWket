@@ -62,15 +62,19 @@
 
       <div class="flex-1 relative">
         
-        <!-- TAB: DASHBOARD -->
+        <!-- ================= TAB: DASHBOARD (BERANDA) ================= -->
         <div id="tab-dashboard" class="px-6 space-y-4">
           
           <div class="bg-gradient-to-br from-main-500 to-accent-400 rounded-3xl p-6 text-white shadow-xl shadow-main-500/20 relative overflow-hidden">
             <i class="fa-solid fa-paw absolute -bottom-4 -right-4 text-8xl opacity-10"></i>
-            <p class="text-main-50 font-semibold mb-1">Saldo Dompet Gabungan</p>
+            <div class="flex justify-between items-center mb-1">
+              <p class="text-main-50 font-semibold">Total Saldo Gabungan</p>
+              <button onclick="switchTab('saldo')" class="text-[10px] bg-white/20 hover:bg-white/30 px-2.5 py-1 rounded-full font-bold backdrop-blur-sm transition">
+                Rincian Saldo <i class="fa-solid fa-chevron-right ml-0.5"></i>
+              </button>
+            </div>
             <h3 class="text-4xl font-bold mb-4 truncate" id="saldoUtama">Rp 0</h3>
             
-            <!-- RINCIAN SALDO MASING-MASING -->
             <div class="flex justify-between text-xs bg-white/20 p-3 rounded-xl backdrop-blur-md mb-3 border border-white/20">
               <div><span class="opacity-80"><i class="fa-solid fa-wallet mr-1"></i>Uangku:</span> <br><span class="font-bold text-sm truncate" id="saldoAku">Rp 0</span></div>
               <div class="text-right"><span class="opacity-80"><i class="fa-solid fa-wallet mr-1"></i>Uang <span id="namaPasanganDompet">Pasangan</span>:</span> <br><span class="font-bold text-sm truncate" id="saldoPasangan">Rp 0</span></div>
@@ -150,7 +154,52 @@
           </div>
         </div>
 
-        <!-- TAB: CATAT TRANSAKSI -->
+        <!-- ================= TAB: SALDO (MENU BARU) ================= -->
+        <div id="tab-saldo" class="hide px-6 space-y-4 pb-6">
+          <div class="bg-gradient-to-r from-main-600 to-main-400 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden">
+            <i class="fa-solid fa-building-columns absolute -bottom-3 -right-3 text-7xl opacity-10"></i>
+            <p class="text-xs text-main-100 font-semibold">Total Seluruh Saldo Aktif</p>
+            <h3 class="text-3xl font-bold mt-1 mb-3 truncate" id="totalSemuaSaldo">Rp 0</h3>
+            <div class="flex gap-2">
+              <button onclick="openTransferModal()" class="flex-1 bg-white text-main-600 font-bold py-2 px-3 rounded-xl text-xs shadow hover:bg-main-50 transition active:scale-95 flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-right-left"></i> Pindah / Top Up
+              </button>
+              <button onclick="tambahDompetBaru()" class="bg-white/20 text-white font-bold py-2 px-3 rounded-xl text-xs hover:bg-white/30 transition active:scale-95 flex items-center justify-center gap-1">
+                <i class="fa-solid fa-plus"></i> Dompet
+              </button>
+            </div>
+          </div>
+
+          <!-- KATEGORI 1: REKENING BANK -->
+          <div>
+            <h4 class="font-bold text-gray-800 text-xs mb-2 flex items-center gap-1.5">
+              <i class="fa-solid fa-building-columns text-main-500"></i> Rekening Bank (BNI, BRI, BCA, Mandiri)
+            </h4>
+            <div id="listSaldoBank" class="grid grid-cols-2 gap-2.5"></div>
+          </div>
+
+          <!-- KATEGORI 2: E-WALLET & KARTU -->
+          <div>
+            <h4 class="font-bold text-gray-800 text-xs mb-2 mt-3 flex items-center gap-1.5">
+              <i class="fa-solid fa-mobile-screen-button text-accent-500"></i> E-Wallet & Kartu (GoPay, Spay, Dana, Tapcash)
+            </h4>
+            <div id="listSaldoEwallet" class="grid grid-cols-2 gap-2.5"></div>
+          </div>
+
+          <!-- KATEGORI 3: TUNAI & LAINNYA -->
+          <div>
+            <h4 class="font-bold text-gray-800 text-xs mb-2 mt-3 flex items-center gap-1.5">
+              <i class="fa-solid fa-money-bill-wave text-green-500"></i> Uang Cash & Lainnya
+            </h4>
+            <div id="listSaldoLainnya" class="grid grid-cols-2 gap-2.5"></div>
+          </div>
+          
+          <p class="text-[10px] text-gray-400 text-center italic pt-2">
+            💡 Klik ikon pensil (<i class="fa-solid fa-pen"></i>) pada kartu saldo jika ingin menyesuaikan nominal saldo awal secara langsung.
+          </p>
+        </div>
+
+        <!-- ================= TAB: CATAT TRANSAKSI ================= -->
         <div id="tab-catat" class="hide px-6">
           <div class="glass rounded-3xl p-6 shadow-xl relative overflow-hidden">
             <h3 class="text-xl font-bold text-gray-800 mb-4">Catat Transaksi <i class="fa-solid fa-pen-nib text-main-400 ml-1"></i></h3>
@@ -176,11 +225,19 @@
             <div class="space-y-4">
               <div>
                 <label class="text-sm font-semibold text-gray-600 ml-1">Tanggal</label>
-                <input type="date" id="inputTanggal" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-main-400 outline-none font-bold text-gray-800">
+                <input type="date" id="inputTanggal" onchange="cekInfoPaylater()" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-main-400 outline-none font-bold text-gray-800">
               </div>
               <div>
                 <label class="text-sm font-semibold text-gray-600 ml-1">Kategori / Pos</label>
                 <select id="inputKategori" onchange="cekKategoriBaru()" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-main-400 outline-none font-semibold text-gray-700"></select>
+              </div>
+              <div id="wadahMetodeBayar">
+                <label id="labelMetodeBayar" class="text-sm font-semibold text-gray-600 ml-1">Pembayaran Menggunakan</label>
+                <select id="inputMetode" onchange="cekMetodeBaru()" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-main-400 outline-none font-semibold text-gray-700"></select>
+                <div id="infoPaylaterBox" class="hide mt-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl p-2.5 text-[11px] font-semibold flex items-start gap-2">
+                  <i class="fa-solid fa-bolt text-amber-500 mt-0.5"></i>
+                  <span id="infoPaylaterText">Otomatis masuk ke daftar Hutang.</span>
+                </div>
               </div>
               <div>
                 <label class="text-sm font-semibold text-gray-600 ml-1">Nominal (Rp)</label>
@@ -195,22 +252,22 @@
           </div>
         </div>
 
-        <!-- TAB: HUTANG -->
+        <!-- ================= TAB: HUTANG ================= -->
         <div id="tab-hutang" class="hide px-6 space-y-6">
           <div class="glass rounded-3xl p-6 shadow-xl relative overflow-hidden flex-1 flex flex-col max-h-[75vh]">
             <h3 class="text-xl font-bold text-gray-800 mb-4 shrink-0">Daftar Hutang Aktif <i class="fa-solid fa-credit-card text-main-400 ml-1"></i></h3>
             <div id="listHutang" class="space-y-3 mb-4 overflow-y-auto pr-1 flex-1"></div>
             <hr class="border-gray-200 mb-4 shrink-0">
-            <h4 class="font-bold text-gray-800 mb-3 text-sm shrink-0">Catat Hutang Baru</h4>
-            <div class="space-y-4 shrink-0">
-              <div><input type="text" id="inputNamaHutang" placeholder="Nama Hutang (Cth: Paylater)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-main-400 outline-none font-semibold text-gray-700"></div>
-              <div><input type="number" id="inputNominalHutang" placeholder="Total Hutang (Rp)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-main-400 outline-none font-bold text-gray-800"></div>
-              <button onclick="simpanHutangBaru()" id="btnSimpanHutang" class="w-full bg-accent-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-accent-500/30 hover:bg-accent-600 transition active:scale-95">Catat Hutang Baru</button>
+            <h4 class="font-bold text-gray-800 mb-3 text-sm shrink-0">Catat Hutang Manual</h4>
+            <div class="space-y-3 shrink-0">
+              <div><input type="text" id="inputNamaHutang" placeholder="Nama Hutang (Cth: Pinjaman / KPR)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-main-400 outline-none font-semibold text-sm text-gray-700"></div>
+              <div><input type="number" id="inputNominalHutang" placeholder="Total Hutang (Rp)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-main-400 outline-none font-bold text-sm text-gray-800"></div>
+              <button onclick="simpanHutangBaru()" id="btnSimpanHutang" class="w-full bg-accent-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-accent-500/30 hover:bg-accent-600 transition active:scale-95 text-sm">Catat Hutang Baru</button>
             </div>
           </div>
         </div>
 
-        <!-- TAB: REKAP BULANAN -->
+        <!-- ================= TAB: REKAP BULANAN ================= -->
         <div id="tab-rekap" class="hide px-6 h-full flex flex-col">
           <div class="glass rounded-3xl p-6 shadow-xl relative overflow-hidden flex-1 flex flex-col">
             <i class="fa-solid fa-calendar-days absolute -bottom-2 -right-4 text-8xl text-main-400 opacity-5"></i>
@@ -230,13 +287,13 @@
               <i class="fa-solid fa-file-excel"></i> Download XLS
             </button>
             <div class="flex justify-between items-center mb-3 shrink-0">
-              <h4 class="font-bold text-gray-800 text-sm">Rincian Transaksi</h4>
+              <h4 class="font-bold text-gray-800 text-sm">Rincian Transaksi (Maks 5/Hal)</h4>
               <span id="infoTotalRekap" class="text-[10px] font-bold text-gray-400"></span>
             </div>
             <div id="listRekap" class="space-y-3 flex-1 overflow-y-auto pr-1">
               <p class="text-center text-gray-400 text-sm py-4">Pilih bulan terlebih dahulu <i class="fa-regular fa-calendar ml-1"></i></p>
             </div>
-            <!-- PAGINATION REKAP -->
+            <!-- PAGINATION REKAP (MAKS 5 ITEM PER PAGE) -->
             <div id="paginationRekap" class="hide flex justify-between items-center mt-4 pt-3 border-t border-gray-100 shrink-0">
               <button onclick="gantiHalamanRekap(-1)" id="btnPrevRekap" class="px-3 py-1.5 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-600 hover:bg-main-50 hover:text-main-600 disabled:opacity-40 disabled:pointer-events-none transition shadow-sm">
                 <i class="fa-solid fa-chevron-left mr-1"></i> Sebelumnya
@@ -252,25 +309,86 @@
       </div>
     </div>
 
-    <!-- Bottom Navigation -->
-    <nav id="bottomNav" class="hide absolute bottom-0 left-0 w-full glass border-t border-gray-100 rounded-t-3xl flex justify-around p-3 text-gray-400 z-50">
+    <!-- Bottom Navigation (5 Menu: Beranda, Saldo, Catat, Hutang, Rekap) -->
+    <nav id="bottomNav" class="hide absolute bottom-0 left-0 w-full glass border-t border-gray-100 rounded-t-3xl flex justify-around py-2.5 px-2 text-gray-400 z-50">
       <button onclick="switchTab('dashboard')" class="flex flex-col items-center w-14 text-main-500" id="nav-dashboard">
-        <i class="fa-solid fa-house-chimney text-2xl mb-1"></i><span class="text-[10px] font-bold">Beranda</span>
+        <i class="fa-solid fa-house-chimney text-xl mb-1"></i><span class="text-[10px] font-bold">Beranda</span>
+      </button>
+      <button onclick="switchTab('saldo')" class="flex flex-col items-center w-14 hover:text-main-400 transition" id="nav-saldo">
+        <i class="fa-solid fa-building-columns text-xl mb-1"></i><span class="text-[10px] font-bold">Saldo</span>
       </button>
       <button onclick="switchTab('catat')" class="flex flex-col items-center w-14 hover:text-main-400 transition" id="nav-catat">
-        <i class="fa-solid fa-cat text-2xl mb-1"></i><span class="text-[10px] font-bold">Catat</span>
+        <i class="fa-solid fa-cat text-xl mb-1"></i><span class="text-[10px] font-bold">Catat</span>
       </button>
       <button onclick="switchTab('hutang')" class="flex flex-col items-center w-14 hover:text-main-400 transition" id="nav-hutang">
-        <i class="fa-solid fa-wallet text-2xl mb-1"></i><span class="text-[10px] font-bold">Hutang</span>
+        <i class="fa-solid fa-credit-card text-xl mb-1"></i><span class="text-[10px] font-bold">Hutang</span>
       </button>
       <button onclick="switchTab('rekap')" class="flex flex-col items-center w-14 hover:text-main-400 transition" id="nav-rekap">
-        <i class="fa-solid fa-list-ul text-2xl mb-1"></i><span class="text-[10px] font-bold">Rekap</span>
+        <i class="fa-solid fa-list-ul text-xl mb-1"></i><span class="text-[10px] font-bold">Rekap</span>
       </button>
     </nav>
 
   </div>
 
-  <!-- POPUP MODAL NEKO AI -->
+  <!-- ================= POPUP MODAL PINDAH / TOP UP SALDO ================= -->
+  <div id="transferModal" class="hide fixed inset-0 z-[90] bg-gray-900/60 flex items-center justify-center p-6 backdrop-blur-sm">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-right-left text-main-500 mr-1.5"></i> Pindah / Top Up Saldo</h3>
+        <button onclick="closeTransferModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs font-bold text-gray-500">Dari Saldo / Rekening</label>
+          <select id="trfDari" onchange="cekInfoAdminTransfer()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-700 outline-none"></select>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-500">Ke Saldo / Tujuan Top Up</label>
+          <select id="trfKe" onchange="cekInfoAdminTransfer()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-700 outline-none"></select>
+        </div>
+        <div id="infoAdminTrf" class="hide bg-amber-50 border border-amber-200 text-amber-700 rounded-xl p-2.5 text-[11px] font-semibold">
+          ⚡ Top Up ke <b>GoPay / Spay</b> otomatis dikenakan biaya Admin <b>Rp 1.250</b> (dipotong dari saldo pengirim).
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-500">Nominal (Rp)</label>
+          <input type="number" id="trfNominal" placeholder="Contoh: 100000" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-bold text-sm text-gray-800 outline-none">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-500">Catatan (Opsional)</label>
+          <input type="text" id="trfCatatan" placeholder="Cth: Top Up GoPay" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-700 outline-none">
+        </div>
+        <button onclick="prosesTransferSaldo()" id="btnProsesTrf" class="w-full bg-main-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-main-500/30 hover:bg-main-600 transition active:scale-95 mt-2">
+          Pindahkan Saldo Sekarang
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= POPUP MODAL BAYAR HUTANG ================= -->
+  <div id="bayarHutangModal" class="hide fixed inset-0 z-[90] bg-gray-900/60 flex items-center justify-center p-6 backdrop-blur-sm">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-hand-holding-dollar text-main-500 mr-1.5"></i> Bayar Cicilan / Tagihan</h3>
+        <button onclick="closeBayarHutangModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+      <p id="labelNamaHutangBayar" class="text-xs font-bold text-accent-500 mb-4"></p>
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs font-bold text-gray-500">Bayar Menggunakan Saldo</label>
+          <select id="bayarHutangMetode" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-700 outline-none"></select>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-500">Nominal Pembayaran (Rp)</label>
+          <input type="number" id="bayarHutangNominal" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-bold text-sm text-gray-800 outline-none">
+        </div>
+        <button onclick="konfirmasiBayarHutang()" id="btnKonfirmasiBayarHutang" class="w-full bg-main-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-main-500/30 hover:bg-main-600 transition active:scale-95 mt-2">
+          Bayar Sekarang
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= POPUP MODAL NEKO AI ================= -->
   <div id="nekoModal" class="hide fixed inset-0 z-[100] bg-gray-900/60 flex items-center justify-center p-6 backdrop-blur-sm opacity-0 transition-opacity duration-300">
     <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative transform scale-95 transition-all duration-300" id="nekoModalContent">
       <div class="absolute -top-12 left-1/2 -translate-x-1/2">
@@ -313,17 +431,54 @@
     let activeUser = "";
     let tipeAktif = "Pengeluaran";
     let jenisTabunganAktif = "Setor";
-    let listKategori = { masuk: [], keluar: [], tabungan: [] };
+    let listKategori = { 
+      masuk: [], 
+      keluar: [], 
+      tabungan: [], 
+      dompet: ["Uang Cash", "BNI", "BRI", "BCA", "Mandiri", "GoPay", "Spay", "Dana", "Tapcash"],
+      paylater: ["GopayLater", "SpayLater", "TiktokPaylater", "Kredivo", "Indodana"]
+    };
+    let latestSaldoDompet = {};
     let dataRekapBulanIni = [];
     let currentPageRekap = 1;
-    const ITEMS_PER_PAGE_REKAP = 10;
+    // MAKSIMAL 5 ITEM PER HALAMAN DI REKAP
+    const ITEMS_PER_PAGE_REKAP = 5;
     
+    let selectedHutangToPay = { id: "", sisa: 0, nama: "" };
     let pieChartAkuInstance = null;
     let pieChartPasanganInstance = null;
     let isNekoCalled = false;
 
+    const BULAN_INDO = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
     const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
     const cleanPosName = (str) => String(str || '').replace(/^[^a-zA-Z0-9]+/, '').trim();
+
+    function isPaylater(metode) {
+      if (!metode) return false;
+      const m = String(metode).toLowerCase().trim();
+      return (listKategori.paylater || ["GopayLater", "SpayLater", "TiktokPaylater", "Kredivo", "Indodana"]).some(p => p.toLowerCase() === m);
+    }
+
+    function hitungPreviewJatuhTempo(tanggalStr, metode) {
+      if (!tanggalStr) return "-";
+      const parts = String(tanggalStr).split('-');
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      const mLower = String(metode).toLowerCase().trim();
+      let tambahBulan = 1;
+
+      if (mLower === 'gopaylater' || mLower === 'tiktokpaylater') {
+        tambahBulan = (day >= 1 && day <= 15) ? 1 : 2;
+      } else if (mLower === 'spaylater') {
+        tambahBulan = (day >= 1 && day <= 21) ? 1 : 2;
+      } else {
+        tambahBulan = 1;
+      }
+
+      const targetDate = new Date(year, month + tambahBulan, 1);
+      return `1 ${BULAN_INDO[targetDate.getMonth()]} ${targetDate.getFullYear()}`;
+    }
 
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById('inputTanggal').value = new Date().toISOString().split('T')[0];
@@ -435,6 +590,7 @@
       if (!res || res.sukses === false) return;
 
       document.getElementById('saldoUtama').innerText = formatRp(res.saldoUtama);
+      document.getElementById('totalSemuaSaldo').innerText = formatRp(res.saldoUtama);
       document.getElementById('totalMasuk').innerText = formatRp(res.totalMasuk);
       document.getElementById('totalKeluar').innerText = formatRp(res.totalKeluar);
       
@@ -452,6 +608,10 @@
       
       document.getElementById('saldoAku').innerText = formatRp(uangku);
       document.getElementById('saldoPasangan').innerText = formatRp(uangPasangan);
+
+      // Render Menu Saldo Rinci
+      latestSaldoDompet = res.saldoDompet || {};
+      renderMenuSaldo(latestSaldoDompet);
 
       const tabObj = res.tabungan || {};
       const labelTabObj = res.labelTabungan || {};
@@ -503,15 +663,19 @@
         const recentTrx = res.riwayatTrx.slice(0, 4);
         recentTrx.forEach(d => {
           const isMasuk = d.tipe === 'Pemasukan';
-          const icon = isMasuk ? '<i class="fa-solid fa-arrow-down text-main-500 bg-main-100 p-2 rounded-lg"></i>' : '<i class="fa-solid fa-arrow-up text-accent-500 bg-accent-100 p-2 rounded-lg"></i>';
-          const color = isMasuk ? 'text-main-500' : 'text-accent-500';
+          const isTrf = d.tipe === 'Transfer';
+          const icon = isTrf 
+            ? '<i class="fa-solid fa-right-left text-purple-500 bg-purple-100 p-2 rounded-lg"></i>'
+            : (isMasuk ? '<i class="fa-solid fa-arrow-down text-main-500 bg-main-100 p-2 rounded-lg"></i>' : '<i class="fa-solid fa-arrow-up text-accent-500 bg-accent-100 p-2 rounded-lg"></i>');
+          const color = isTrf ? 'text-purple-500' : (isMasuk ? 'text-main-500' : 'text-accent-500');
+          const badgeMetode = d.metode ? `<span class="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-[8px] font-bold ml-1">${d.metode}</span>` : '';
           
           listTrx.innerHTML += `
             <div class="flex justify-between items-center bg-white p-2.5 rounded-xl shadow-sm border border-gray-50">
               <div class="flex items-center gap-3">
                 ${icon}
                 <div>
-                  <p class="font-bold text-xs text-gray-800">${d.kategori}</p>
+                  <p class="font-bold text-xs text-gray-800">${d.kategori} ${badgeMetode}</p>
                   <p class="text-[9px] text-gray-400">${d.tanggal} • ${d.oleh}</p>
                 </div>
               </div>
@@ -544,6 +708,159 @@
           options: chartOptions
         });
       }, 300); 
+    }
+
+    // RENDER MENU SALDO RINCI
+    function renderMenuSaldo(saldoObj) {
+      const bankList = ["BNI", "BRI", "BCA", "Mandiri"];
+      const ewalletList = ["GoPay", "Spay", "Dana", "Tapcash"];
+      
+      const uiBank = document.getElementById('listSaldoBank');
+      const uiEwallet = document.getElementById('listSaldoEwallet');
+      const uiLainnya = document.getElementById('listSaldoLainnya');
+      
+      uiBank.innerHTML = '';
+      uiEwallet.innerHTML = '';
+      uiLainnya.innerHTML = '';
+
+      const buatKartu = (nama, nominal, warnaBorder, warnaTeks, ikon) => `
+        <div class="bg-white rounded-2xl p-3.5 shadow-sm border ${warnaBorder} flex flex-col justify-between">
+          <div class="flex justify-between items-center mb-1">
+            <span class="text-xs font-bold ${warnaTeks} truncate"><i class="${ikon} mr-1"></i>${nama}</span>
+            <button onclick="sesuaikanSaldo('${nama}', ${nominal})" class="text-[10px] text-gray-300 hover:text-main-500 transition" title="Sesuaikan Saldo">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+          </div>
+          <p class="font-bold text-gray-800 text-sm truncate">${formatRp(nominal)}</p>
+        </div>
+      `;
+
+      bankList.forEach(b => {
+        uiBank.innerHTML += buatKartu(b, saldoObj[b] || 0, 'border-main-100', 'text-main-600', 'fa-solid fa-building-columns');
+      });
+
+      ewalletList.forEach(e => {
+        uiEwallet.innerHTML += buatKartu(e, saldoObj[e] || 0, 'border-accent-100', 'text-accent-600', 'fa-solid fa-wallet');
+      });
+
+      // Sisanya masuk ke Tunai & Lainnya (termasuk Uang Cash)
+      const allKeys = Object.keys(saldoObj);
+      if (!allKeys.includes("Uang Cash")) allKeys.unshift("Uang Cash");
+      
+      allKeys.forEach(k => {
+        if (!bankList.includes(k) && !ewalletList.includes(k)) {
+          uiLainnya.innerHTML += buatKartu(k, saldoObj[k] || 0, 'border-green-100', 'text-green-600', 'fa-solid fa-money-bill-wave');
+        }
+      });
+    }
+
+    async function sesuaikanSaldo(namaDompet, nominalSekarang) {
+      const input = prompt(`Sesuaikan saldo aktual untuk "${namaDompet}"\n(Saldo tercatat saat ini: ${formatRp(nominalSekarang)})\n\nMasukkan nominal saldo sebenarnya (angka saja):`, nominalSekarang);
+      if (input !== null && input.trim() !== "" && !isNaN(input)) {
+        const res = await callAPI('sesuaikanSaldo', {
+          form: { dompet: namaDompet, saldoBaru: Number(input), oleh: activeUser }
+        });
+        if (res && res.sukses) {
+          alert(res.pesan);
+          loadDataDashboard();
+        } else {
+          alert(res.pesan || "Gagal menyesuaikan saldo.");
+        }
+      }
+    }
+
+    async function tambahDompetBaru() {
+      const nama = prompt("Masukkan nama Rekening / Dompet baru:\n(Contoh: SeaBank, Jago, OVO, Flazz)");
+      if (nama && nama.trim() !== "") {
+        const res = await callAPI('tambahKategori', { tipe: 'Dompet', namaKategori: cleanPosName(nama.trim()) });
+        if (res && res.sukses) {
+          listKategori = res;
+          renderMetodePembayaran();
+          loadDataDashboard();
+          alert(`Dompet "${nama.trim()}" berhasil ditambahkan! ✨`);
+        }
+      }
+    }
+
+    function openTransferModal() {
+      const selDari = document.getElementById('trfDari');
+      const selKe = document.getElementById('trfKe');
+      selDari.innerHTML = '';
+      selKe.innerHTML = '';
+
+      const dompetList = (listKategori.dompet && listKategori.dompet.length > 0) 
+        ? listKategori.dompet 
+        : ["Uang Cash", "BNI", "BRI", "BCA", "Mandiri", "GoPay", "Spay", "Dana", "Tapcash"];
+
+      dompetList.forEach(d => {
+        const cleanD = cleanPosName(d);
+        const saldo = latestSaldoDompet[cleanD] || 0;
+        let opt1 = document.createElement('option');
+        opt1.value = cleanD;
+        opt1.innerText = `${cleanD} (${formatRp(saldo)})`;
+        selDari.appendChild(opt1);
+
+        let opt2 = document.createElement('option');
+        opt2.value = cleanD;
+        opt2.innerText = cleanD;
+        selKe.appendChild(opt2);
+      });
+
+      if (dompetList.length > 1) selKe.selectedIndex = 1;
+      document.getElementById('trfNominal').value = '';
+      document.getElementById('trfCatatan').value = '';
+      cekInfoAdminTransfer();
+      document.getElementById('transferModal').classList.remove('hide');
+    }
+
+    function closeTransferModal() {
+      document.getElementById('transferModal').classList.add('hide');
+    }
+
+    function cekInfoAdminTransfer() {
+      const ke = String(document.getElementById('trfKe').value || '').toLowerCase();
+      const box = document.getElementById('infoAdminTrf');
+      if (ke === 'gopay' || ke === 'spay') {
+        box.classList.remove('hide');
+      } else {
+        box.classList.add('hide');
+      }
+    }
+
+    async function prosesTransferSaldo() {
+      const dari = document.getElementById('trfDari').value;
+      const ke = document.getElementById('trfKe').value;
+      const nominal = document.getElementById('trfNominal').value;
+      const catatan = document.getElementById('trfCatatan').value;
+
+      if (!dari || !ke || dari === ke) return alert("Pilih rekening asal dan tujuan yang berbeda!");
+      if (!nominal || Number(nominal) <= 0) return alert("Masukkan nominal yang valid!");
+
+      const btn = document.getElementById('btnProsesTrf');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
+      btn.disabled = true;
+
+      const res = await callAPI('transferSaldo', {
+        form: {
+          tanggal: new Date().toISOString().split('T')[0],
+          oleh: activeUser,
+          dari: dari,
+          ke: ke,
+          nominal: Number(nominal),
+          catatan: catatan
+        }
+      });
+
+      btn.innerHTML = 'Pindahkan Saldo Sekarang';
+      btn.disabled = false;
+
+      if (res && res.sukses) {
+        alert(res.pesan);
+        closeTransferModal();
+        loadDataDashboard();
+      } else {
+        alert(res.pesan || "Gagal memindahkan saldo.");
+      }
     }
 
     async function editTargetBaru() {
@@ -580,6 +897,8 @@
 
       hutangAktif.forEach(h => {
         const teksCicilan = (h.cicilanRutin && h.cicilanRutin > 0) ? formatRp(h.cicilanRutin) : "Sesuai Tagihan";
+        const rawTgl = String(h.tglJatuhTempo || '-');
+        const labelJatuhTempo = (rawTgl.includes(' ') || rawTgl === '-') ? rawTgl : `Tgl ${rawTgl}`;
         listUi.innerHTML += `
           <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
             <div class="flex justify-between items-start mb-2">
@@ -590,19 +909,21 @@
               <p class="font-bold text-accent-500 text-sm">${formatRp(h.sisaHutang)}</p>
             </div>
             <div class="bg-main-50 p-2 rounded-lg flex justify-between items-center mb-3">
-              <p class="text-[10px] text-gray-500">Jatuh Tempo: <b class="text-main-600">Tgl ${h.tglJatuhTempo || '-'}</b><br>Cicilan: <b class="text-main-600">${teksCicilan}</b></p>
+              <p class="text-[10px] text-gray-500">Jatuh Tempo: <b class="text-main-600">${labelJatuhTempo}</b><br>Cicilan: <b class="text-main-600">${teksCicilan}</b></p>
               <button onclick="setPengingatHutang('${h.id}')" class="text-main-500 text-[10px] font-bold hover:underline"><i class="fa-solid fa-gear"></i> Setting</button>
             </div>
-            <button onclick="bayarHutang('${h.id}', ${h.sisaHutang}, '${h.namaHutang}')" class="w-full bg-main-100 text-main-600 py-1.5 rounded-lg text-xs font-bold hover:bg-main-200 transition active:scale-95">Bayar Cicilan via Saldo Utama</button>
+            <button onclick="bukaModalBayarHutang('${h.id}', ${h.sisaHutang}, '${h.namaHutang.replace(/'/g, "\\'")}')" class="w-full bg-main-100 text-main-600 py-2 rounded-lg text-xs font-bold hover:bg-main-200 transition active:scale-95">
+              Bayar Tagihan / Cicilan
+            </button>
           </div>
         `;
       });
     }
 
     async function setPengingatHutang(id) {
-      const tgl = prompt("Pengingat Jatuh Tempo setiap tanggal berapa? (Cth: 15, 28, Akhir Bulan)");
+      const tgl = prompt("Pengingat Jatuh Tempo setiap tanggal berapa? (Cth: 1 Des 2026, 15, Akhir Bulan)");
       if (tgl !== null) {
-        const cicilan = prompt("Berapa nominal cicilannya?\n(Kosongkan atau ketik 0 jika tagihan tiap bulan berbeda-beda)");
+        const cicilan = prompt("Berapa nominal cicilan rutinnya?\n(Kosongkan atau ketik 0 jika tagihan sesuai pemakaian)");
         if (cicilan !== null) { 
           const nominalCicilan = Number(cicilan) || 0;
           const res = await callAPI('updatePengingatHutang', { id: id, tgl: tgl, cicilan: nominalCicilan });
@@ -632,13 +953,60 @@
       btn.disabled = false;
     }
 
-    async function bayarHutang(idHutang, sisaSekarang, namaHutang) {
-      const input = prompt(`Bayar cicilan untuk "${namaHutang}"\n(Sisa saat ini: ${formatRp(sisaSekarang)})\n\nMasukkan nominal pembayaran:`);
-      if (input && !isNaN(input) && Number(input) > 0) {
-        const nominalBayar = Number(input);
-        if (nominalBayar > sisaSekarang) return alert("Gagal. Nominal bayar melebihi sisa hutang!");
-        const res = await callAPI('bayarHutang', { idHutang: idHutang, nominalBayar: nominalBayar, oleh: activeUser });
-        if (res && res.sukses) { alert("Pembayaran berhasil dicatat & otomatis memotong Saldo Utama! ✨"); loadDataDashboard(); }
+    function bukaModalBayarHutang(idHutang, sisaSekarang, namaHutang) {
+      selectedHutangToPay = { id: idHutang, sisa: sisaSekarang, nama: namaHutang };
+      document.getElementById('labelNamaHutangBayar').innerText = `${namaHutang} (Sisa: ${formatRp(sisaSekarang)})`;
+      document.getElementById('bayarHutangNominal').value = sisaSekarang;
+
+      const select = document.getElementById('bayarHutangMetode');
+      select.innerHTML = '';
+      const dompetList = (listKategori.dompet && listKategori.dompet.length > 0) 
+        ? listKategori.dompet 
+        : ["Uang Cash", "BNI", "BRI", "BCA", "Mandiri", "GoPay", "Spay", "Dana", "Tapcash"];
+
+      dompetList.forEach(d => {
+        const cleanD = cleanPosName(d);
+        const saldo = latestSaldoDompet[cleanD] || 0;
+        let opt = document.createElement('option');
+        opt.value = cleanD;
+        opt.innerText = `${cleanD} (${formatRp(saldo)})`;
+        select.appendChild(opt);
+      });
+
+      document.getElementById('bayarHutangModal').classList.remove('hide');
+    }
+
+    function closeBayarHutangModal() {
+      document.getElementById('bayarHutangModal').classList.add('hide');
+    }
+
+    async function konfirmasiBayarHutang() {
+      const nominalBayar = Number(document.getElementById('bayarHutangNominal').value);
+      const metode = document.getElementById('bayarHutangMetode').value;
+
+      if (!nominalBayar || nominalBayar <= 0) return alert("Masukkan nominal pembayaran yang valid!");
+      if (nominalBayar > selectedHutangToPay.sisa) return alert("Nominal bayar melebihi sisa hutang!");
+
+      const btn = document.getElementById('btnKonfirmasiBayarHutang');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
+      btn.disabled = true;
+
+      const res = await callAPI('bayarHutang', { 
+        idHutang: selectedHutangToPay.id, 
+        nominalBayar: nominalBayar, 
+        oleh: activeUser,
+        metode: metode
+      });
+
+      btn.innerHTML = 'Bayar Sekarang';
+      btn.disabled = false;
+
+      if (res && res.sukses) {
+        alert(`Pembayaran berhasil dicatat & memotong saldo ${metode}! ✨`);
+        closeBayarHutangModal();
+        loadDataDashboard();
+      } else {
+        alert("Gagal mencatat pembayaran hutang.");
       }
     }
 
@@ -648,6 +1016,7 @@
         listKategori = res; 
         if (tipeAktif === 'Tabungan') renderKategoriTabungan();
         else renderKategori(); 
+        renderMetodePembayaran();
       }
     }
 
@@ -682,14 +1051,110 @@
       select.appendChild(optAdd);
     }
 
+    function renderMetodePembayaran() {
+      const select = document.getElementById('inputMetode');
+      const label = document.getElementById('labelMetodeBayar');
+      select.innerHTML = '';
+
+      const dompetList = (listKategori.dompet && listKategori.dompet.length > 0) 
+        ? listKategori.dompet 
+        : ["Uang Cash", "BNI", "BRI", "BCA", "Mandiri", "GoPay", "Spay", "Dana", "Tapcash"];
+      const paylaterList = listKategori.paylater || ["GopayLater", "SpayLater", "TiktokPaylater", "Kredivo", "Indodana"];
+
+      if (tipeAktif === 'Pemasukan') {
+        label.innerText = "Masuk ke Saldo / Rekening";
+        dompetList.forEach(d => {
+          let opt = document.createElement('option');
+          opt.value = cleanPosName(d);
+          opt.innerText = `💳 ${cleanPosName(d)}`;
+          select.appendChild(opt);
+        });
+      } else if (tipeAktif === 'Pengeluaran') {
+        label.innerText = "Pembayaran Menggunakan";
+        
+        let grpSaldo = document.createElement('optgroup');
+        grpSaldo.label = "Saldo Rekening / E-Wallet / Cash";
+        dompetList.forEach(d => {
+          let opt = document.createElement('option');
+          opt.value = cleanPosName(d);
+          opt.innerText = `💳 ${cleanPosName(d)}`;
+          grpSaldo.appendChild(opt);
+        });
+        select.appendChild(grpSaldo);
+
+        let grpPaylater = document.createElement('optgroup');
+        grpPaylater.label = "PayLater (Otomatis Masuk Hutang)";
+        paylaterList.forEach(p => {
+          let opt = document.createElement('option');
+          opt.value = p;
+          opt.innerText = `⚡ ${p}`;
+          grpPaylater.appendChild(opt);
+        });
+        select.appendChild(grpPaylater);
+      }
+
+      let optAdd = document.createElement('option');
+      optAdd.value = "ADD_NEW_DOMPET";
+      optAdd.innerText = "+ Tambah Dompet / Rekening Lainnya";
+      optAdd.className = "text-main-500 font-bold";
+      select.appendChild(optAdd);
+
+      cekInfoPaylater();
+    }
+
+    function cekInfoPaylater() {
+      const metode = document.getElementById('inputMetode').value;
+      const tgl = document.getElementById('inputTanggal').value;
+      const infoBox = document.getElementById('infoPaylaterBox');
+      const infoText = document.getElementById('infoPaylaterText');
+
+      if (tipeAktif === 'Pengeluaran' && isPaylater(metode)) {
+        const jatuhTempo = hitungPreviewJatuhTempo(tgl, metode);
+        infoText.innerHTML = `Pembayaran via <b>${metode}</b> otomatis masuk ke <b>Hutang</b> & ditagihkan pada <b>${jatuhTempo}</b>.`;
+        infoBox.classList.remove('hide');
+      } else {
+        infoBox.classList.add('hide');
+      }
+    }
+
+    async function cekMetodeBaru() {
+      const select = document.getElementById('inputMetode');
+      if (select.value === "ADD_NEW_DOMPET") {
+        const nama = prompt("Masukkan nama Saldo / Rekening baru:\n(Contoh: SeaBank, Jago, OVO)");
+        if (nama && nama.trim() !== "") {
+          select.disabled = true;
+          const cleanNama = cleanPosName(nama.trim());
+          const res = await callAPI('tambahKategori', { tipe: 'Dompet', namaKategori: cleanNama });
+          if (res && res.sukses) {
+            listKategori = res;
+            renderMetodePembayaran();
+            select.value = cleanNama;
+            loadDataDashboard();
+          }
+          select.disabled = false;
+        } else {
+          select.selectedIndex = 0;
+        }
+      }
+      cekInfoPaylater();
+    }
+
     function setTipe(tipe) {
       tipeAktif = tipe;
       document.getElementById('btnPemasukan').className = tipe === 'Pemasukan' ? "flex-1 py-1.5 rounded-lg text-sm font-bold bg-white text-main-500 shadow transition" : "flex-1 py-1.5 rounded-lg text-sm font-bold text-gray-400 transition";
       document.getElementById('btnPengeluaran').className = tipe === 'Pengeluaran' ? "flex-1 py-1.5 rounded-lg text-sm font-bold bg-white text-accent-500 shadow transition" : "flex-1 py-1.5 rounded-lg text-sm font-bold text-gray-400 transition";
       document.getElementById('btnTabungan').className = tipe === 'Tabungan' ? "flex-1 py-1.5 rounded-lg text-sm font-bold bg-white text-purple-500 shadow transition" : "flex-1 py-1.5 rounded-lg text-sm font-bold text-gray-400 transition";
       
-      if(tipe === 'Tabungan') { document.getElementById('opsiTabungan').classList.remove('hide'); renderKategoriTabungan(); } 
-      else { document.getElementById('opsiTabungan').classList.add('hide'); renderKategori(); }
+      if(tipe === 'Tabungan') { 
+        document.getElementById('opsiTabungan').classList.remove('hide'); 
+        document.getElementById('wadahMetodeBayar').classList.add('hide');
+        renderKategoriTabungan(); 
+      } else { 
+        document.getElementById('opsiTabungan').classList.add('hide'); 
+        document.getElementById('wadahMetodeBayar').classList.remove('hide');
+        renderKategori(); 
+        renderMetodePembayaran();
+      }
     }
 
     function setJenisTabungan(jenis) {
@@ -737,7 +1202,8 @@
           document.getElementById('inputTanggal').value = res.hasil.tanggal || new Date().toISOString().split('T')[0];
           document.getElementById('inputNominal').value = res.hasil.nominal;
           document.getElementById('inputCatatan').value = res.hasil.catatan;
-          alert("Struk terbaca AI! ✨ Periksa kembali tanggal & angkanya.");
+          cekInfoPaylater();
+          alert("Struk terbaca AI! ✨ Periksa kembali tanggal, metode pembayaran & angkanya.");
         }
         btnUi.innerHTML = '<i class="fa-solid fa-camera"></i> Foto Struk (Scan AI)';
       };
@@ -747,8 +1213,10 @@
     async function simpanTransaksi() {
       const form = {
         tanggal: document.getElementById('inputTanggal').value,
-        oleh: activeUser, tipe: tipeAktif,
+        oleh: activeUser, 
+        tipe: tipeAktif,
         kategori: document.getElementById('inputKategori').value,
+        metode: document.getElementById('inputMetode').value || 'Uang Cash',
         nominal: document.getElementById('inputNominal').value,
         catatan: document.getElementById('inputCatatan').value
       };
@@ -767,25 +1235,26 @@
       }
       
       if (res && res.sukses) {
-        alert("Berhasil dicatat! ✨");
+        alert("Berhasil dicatat! ✨" + (res.pesanTambahan || ""));
         document.getElementById('inputNominal').value = '';
         document.getElementById('inputCatatan').value = '';
         document.getElementById('inputKategori').value = '';
         document.getElementById('inputTanggal').value = new Date().toISOString().split('T')[0];
+        cekInfoPaylater();
         loadDataDashboard(); switchTab('dashboard');
       }
       btn.innerHTML = 'Simpan Data'; btn.disabled = false;
     }
 
     function switchTab(tabId) {
-      ['dashboard', 'catat', 'hutang', 'rekap'].forEach(id => {
+      ['dashboard', 'saldo', 'catat', 'hutang', 'rekap'].forEach(id => {
         document.getElementById(`tab-${id}`).classList.add('hide');
         document.getElementById(`nav-${id}`).classList.replace('text-main-500', 'text-gray-400');
       });
       document.getElementById(`tab-${tabId}`).classList.remove('hide');
       document.getElementById(`nav-${tabId}`).classList.replace('text-gray-400', 'text-main-500');
       
-      if (tabId === 'dashboard') { setTimeout(loadDataDashboard, 100); }
+      if (tabId === 'dashboard' || tabId === 'saldo') { setTimeout(loadDataDashboard, 100); }
       if (tabId === 'rekap') {
         const inputBulan = document.getElementById('inputBulan');
         if (!inputBulan.value) {
@@ -839,15 +1308,20 @@
 
       let html = '';
       itemsHalamanIni.forEach(d => {
+        const isTrf = d.Tipe === 'Transfer';
         const isMasuk = d.Tipe === 'Pemasukan' || (d.Tipe === 'Tabungan' && d.Catatan.includes('Setor')); 
-        const icon = isMasuk ? '<i class="fa-solid fa-arrow-down text-main-500 bg-main-100 p-2 rounded-lg"></i>' : '<i class="fa-solid fa-arrow-up text-accent-500 bg-accent-100 p-2 rounded-lg"></i>';
-        const color = isMasuk ? 'text-main-500' : 'text-accent-500';
+        const icon = isTrf
+          ? '<i class="fa-solid fa-right-left text-purple-500 bg-purple-100 p-2 rounded-lg"></i>'
+          : (isMasuk ? '<i class="fa-solid fa-arrow-down text-main-500 bg-main-100 p-2 rounded-lg"></i>' : '<i class="fa-solid fa-arrow-up text-accent-500 bg-accent-100 p-2 rounded-lg"></i>');
+        const color = isTrf ? 'text-purple-500' : (isMasuk ? 'text-main-500' : 'text-accent-500');
+        const badgeMetode = d.Metode ? `<span class="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-[9px] font-bold ml-1">${d.Metode}</span>` : '';
+
         html += `
           <div class="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm border border-gray-50 relative group">
             <div class="flex items-center gap-3 w-full pr-8">
               ${icon}
               <div class="w-full">
-                <p class="font-bold text-sm text-gray-800">${d.Kategori}</p>
+                <p class="font-bold text-sm text-gray-800">${d.Kategori} ${badgeMetode}</p>
                 <p class="text-[10px] text-gray-400">${d.Tanggal} • ${d.Oleh} <br> <span class="italic truncate block max-w-[180px]">${d.Catatan}</span></p>
               </div>
             </div>
@@ -888,7 +1362,7 @@
       if(dataRekapBulanIni.length === 0) return alert("Tidak ada data untuk diexport! Pilih bulan yang ada transaksinya.");
       const bln = document.getElementById('inputBulan').value;
       const ws = XLSX.utils.json_to_sheet(dataRekapBulanIni);
-      ws['!cols'] = [{wch: 15}, {wch: 10}, {wch: 12}, {wch: 20}, {wch: 15}, {wch: 30}];
+      ws['!cols'] = [{wch: 15}, {wch: 12}, {wch: 15}, {wch: 12}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 30}];
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Rekap_" + bln);
       XLSX.writeFile(wb, `PAWket_Rekap_${bln}.xlsx`);
