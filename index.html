@@ -338,8 +338,7 @@
       switchTab('dashboard');
     }
 
-    // FUNGSI BARU: MINTA WEJANGAN NEKO AI
-    async function mintaWejangan() {
+	async function mintaWejangan() {
       const btn = document.getElementById('btnWejangan');
       const wadah = document.getElementById('tempatWejangan');
       
@@ -353,7 +352,8 @@
         let formattedText = res.hasil.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
         wadah.innerHTML = `<p class="w-full text-gray-700 leading-relaxed font-medium">"${formattedText}"</p>`;
       } else {
-        wadah.innerHTML = '<p class="text-center w-full text-red-400">Neko lagi ngambek, gagal ngasih petuah.</p>';
+        // TAMPILKAN PESAN ASLI DARI BACKEND
+        wadah.innerHTML = `<p class="text-center w-full text-red-500 font-bold text-[10px]">${res.pesan || 'Gagal terhubung ke server Neko AI.'}</p>`;
       }
       
       btn.innerHTML = '<i class="fa-solid fa-sparkles"></i> Analisis Ulang';
