@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>NekoCash - Couple Tracker</title>
+  <title>PAWket - Couple Tracker</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -30,7 +30,7 @@
   <!-- ================= SCREEN LOGIN ================= -->
   <div id="loginScreen" class="min-h-screen flex flex-col items-center justify-center p-6">
     <i class="fa-solid fa-cat text-neko-500 text-6xl mb-4"></i>
-    <h1 class="text-3xl font-bold text-gray-800 mb-8 tracking-tight">NekoCash <i class="fa-solid fa-paw text-neko-400 text-xl"></i></h1>
+    <h1 class="text-3xl font-bold text-gray-800 mb-8 tracking-tight">PAWket <i class="fa-solid fa-paw text-neko-400 text-xl"></i></h1>
     <div class="glass w-full max-w-sm rounded-3xl p-6 shadow-xl">
       <input type="text" id="username" placeholder="Username" class="w-full bg-white/60 border-0 rounded-xl px-4 py-3 mb-4 focus:ring-2 focus:ring-neko-400 outline-none font-semibold">
       <input type="password" id="password" placeholder="Password" class="w-full bg-white/60 border-0 rounded-xl px-4 py-3 mb-6 focus:ring-2 focus:ring-neko-400 outline-none font-semibold">
@@ -156,6 +156,9 @@
       </button>
       <button onclick="switchTab('catat')" class="flex flex-col items-center w-16 hover:text-neko-400 transition" id="nav-catat">
         <i class="fa-solid fa-paw text-2xl mb-1"></i><span class="text-[10px] font-bold">Catat</span>
+      </button>
+      <button onclick="switchTab('rekap')" class="flex flex-col items-center w-16 hover:text-neko-400 transition" id="nav-rekap">
+        <i class="fa-solid fa-chart-simple text-2xl mb-1"></i><span class="text-[10px] font-bold">Rekap</span>
       </button>
     </nav>
   </div>
@@ -310,14 +313,87 @@
 
     // --- Tab Navigation Switcher ---
     function switchTab(tabId) {
+      // 1. Sembunyikan semua konten tab
       document.getElementById('tab-dashboard').classList.add('hide');
       document.getElementById('tab-catat').classList.add('hide');
+      document.getElementById('tab-rekap').classList.add('hide');
       
+      // 2. Reset warna semua icon navigasi menjadi abu-abu
       document.getElementById('nav-dashboard').classList.replace('text-neko-500', 'text-gray-400');
       document.getElementById('nav-catat').classList.replace('text-neko-500', 'text-gray-400');
+      document.getElementById('nav-rekap').classList.replace('text-neko-500', 'text-gray-400');
       
+      // 3. Tampilkan tab yang dipilih dan ubah warnanya
       document.getElementById('tab-' + tabId).classList.remove('hide');
       document.getElementById('nav-' + tabId).classList.replace('text-gray-400', 'text-neko-500');
+    }
+
+    let dataRekapBulanIni = [];
+
+    // --- Load Data Spesifik Per Bulan ---
+    function loadRekap() {
+      const bln = document.getElementById('inputBulan').value;
+      if(!bln) return;
+      
+      const listUi = document.getElementById('listRekap');
+      listUi.innerHTML = '<p class="text-center text-gray-400 text-sm py-4"><i class="fa-solid fa-spinner fa-spin text-neko-400 text-2xl mb-2"></i><br>Membongkar catatan...</p>';
+      
+      google.script.run.withSuccessHandler(res => {
+        document.getElementById('rekapMasuk').innerText = formatRp(res.totalMasuk);
+        document.getElementById('rekapKeluar').innerText = formatRp(res.totalKeluar);
+        dataRekapBulanIni = res.detail; // Simpan untuk keperluan export
+        
+        let html = '';
+        if(res.detail.length === 0) {
+          html = '<p class="text-center text-gray-400 text-sm py-4">Belum ada transaksi di bulan ini 🐱</p>';
+        } else {
+          res.detail.forEach(d => {
+            const isMasuk = d.Tipe === 'Pemasukan';
+            const icon = isMasuk ? '<i class="fa-solid fa-arrow-down text-neko-500 bg-neko-100 p-2 rounded-lg"></i>' : '<i class="fa-solid fa-arrow-up text-gray-500 bg-gray-100 p-2 rounded-lg"></i>';
+            const color = isMasuk ? 'text-neko-500' : 'text-gray-800';
+            
+            html += `
+              <div class="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm border border-gray-50">
+                <div class="flex items-center gap-3">
+                  ${icon}
+                  <div>
+                    <p class="font-bold text-sm text-gray-800">${d.Kategori}</p>
+                    <p class="text-[10px] text-gray-400">${d.Tanggal} • ${d.Oleh} <br> <span class="italic">${d.Catatan}</span></p>
+                  </div>
+                </div>
+                <div class="font-bold text-sm ${color}">${formatRp(d.Nominal)}</div>
+              </div>
+            `;
+          });
+        }
+        listUi.innerHTML = html;
+      }).getRekapBulanan(bln);
+    }
+
+    // --- Export ke Excel (XLSX) via SheetJS ---
+    function exportXLS() {
+      if(dataRekapBulanIni.length === 0) return alert("Tidak ada data untuk diexport! Pilih bulan yang ada transaksinya.");
+      
+      const bln = document.getElementById('inputBulan').value;
+      
+      // Ubah JSON ke Worksheet
+      const ws = XLSX.utils.json_to_sheet(dataRekapBulanIni);
+      
+      // Rapikan lebar kolom Excel secara otomatis
+      const wscols = [
+        {wch: 15}, // Tanggal
+        {wch: 10}, // Oleh
+        {wch: 12}, // Tipe
+        {wch: 20}, // Kategori
+        {wch: 15}, // Nominal
+        {wch: 30}  // Catatan
+      ];
+      ws['!cols'] = wscols;
+
+      // Buat Workbook dan download file
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Rekap_" + bln);
+      XLSX.writeFile(wb, `PAWket_Rekap_${bln}.xlsx`);
     }
   </script>
 </body>
