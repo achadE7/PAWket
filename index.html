@@ -681,9 +681,22 @@
       document.getElementById(`tab-${tabId}`).classList.remove('hide');
       document.getElementById(`nav-${tabId}`).classList.replace('text-gray-400', 'text-main-500');
       
-      // Jika pindah ke Dashboard, trigger render ulang untuk grafik
       if (tabId === 'dashboard') {
         setTimeout(loadDataDashboard, 100); 
+      }
+      
+      // TAMBAHAN: Otomatis load data bulan berjalan saat buka tab Rekap
+      if (tabId === 'rekap') {
+        const inputBulan = document.getElementById('inputBulan');
+        // Jika belum ada isinya, isi dengan bulan ini (YYYY-MM)
+        if (!inputBulan.value) {
+          const now = new Date();
+          const yyyy = now.getFullYear();
+          const mm = String(now.getMonth() + 1).padStart(2, '0');
+          inputBulan.value = `${yyyy}-${mm}`;
+        }
+        // Langsung muat datanya
+        loadRekap();
       }
     }
 
