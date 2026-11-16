@@ -70,7 +70,7 @@
             <p class="text-main-50 font-semibold mb-1">Saldo Dompet Gabungan</p>
             <h3 class="text-4xl font-bold mb-4 truncate" id="saldoUtama">Rp 0</h3>
             
-            <!-- UPDATE: RINCIAN SALDO MASING-MASING -->
+            <!-- RINCIAN SALDO MASING-MASING -->
             <div class="flex justify-between text-xs bg-white/20 p-3 rounded-xl backdrop-blur-md mb-3 border border-white/20">
               <div><span class="opacity-80"><i class="fa-solid fa-wallet mr-1"></i>Uangku:</span> <br><span class="font-bold text-sm truncate" id="saldoAku">Rp 0</span></div>
               <div class="text-right"><span class="opacity-80"><i class="fa-solid fa-wallet mr-1"></i>Uang <span id="namaPasanganDompet">Pasangan</span>:</span> <br><span class="font-bold text-sm truncate" id="saldoPasangan">Rp 0</span></div>
@@ -108,26 +108,36 @@
             </div>
           </div>
 
+          <!-- KANTONG TABUNGAN DINAMIS -->
           <h4 class="font-bold text-gray-800 mb-1 mt-2">Kantong Tabungan <i class="fa-solid fa-box-archive text-gray-400 ml-1"></i></h4>
-          <div class="grid grid-cols-2 gap-3 mb-2">
+          <div id="kantongTabunganContainer" class="grid grid-cols-2 gap-3 mb-2">
             <div class="glass rounded-2xl p-3 shadow-sm border border-main-100">
-              <p class="text-[11px] text-main-500 font-semibold"><i class="fa-solid fa-piggy-bank mr-1"></i> Simpanan</p>
-              <p class="font-bold text-gray-800 text-sm truncate" id="tabSimpanan">Rp 0</p>
+              <p class="text-[11px] text-main-500 font-semibold">🏦 Simpanan</p>
+              <p class="font-bold text-gray-800 text-sm truncate">Rp 0</p>
             </div>
             <div class="glass rounded-2xl p-3 shadow-sm border border-accent-100">
-              <p class="text-[11px] text-accent-500 font-semibold"><i class="fa-solid fa-plane-departure mr-1"></i> Liburan</p>
-              <p class="font-bold text-gray-800 text-sm truncate" id="tabLiburan">Rp 0</p>
+              <p class="text-[11px] text-accent-500 font-semibold">✈️ Liburan</p>
+              <p class="font-bold text-gray-800 text-sm truncate">Rp 0</p>
             </div>
           </div>
 
+          <!-- GRAFIK ARUS KAS DENGAN KETERANGAN WARNA -->
           <div class="grid grid-cols-2 gap-3 mb-4">
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
               <h4 class="font-bold text-gray-800 text-[10px] text-center mb-2"><i class="fa-solid fa-chart-pie text-main-400 mr-1"></i> Arus Kasku</h4>
               <div style="position: relative; height: 80px; width: 80px;"><canvas id="pieChartAku"></canvas></div>
+              <div class="flex items-center justify-center gap-2 mt-2.5 pt-2 border-t border-gray-50 w-full text-[9px] font-bold text-gray-500">
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-main-500 inline-block"></span>Pemasukan</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-accent-400 inline-block"></span>Pengeluaran</span>
+              </div>
             </div>
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
               <h4 class="font-bold text-gray-800 text-[10px] text-center mb-2"><i class="fa-solid fa-chart-pie text-accent-400 mr-1"></i> Kas <span id="namaPasanganText">Pasangan</span></h4>
               <div style="position: relative; height: 80px; width: 80px;"><canvas id="pieChartPasangan"></canvas></div>
+              <div class="flex items-center justify-center gap-2 mt-2.5 pt-2 border-t border-gray-50 w-full text-[9px] font-bold text-gray-500">
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-main-400 inline-block"></span>Pemasukan</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-accent-500 inline-block"></span>Pengeluaran</span>
+              </div>
             </div>
           </div>
 
@@ -219,9 +229,22 @@
             <button onclick="exportXLS()" id="btnExport" class="w-full bg-[#107c41] text-white font-bold py-3 rounded-xl shadow-lg shadow-green-700/20 hover:bg-green-700 transition active:scale-95 mb-4 flex items-center justify-center gap-2 shrink-0">
               <i class="fa-solid fa-file-excel"></i> Download XLS
             </button>
-            <h4 class="font-bold text-gray-800 mb-3 text-sm shrink-0">Rincian Transaksi</h4>
+            <div class="flex justify-between items-center mb-3 shrink-0">
+              <h4 class="font-bold text-gray-800 text-sm">Rincian Transaksi</h4>
+              <span id="infoTotalRekap" class="text-[10px] font-bold text-gray-400"></span>
+            </div>
             <div id="listRekap" class="space-y-3 flex-1 overflow-y-auto pr-1">
               <p class="text-center text-gray-400 text-sm py-4">Pilih bulan terlebih dahulu <i class="fa-regular fa-calendar ml-1"></i></p>
+            </div>
+            <!-- PAGINATION REKAP -->
+            <div id="paginationRekap" class="hide flex justify-between items-center mt-4 pt-3 border-t border-gray-100 shrink-0">
+              <button onclick="gantiHalamanRekap(-1)" id="btnPrevRekap" class="px-3 py-1.5 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-600 hover:bg-main-50 hover:text-main-600 disabled:opacity-40 disabled:pointer-events-none transition shadow-sm">
+                <i class="fa-solid fa-chevron-left mr-1"></i> Sebelumnya
+              </button>
+              <span id="pageIndicatorRekap" class="text-xs font-bold text-gray-600">Hal 1 / 1</span>
+              <button onclick="gantiHalamanRekap(1)" id="btnNextRekap" class="px-3 py-1.5 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-600 hover:bg-main-50 hover:text-main-600 disabled:opacity-40 disabled:pointer-events-none transition shadow-sm">
+                Selanjutnya <i class="fa-solid fa-chevron-right ml-1"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -275,24 +298,32 @@
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload)
         });
-        return await response.json();
+        
+        const text = await response.text();
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          return { sukses: false, pesan: "Error Server: " + text.substring(0, 60) + "..." };
+        }
       } catch (error) {
-        console.error("Error:", error);
-        return { sukses: false, pesan: "Gagal terhubung." };
+        return { sukses: false, pesan: "Network Error: Pastikan API_URL berakhiran /exec" };
       }
     }
     
     let activeUser = "";
     let tipeAktif = "Pengeluaran";
     let jenisTabunganAktif = "Setor";
-    let listKategori = { masuk: [], keluar: [] };
+    let listKategori = { masuk: [], keluar: [], tabungan: [] };
     let dataRekapBulanIni = [];
+    let currentPageRekap = 1;
+    const ITEMS_PER_PAGE_REKAP = 10;
     
     let pieChartAkuInstance = null;
     let pieChartPasanganInstance = null;
-    let isNekoCalled = false; // Mencegah Neko terpanggil berkali-kali
+    let isNekoCalled = false;
 
     const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+    const cleanPosName = (str) => String(str || '').replace(/^[^a-zA-Z0-9]+/, '').trim();
 
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById('inputTanggal').value = new Date().toISOString().split('T')[0];
@@ -332,9 +363,7 @@
           loadDataDashboard();
           loadKategori();
           
-          // MUNCULKAN POPUP NEKO OTOMATIS SETELAH LOGIN (Delay 1 detik agar UI siap)
           setTimeout(() => { showNekoModal(false); }, 1000);
-
         }, 300);
       } else {
         alert(res.pesan);
@@ -361,7 +390,6 @@
       switchTab('dashboard');
     }
 
-    // FUNGSI POPUP NEKO AI
     function showNekoModal(forceRefresh = false) {
       const modal = document.getElementById('nekoModal');
       modal.classList.remove('hide');
@@ -390,15 +418,15 @@
       textContainer.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-main-400 text-3xl mb-3"></i><p class="font-semibold text-main-400 animate-pulse text-center">Neko sedang mengintip dompet kalian...</p>';
       inlineWadah.innerHTML = '<p class="text-center w-full animate-pulse text-main-400 font-semibold">Neko sedang berpikir... 🐾</p>';
       
-      const res = await callAPI('analisisAI');
+      const res = await callAPI('analisisKeuanganAI'); 
       
       if(res && res.sukses) {
         let formattedText = res.hasil.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
         textContainer.innerHTML = `<span class="text-gray-700 font-medium leading-relaxed">"${formattedText}"</span>`;
         inlineWadah.innerHTML = `<p class="w-full text-gray-700 leading-relaxed font-medium">"${formattedText}"</p>`;
       } else {
-        textContainer.innerHTML = `<span class="text-red-500 font-bold">${res.pesan || 'Gagal terhubung ke Neko.'}</span>`;
-        inlineWadah.innerHTML = `<p class="text-center w-full text-red-500 font-bold text-[10px]">${res.pesan || 'Gagal terhubung'}</p>`;
+        textContainer.innerHTML = `<span class="text-red-500 font-bold text-xs">${res.pesan}</span>`;
+        inlineWadah.innerHTML = `<p class="text-center w-full text-red-500 font-bold text-[10px]">${res.pesan}</p>`;
       }
     }
 
@@ -419,7 +447,6 @@
       document.getElementById('namaPasanganText').innerText = partnerName.split(' ')[0]; 
       document.getElementById('namaPasanganDompet').innerText = partnerName.split(' ')[0]; 
 
-      // KALKULASI SALDO MASING-MASING (Pemasukan dikurang Pengeluaran)
       const uangku = myStats.masuk - myStats.keluar;
       const uangPasangan = partnerStats.masuk - partnerStats.keluar;
       
@@ -427,8 +454,23 @@
       document.getElementById('saldoPasangan').innerText = formatRp(uangPasangan);
 
       const tabObj = res.tabungan || {};
-      document.getElementById('tabSimpanan').innerText = formatRp(tabObj['Simpanan'] || 0);
-      document.getElementById('tabLiburan').innerText = formatRp(tabObj['Liburan'] || 0);
+      const labelTabObj = res.labelTabungan || {};
+      const kantongContainer = document.getElementById('kantongTabunganContainer');
+      kantongContainer.innerHTML = '';
+      
+      const tabKeys = Object.keys(tabObj);
+      tabKeys.forEach((key, idx) => {
+        const isMainColor = idx % 2 === 0;
+        const borderClass = isMainColor ? 'border-main-100' : 'border-accent-100';
+        const textClass = isMainColor ? 'text-main-500' : 'text-accent-500';
+        const labelTampil = labelTabObj[key] || key;
+        kantongContainer.innerHTML += `
+          <div class="glass rounded-2xl p-3 shadow-sm border ${borderClass}">
+            <p class="text-[11px] ${textClass} font-semibold truncate">${labelTampil}</p>
+            <p class="font-bold text-gray-800 text-sm truncate">${formatRp(tabObj[key] || 0)}</p>
+          </div>
+        `;
+      });
 
       const targetObj = res.targetTabungan || {};
       const targetPos = targetObj.pos || "Semua";
@@ -436,9 +478,10 @@
       
       let terkumpul = 0;
       if (targetPos === "Semua") {
-        terkumpul = (tabObj['Simpanan'] || 0) + (tabObj['Liburan'] || 0) + (tabObj['Keperluan Lainnya'] || 0);
+        tabKeys.forEach(k => { terkumpul += (tabObj[k] || 0); });
       } else {
-        terkumpul = tabObj[targetPos] || 0;
+        const cleanTarget = cleanPosName(targetPos);
+        terkumpul = tabObj[cleanTarget] !== undefined ? tabObj[cleanTarget] : (tabObj[targetPos] || 0);
       }
       
       const persen = targetNominal > 0 ? Math.min(100, Math.round((terkumpul / targetNominal) * 100)) : 0;
@@ -504,20 +547,24 @@
     }
 
     async function editTargetBaru() {
-      const posSelect = prompt("Pilih pos tabungan yang ingin dilacak di beranda:\n1. Semua\n2. Simpanan\n3. Liburan\n4. Keperluan Lainnya\n\nKetik angkanya saja:");
-      let posTerpilih = "Semua";
-      if (posSelect === "2") posTerpilih = "Simpanan";
-      else if (posSelect === "3") posTerpilih = "Liburan";
-      else if (posSelect === "4") posTerpilih = "Keperluan Lainnya";
-      else if (posSelect !== "1" && posSelect !== null) return alert("Pilihan tidak valid.");
+      const opsiPos = ["Semua", ...(listKategori.tabungan || ['🏦 Simpanan', '✈️ Liburan', '🛍️ Keperluan Lainnya']).map(k => cleanPosName(k))];
+      let teksPrompt = "Pilih pos tabungan yang ingin dilacak di beranda:\n";
+      opsiPos.forEach((p, idx) => { teksPrompt += `${idx + 1}. ${p}\n`; });
+      teksPrompt += "\nKetik angkanya saja:";
 
-      if (posSelect !== null) {
-        const nominal = prompt(`Masukkan nominal target untuk pos "${posTerpilih}" (angka saja):`);
-        if (nominal && !isNaN(nominal) && nominal.trim() !== "") {
-          const res = await callAPI('setTarget', { pos: posTerpilih, nominal: Number(nominal) });
-          if (res && res.sukses) { alert('Target tabungan berhasil diperbarui! ✨'); loadDataDashboard(); } 
-          else { alert('Gagal memperbarui target.'); }
-        }
+      const posSelect = prompt(teksPrompt);
+      if (posSelect === null) return;
+      const idxTerpilih = parseInt(posSelect, 10) - 1;
+      if (isNaN(idxTerpilih) || idxTerpilih < 0 || idxTerpilih >= opsiPos.length) {
+        return alert("Pilihan tidak valid.");
+      }
+      const posTerpilih = opsiPos[idxTerpilih];
+
+      const nominal = prompt(`Masukkan nominal target untuk pos "${posTerpilih}" (angka saja):`);
+      if (nominal && !isNaN(nominal) && nominal.trim() !== "") {
+        const res = await callAPI('setTarget', { pos: posTerpilih, nominal: Number(nominal) });
+        if (res && res.sukses) { alert('Target tabungan berhasil diperbarui! ✨'); loadDataDashboard(); } 
+        else { alert('Gagal memperbarui target.'); }
       }
     }
 
@@ -597,14 +644,18 @@
 
     async function loadKategori() {
       const res = await callAPI('getKategori');
-      if (res && res.sukses) { listKategori = res; renderKategori(); }
+      if (res && res.sukses) { 
+        listKategori = res; 
+        if (tipeAktif === 'Tabungan') renderKategoriTabungan();
+        else renderKategori(); 
+      }
     }
 
     function renderKategori() {
       const select = document.getElementById('inputKategori');
       select.innerHTML = '<option value="" disabled selected>-- Pilih Kategori --</option>'; 
       const arr = tipeAktif === 'Pemasukan' ? listKategori.masuk : listKategori.keluar;
-      arr.forEach(k => { let opt = document.createElement('option'); opt.value = k; opt.innerText = k; select.appendChild(opt); });
+      (arr || []).forEach(k => { let opt = document.createElement('option'); opt.value = k; opt.innerText = k; select.appendChild(opt); });
       let optAdd = document.createElement('option');
       optAdd.value = "ADD_NEW"; optAdd.innerText = "+ Tambah Kategori Baru"; optAdd.className = "text-main-500 font-bold";
       select.appendChild(optAdd);
@@ -613,8 +664,22 @@
     function renderKategoriTabungan() {
       const select = document.getElementById('inputKategori');
       select.innerHTML = '<option value="" disabled selected>-- Pilih Pos Tabungan --</option>';
-      const posList = [{t: '🏦 Simpanan', v: 'Simpanan'}, {t: '✈️ Liburan', v: 'Liburan'}, {t: '🛍️ Keperluan Lainnya', v: 'Keperluan Lainnya'}];
-      posList.forEach(k => { let opt = document.createElement('option'); opt.value = k.v; opt.innerText = k.t; select.appendChild(opt); });
+      const posList = (listKategori.tabungan && listKategori.tabungan.length > 0) 
+        ? listKategori.tabungan 
+        : ['🏦 Simpanan', '✈️ Liburan', '🛍️ Keperluan Lainnya'];
+      
+      posList.forEach(k => { 
+        let opt = document.createElement('option'); 
+        opt.value = cleanPosName(k); 
+        opt.innerText = k; 
+        select.appendChild(opt); 
+      });
+      
+      let optAdd = document.createElement('option');
+      optAdd.value = "ADD_NEW"; 
+      optAdd.innerText = "+ Tambah Kategori Baru"; 
+      optAdd.className = "text-main-500 font-bold";
+      select.appendChild(optAdd);
     }
 
     function setTipe(tipe) {
@@ -636,11 +701,22 @@
     async function cekKategoriBaru() {
       const select = document.getElementById('inputKategori');
       if (select.value === "ADD_NEW") {
-        let kategoriBaru = prompt(`Masukkan nama kategori ${tipeAktif} baru:\n(Beri emoji di depannya, contoh: 🍣 Sushi Berdua)`);
+        let contoh = tipeAktif === 'Tabungan' ? '🏠 Rumah Impian' : '🍣 Sushi Berdua';
+        let kategoriBaru = prompt(`Masukkan nama kategori ${tipeAktif} baru:\n(Beri emoji di depannya, contoh: ${contoh})`);
         if (kategoriBaru && kategoriBaru.trim() !== "") {
           select.disabled = true;
           const res = await callAPI('tambahKategori', { tipe: tipeAktif, namaKategori: kategoriBaru.trim() });
-          if(res && res.sukses) { listKategori = res; renderKategori(); select.value = kategoriBaru.trim(); }
+          if(res && res.sukses) { 
+            listKategori = res; 
+            if (tipeAktif === 'Tabungan') {
+              renderKategoriTabungan();
+              select.value = cleanPosName(kategoriBaru.trim());
+              loadDataDashboard();
+            } else {
+              renderKategori(); 
+              select.value = kategoriBaru.trim(); 
+            }
+          }
           select.disabled = false;
         } else { select.value = ""; }
       }
@@ -724,6 +800,9 @@
       const bln = document.getElementById('inputBulan').value;
       if(!bln) return;
       const listUi = document.getElementById('listRekap');
+      const paginationUi = document.getElementById('paginationRekap');
+      paginationUi.classList.add('hide');
+      document.getElementById('infoTotalRekap').innerText = '';
       listUi.innerHTML = '<p class="text-center text-gray-400 text-sm py-4"><i class="fa-solid fa-spinner fa-spin text-main-400 text-2xl mb-2"></i><br>Membongkar catatan...</p>';
       
       const res = await callAPI('getRekap', { bulanTahun: bln });
@@ -731,34 +810,70 @@
         document.getElementById('rekapMasuk').innerText = formatRp(res.totalMasuk);
         document.getElementById('rekapKeluar').innerText = formatRp(res.totalKeluar);
         dataRekapBulanIni = res.detail; 
-        
-        let html = '';
-        if(res.detail.length === 0) {
-          html = '<p class="text-center text-gray-400 text-sm py-4">Belum ada transaksi di bulan ini ✨</p>';
-        } else {
-          res.detail.forEach(d => {
-            const isMasuk = d.Tipe === 'Pemasukan' || (d.Tipe === 'Tabungan' && d.Catatan.includes('Setor')); 
-            const icon = isMasuk ? '<i class="fa-solid fa-arrow-down text-main-500 bg-main-100 p-2 rounded-lg"></i>' : '<i class="fa-solid fa-arrow-up text-accent-500 bg-accent-100 p-2 rounded-lg"></i>';
-            const color = isMasuk ? 'text-main-500' : 'text-accent-500';
-            html += `
-              <div class="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm border border-gray-50 relative group">
-                <div class="flex items-center gap-3 w-full pr-8">
-                  ${icon}
-                  <div class="w-full">
-                    <p class="font-bold text-sm text-gray-800">${d.Kategori}</p>
-                    <p class="text-[10px] text-gray-400">${d.Tanggal} • ${d.Oleh} <br> <span class="italic truncate block max-w-[180px]">${d.Catatan}</span></p>
-                  </div>
-                </div>
-                <div class="font-bold text-sm ${color} absolute right-3 top-3">${formatRp(d.Nominal)}</div>
-                <button onclick="hapusCatatan('${d.id}')" class="absolute right-3 bottom-2 text-red-300 hover:text-red-500 transition text-[10px] font-bold">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
-              </div>
-            `;
-          });
-        }
-        listUi.innerHTML = html;
+        currentPageRekap = 1;
+        renderListRekap();
       }
+    }
+
+    function renderListRekap() {
+      const listUi = document.getElementById('listRekap');
+      const paginationUi = document.getElementById('paginationRekap');
+      const infoTotal = document.getElementById('infoTotalRekap');
+
+      if (dataRekapBulanIni.length === 0) {
+        listUi.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">Belum ada transaksi di bulan ini ✨</p>';
+        paginationUi.classList.add('hide');
+        infoTotal.innerText = '0 Transaksi';
+        return;
+      }
+
+      const totalPages = Math.ceil(dataRekapBulanIni.length / ITEMS_PER_PAGE_REKAP);
+      if (currentPageRekap > totalPages) currentPageRekap = totalPages;
+      if (currentPageRekap < 1) currentPageRekap = 1;
+
+      const startIdx = (currentPageRekap - 1) * ITEMS_PER_PAGE_REKAP;
+      const endIdx = startIdx + ITEMS_PER_PAGE_REKAP;
+      const itemsHalamanIni = dataRekapBulanIni.slice(startIdx, endIdx);
+
+      infoTotal.innerText = `${dataRekapBulanIni.length} Transaksi`;
+
+      let html = '';
+      itemsHalamanIni.forEach(d => {
+        const isMasuk = d.Tipe === 'Pemasukan' || (d.Tipe === 'Tabungan' && d.Catatan.includes('Setor')); 
+        const icon = isMasuk ? '<i class="fa-solid fa-arrow-down text-main-500 bg-main-100 p-2 rounded-lg"></i>' : '<i class="fa-solid fa-arrow-up text-accent-500 bg-accent-100 p-2 rounded-lg"></i>';
+        const color = isMasuk ? 'text-main-500' : 'text-accent-500';
+        html += `
+          <div class="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm border border-gray-50 relative group">
+            <div class="flex items-center gap-3 w-full pr-8">
+              ${icon}
+              <div class="w-full">
+                <p class="font-bold text-sm text-gray-800">${d.Kategori}</p>
+                <p class="text-[10px] text-gray-400">${d.Tanggal} • ${d.Oleh} <br> <span class="italic truncate block max-w-[180px]">${d.Catatan}</span></p>
+              </div>
+            </div>
+            <div class="font-bold text-sm ${color} absolute right-3 top-3">${formatRp(d.Nominal)}</div>
+            <button onclick="hapusCatatan('${d.id}')" class="absolute right-3 bottom-2 text-red-300 hover:text-red-500 transition text-[10px] font-bold">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        `;
+      });
+      listUi.innerHTML = html;
+      listUi.scrollTop = 0;
+
+      if (totalPages > 1) {
+        paginationUi.classList.remove('hide');
+        document.getElementById('pageIndicatorRekap').innerText = `Hal ${currentPageRekap} / ${totalPages}`;
+        document.getElementById('btnPrevRekap').disabled = (currentPageRekap === 1);
+        document.getElementById('btnNextRekap').disabled = (currentPageRekap === totalPages);
+      } else {
+        paginationUi.classList.add('hide');
+      }
+    }
+
+    function gantiHalamanRekap(arah) {
+      currentPageRekap += arah;
+      renderListRekap();
     }
 
     async function hapusCatatan(id) {
