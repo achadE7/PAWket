@@ -184,10 +184,10 @@
   </div>
 
   <script>
-    // Taruh URL Apps Script yang baru di-deploy di sini
+    // URL Web App Apps Script (REST API Endpoint)
     const API_URL = "https://script.google.com/macros/s/AKfycbzufhYyOQwVmj0qEPWd_vZwYHh-nnGo5iKNQrZFMXBHJcoFOvECMkr1qg0Y-VB7kpGf/exec";
 
-    // Fungsi jembatan pengganti google.script.run
+    // Fungsi fetch utama penghubung frontend (GitHub) dan backend (Apps Script)
     async function callAPI(action, payload = {}) {
       payload.action = action;
       try {
@@ -211,44 +211,106 @@
     const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
 
     // --- Login ---
-    function prosesLogin() {
+    async function prosesLogin() {
       const u = document.getElementById('username').value;
       const p = document.getElementById('password').value;
       const btn = document.getElementById('btnLogin');
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
       
-      google.script.run.withSuccessHandler(res => {
-        if(res.sukses) {
-          activeUser = res.nama;
-          document.getElementById('namaUser').innerText = activeUser;
-          document.getElementById('loginScreen').classList.add('hide');
-          document.getElementById('appScreen').classList.remove('hide');
-          loadDataDashboard();
-          loadKategori();
-        } else {
-          alert(res.pesan);
-          btn.innerHTML = 'Masuk';
-        }
-      }).loginUser(u, p);
+      const res = await callAPI('login', { username: u, password: p });
+      
+      if(res.sukses) {
+        activeUser = res.nama;
+        document.getElementById('namaUser').innerText = activeUser;
+        document.getElementById('loginScreen').classList.add('hide');
+        document.getElementById('appScreen').classList.remove('hide');
+        loadDataDashboard();
+        loadKategori();
+      } else {
+        alert(res.pesan);
+        btn.innerHTML = 'Masuk';
+      }
     }
 
     // --- Load Data Dashboard ---
-    function loadDataDashboard() {
-      google.script.run.withSuccessHandler(res => {
-        document.getElementById('saldoUtama').innerText = formatRp(res.saldoUtama);
-        document.getElementById('totalMasuk').innerText = formatRp(res.totalMasuk);
-        document.getElementById('totalKeluar').innerText = formatRp(res.totalKeluar);
-        document.getElementById('tabSimpanan').innerText = formatRp(res.tabungan['Simpanan'] || 0);
-        document.getElementById('tabLiburan').innerText = formatRp(res.tabungan['Liburan'] || 0);
-      }).getDashboardData();
+    async function loadDataDashboard() {
+      const res = await callAPI('getDashboard');
+      
+      if (!res || res.sukses === false) return;
+
+      // 1. Update Angka Teks
+      document.getElementById('saldoUtama').innerText = formatRp(res.saldoUtama);
+      document.getElementById('totalMasuk').innerText = formatRp(res.totalMasuk);
+      document.getElementById('totalKeluar').innerText = formatRp(res.totalKeluar);
+      document.getElementById('tabSimpanan').innerText = formatRp(res.tabungan['Simpanan'] || 0);
+      document.getElementById('tabLiburan').innerText = formatRp(res.tabungan['Liburan'] || 0);
+
+      // 2. Kalkulasi Data untuk Grafik
+      const sisaUang = res.saldoUtama;
+      const pemasukan = res.totalMasuk;
+      const pengeluaran = res.totalKeluar;
+      const sisaHutang = res.totalSisaHutang || 0;
+      
+      const totalTabunganTerkumpul = (res.tabungan['Simpanan'] || 0) + (res.tabungan['Liburan'] || 0) + (res.tabungan['Keperluan Lainnya'] || 0);
+      const sisaTargetTabungan = Math.max(0, res.targetTabungan - totalTabunganTerkumpul);
+
+      // 3. Render Bar Chart (Rekap Keseluruhan)
+      const ctxBar = document.getElementById('barChart').getContext('2d');
+      if (barChartInstance) barChartInstance.destroy();
+      barChartInstance = new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+          labels: ['Sisa Uang', 'Pemasukan', 'Pengeluaran', 'Sisa Hutang', 'Sisa Target'],
+          datasets: [{
+            data: [sisaUang, pemasukan, pengeluaran, sisaHutang, sisaTargetTabungan],
+            backgroundColor: ['#10b981', '#3b82f6', '#f07147', '#ef4444', '#8b5cf6'],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: (context) => formatRp(context.raw) } } },
+          scales: { 
+            y: { beginAtZero: true, ticks: { callback: value => 'Rp ' + (value/1000) + 'k', font: { family: 'Quicksand' } } },
+            x: { ticks: { font: { family: 'Quicksand', size: 10 } } }
+          }
+        }
+      });
+
+      // 4. Render Doughnut Chart (Persentase Arus Kas)
+      const ctxPie = document.getElementById('pieChart').getContext('2d');
+      if (pieChartInstance) pieChartInstance.destroy();
+      
+      const isDataKosong = pemasukan === 0 && pengeluaran === 0;
+      pieChartInstance = new Chart(ctxPie, {
+        type: 'doughnut',
+        data: {
+          labels: ['Pemasukan', 'Pengeluaran'],
+          datasets: [{
+            data: isDataKosong ? [1] : [pemasukan, pengeluaran],
+            backgroundColor: isDataKosong ? ['#e5e7eb'] : ['#3b82f6', '#f07147'],
+            borderWidth: 0,
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          cutout: '70%',
+          plugins: { 
+            legend: { position: 'bottom', labels: { font: { family: 'Quicksand', weight: 'bold' }, usePointStyle: true, padding: 20 } },
+            tooltip: { callbacks: { label: (context) => isDataKosong ? ' Belum ada data' : ' ' + formatRp(context.raw) } }
+          }
+        }
+      });
     }
 
     // --- Load Kategori & Dinamis Kategori ---
-    function loadKategori() {
-      google.script.run.withSuccessHandler(res => {
+    async function loadKategori() {
+      const res = await callAPI('getKategori');
+      if (res && res.masuk) {
         listKategori = res;
         renderKategori();
-      }).getKategori();
+      }
     }
 
     function renderKategori() {
@@ -275,18 +337,21 @@
       renderKategori();
     }
 
-    function cekKategoriBaru() {
+    async function cekKategoriBaru() {
       const select = document.getElementById('inputKategori');
       if (select.value === "ADD_NEW") {
         let kategoriBaru = prompt(`Masukkan nama kategori ${tipeAktif} baru:`);
         if (kategoriBaru && kategoriBaru.trim() !== "") {
           select.disabled = true;
-          google.script.run.withSuccessHandler(res => {
+          
+          const res = await callAPI('tambahKategori', { tipe: tipeAktif, namaKategori: kategoriBaru.trim() });
+          
+          if(res && res.masuk) {
             listKategori = res;
             renderKategori();
             select.value = kategoriBaru.trim();
-            select.disabled = false;
-          }).tambahKategori(tipeAktif, kategoriBaru.trim());
+          }
+          select.disabled = false;
         } else {
           renderKategori(); // Reset kembali jika dibatalkan
         }
@@ -302,30 +367,30 @@
       btnUi.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Membaca Struk...';
       
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = async function(e) {
         const base64 = e.target.result.split(',')[1];
-        google.script.run.withSuccessHandler(res => {
-          if(res.sukses) {
-            setTipe('Pengeluaran');
-            document.getElementById('inputNominal').value = res.hasil.nominal;
-            document.getElementById('inputCatatan').value = res.hasil.catatan;
-            
-            // Cek apakah AI memprediksi kategori yg ada, jika tidak masukkan ke catatan saja
-            if(listKategori.keluar.includes(res.hasil.kategori)) {
-              document.getElementById('inputKategori').value = res.hasil.kategori;
-            }
-            alert("Struk berhasil dibaca AI! 🐱 Cek kembali nominalnya.");
-          } else {
-            alert(res.pesan);
+        
+        const res = await callAPI('scanStruk', { base64: base64, mimeType: file.type });
+        
+        if(res.sukses) {
+          setTipe('Pengeluaran');
+          document.getElementById('inputNominal').value = res.hasil.nominal;
+          document.getElementById('inputCatatan').value = res.hasil.catatan;
+          
+          if(listKategori.keluar.includes(res.hasil.kategori)) {
+            document.getElementById('inputKategori').value = res.hasil.kategori;
           }
-          btnUi.innerHTML = '<i class="fa-solid fa-camera"></i> Foto Struk (Scan AI)';
-        }).scanStrukAI(base64, file.type);
+          alert("Struk berhasil dibaca AI! 🐱 Cek kembali nominalnya.");
+        } else {
+          alert(res.pesan || "Gagal membaca struk.");
+        }
+        btnUi.innerHTML = '<i class="fa-solid fa-camera"></i> Foto Struk (Scan AI)';
       };
       reader.readAsDataURL(file);
     }
 
     // --- Simpan Transaksi ---
-    function simpanTransaksi() {
+    async function simpanTransaksi() {
       const form = {
         tanggal: new Date().toISOString().split('T')[0],
         oleh: activeUser,
@@ -339,48 +404,55 @@
       
       const btn = document.getElementById('btnSimpan');
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+      btn.disabled = true;
       
-      google.script.run.withSuccessHandler(() => {
+      const res = await callAPI('tambahTransaksi', { form: form });
+      
+      if (res && res.sukses) {
         alert("Berhasil dicatat! 🐾");
         document.getElementById('inputNominal').value = '';
         document.getElementById('inputCatatan').value = '';
-        btn.innerHTML = 'Simpan Data';
         loadDataDashboard();
         switchTab('dashboard');
-      }).tambahTransaksi(form);
+      } else {
+        alert("Gagal menyimpan transaksi.");
+      }
+      btn.innerHTML = 'Simpan Data';
+      btn.disabled = false;
     }
 
     // --- Tab Navigation Switcher ---
     function switchTab(tabId) {
-      // 1. Sembunyikan semua konten tab
       document.getElementById('tab-dashboard').classList.add('hide');
       document.getElementById('tab-catat').classList.add('hide');
       document.getElementById('tab-rekap').classList.add('hide');
       
-      // 2. Reset warna semua icon navigasi menjadi abu-abu
       document.getElementById('nav-dashboard').classList.replace('text-neko-500', 'text-gray-400');
       document.getElementById('nav-catat').classList.replace('text-neko-500', 'text-gray-400');
       document.getElementById('nav-rekap').classList.replace('text-neko-500', 'text-gray-400');
       
-      // 3. Tampilkan tab yang dipilih dan ubah warnanya
       document.getElementById('tab-' + tabId).classList.remove('hide');
       document.getElementById('nav-' + tabId).classList.replace('text-gray-400', 'text-neko-500');
     }
 
     let dataRekapBulanIni = [];
+    let barChartInstance = null;
+    let pieChartInstance = null;
 
     // --- Load Data Spesifik Per Bulan ---
-    function loadRekap() {
+    async function loadRekap() {
       const bln = document.getElementById('inputBulan').value;
       if(!bln) return;
       
       const listUi = document.getElementById('listRekap');
       listUi.innerHTML = '<p class="text-center text-gray-400 text-sm py-4"><i class="fa-solid fa-spinner fa-spin text-neko-400 text-2xl mb-2"></i><br>Membongkar catatan...</p>';
       
-      google.script.run.withSuccessHandler(res => {
+      const res = await callAPI('getRekap', { bulanTahun: bln });
+      
+      if(res && res.detail) {
         document.getElementById('rekapMasuk').innerText = formatRp(res.totalMasuk);
         document.getElementById('rekapKeluar').innerText = formatRp(res.totalKeluar);
-        dataRekapBulanIni = res.detail; // Simpan untuk keperluan export
+        dataRekapBulanIni = res.detail; 
         
         let html = '';
         if(res.detail.length === 0) {
@@ -406,7 +478,7 @@
           });
         }
         listUi.innerHTML = html;
-      }).getRekapBulanan(bln);
+      }
     }
 
     // --- Export ke Excel (XLSX) via SheetJS ---
@@ -414,134 +486,18 @@
       if(dataRekapBulanIni.length === 0) return alert("Tidak ada data untuk diexport! Pilih bulan yang ada transaksinya.");
       
       const bln = document.getElementById('inputBulan').value;
-      
-      // Ubah JSON ke Worksheet
       const ws = XLSX.utils.json_to_sheet(dataRekapBulanIni);
       
-      // Rapikan lebar kolom Excel secara otomatis
-      const wscols = [
-        {wch: 15}, // Tanggal
-        {wch: 10}, // Oleh
-        {wch: 12}, // Tipe
-        {wch: 20}, // Kategori
-        {wch: 15}, // Nominal
-        {wch: 30}  // Catatan
-      ];
+      const wscols = [{wch: 15}, {wch: 10}, {wch: 12}, {wch: 20}, {wch: 15}, {wch: 30}];
       ws['!cols'] = wscols;
 
-      // Buat Workbook dan download file
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Rekap_" + bln);
       XLSX.writeFile(wb, `PAWket_Rekap_${bln}.xlsx`);
     }
 
-    // --- Variabel Global Grafik & Target ---
-    let barChartInstance = null;
-    let pieChartInstance = null;
-
-    // --- Load Data Dashboard (Versi Update Grafik) ---
-    function loadDataDashboard() {
-      google.script.run.withSuccessHandler(res => {
-        // 1. Update Angka Teks
-        document.getElementById('saldoUtama').innerText = formatRp(res.saldoUtama);
-        document.getElementById('totalMasuk').innerText = formatRp(res.totalMasuk);
-        document.getElementById('totalKeluar').innerText = formatRp(res.totalKeluar);
-        document.getElementById('tabSimpanan').innerText = formatRp(res.tabungan['Simpanan'] || 0);
-        document.getElementById('tabLiburan').innerText = formatRp(res.tabungan['Liburan'] || 0);
-
-        // 2. Kalkulasi Data untuk Grafik
-        const sisaUang = res.saldoUtama;
-        const pemasukan = res.totalMasuk;
-        const pengeluaran = res.totalKeluar;
-        const sisaHutang = res.totalSisaHutang || 0; // Didapat dari update backend sebelumnya
-        
-        const totalTabunganTerkumpul = (res.tabungan['Simpanan'] || 0) + (res.tabungan['Liburan'] || 0) + (res.tabungan['Keperluan Lainnya'] || 0);
-        
-        // Menggunakan targetTabungan dari database
-        const sisaTargetTabungan = Math.max(0, res.targetTabungan - totalTabunganTerkumpul);
-
-        // 3. Render Bar Chart (Rekap Keseluruhan)
-        const ctxBar = document.getElementById('barChart').getContext('2d');
-        if (barChartInstance) barChartInstance.destroy();
-        barChartInstance = new Chart(ctxBar, {
-          type: 'bar',
-          data: {
-            labels: ['Sisa Uang', 'Pemasukan', 'Pengeluaran', 'Sisa Hutang', 'Sisa Target'],
-            datasets: [{
-              data: [sisaUang, pemasukan, pengeluaran, sisaHutang, sisaTargetTabungan],
-              backgroundColor: [
-                '#10b981', // Hijau (Sisa Uang)
-                '#3b82f6', // Biru (Pemasukan)
-                '#f07147', // Oranye Neko (Pengeluaran)
-                '#ef4444', // Merah (Hutang)
-                '#8b5cf6'  // Ungu (Sisa Target)
-              ],
-              borderRadius: 6
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: { 
-              legend: { display: false },
-              tooltip: {
-                callbacks: {
-                  label: (context) => formatRp(context.raw)
-                }
-              }
-            },
-            scales: { 
-              y: { 
-                beginAtZero: true, 
-                ticks: { 
-                  callback: value => 'Rp ' + (value/1000) + 'k', // Menyingkat Rp 10.000 jadi Rp 10k
-                  font: { family: 'Quicksand' }
-                } 
-              },
-              x: { ticks: { font: { family: 'Quicksand', size: 10 } } }
-            }
-          }
-        });
-
-        // 4. Render Doughnut Chart (Persentase Arus Kas)
-        const ctxPie = document.getElementById('pieChart').getContext('2d');
-        if (pieChartInstance) pieChartInstance.destroy();
-        
-        // Jika belum ada transaksi sama sekali, tampilkan grafik abu-abu
-        const isDataKosong = pemasukan === 0 && pengeluaran === 0;
-        
-        pieChartInstance = new Chart(ctxPie, {
-          type: 'doughnut',
-          data: {
-            labels: ['Pemasukan', 'Pengeluaran'],
-            datasets: [{
-              data: isDataKosong ? [1] : [pemasukan, pengeluaran],
-              backgroundColor: isDataKosong ? ['#e5e7eb'] : ['#3b82f6', '#f07147'],
-              borderWidth: 0,
-              hoverOffset: 4
-            }]
-          },
-          options: {
-            responsive: true,
-            cutout: '70%',
-            plugins: { 
-              legend: { 
-                position: 'bottom',
-                labels: { font: { family: 'Quicksand', weight: 'bold' }, usePointStyle: true, padding: 20 }
-              },
-              tooltip: {
-                callbacks: {
-                  label: (context) => isDataKosong ? ' Belum ada data' : ' ' + formatRp(context.raw)
-                }
-              }
-            }
-          }
-        });
-
-      }).getDashboardData();
-    }
-
     // --- Edit Target Tabungan Dinamis ---
-    function editTarget() {
+    async function editTarget() {
       const input = prompt("Masukkan target tabungan keseluruhan yang baru (angka saja, tanpa titik/koma):");
       
       if (input && !isNaN(input) && input.trim() !== "") {
@@ -550,12 +506,17 @@
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
         btn.disabled = true;
 
-        google.script.run.withSuccessHandler(() => {
+        const res = await callAPI('setTarget', { nominal: Number(input) });
+        
+        if (res && res.sukses) {
           alert('Target tabungan berhasil diperbarui! 🐾');
-          loadDataDashboard(); // Reload data agar grafik otomatis berubah
-          btn.innerHTML = originalText;
-          btn.disabled = false;
-        }).setTargetTabungan(Number(input));
+          loadDataDashboard(); 
+        } else {
+          alert('Gagal memperbarui target.');
+        }
+        
+        btn.innerHTML = originalText;
+        btn.disabled = false;
       } else if (input !== null) {
         alert("Gagal. Harap masukkan format angka yang valid.");
       }
