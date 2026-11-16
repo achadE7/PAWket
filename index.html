@@ -67,11 +67,18 @@
           
           <div class="bg-gradient-to-br from-main-500 to-accent-400 rounded-3xl p-6 text-white shadow-xl shadow-main-500/20 relative overflow-hidden">
             <i class="fa-solid fa-paw absolute -bottom-4 -right-4 text-8xl opacity-10"></i>
-            <p class="text-main-50 font-semibold mb-1">Saldo Dompet Utama</p>
+            <p class="text-main-50 font-semibold mb-1">Saldo Dompet Gabungan</p>
             <h3 class="text-4xl font-bold mb-4 truncate" id="saldoUtama">Rp 0</h3>
-            <div class="flex justify-between text-sm bg-white/20 p-3 rounded-2xl backdrop-blur-md">
-              <div><span class="opacity-80"><i class="fa-solid fa-arrow-down mr-1"></i>Masuk:</span> <br><span class="font-bold truncate" id="totalMasuk">Rp 0</span></div>
-              <div class="text-right"><span class="opacity-80"><i class="fa-solid fa-arrow-up mr-1"></i>Keluar:</span> <br><span class="font-bold truncate" id="totalKeluar">Rp 0</span></div>
+            
+            <!-- UPDATE: RINCIAN SALDO MASING-MASING -->
+            <div class="flex justify-between text-xs bg-white/20 p-3 rounded-xl backdrop-blur-md mb-3 border border-white/20">
+              <div><span class="opacity-80"><i class="fa-solid fa-wallet mr-1"></i>Uangku:</span> <br><span class="font-bold text-sm truncate" id="saldoAku">Rp 0</span></div>
+              <div class="text-right"><span class="opacity-80"><i class="fa-solid fa-wallet mr-1"></i>Uang <span id="namaPasanganDompet">Pasangan</span>:</span> <br><span class="font-bold text-sm truncate" id="saldoPasangan">Rp 0</span></div>
+            </div>
+
+            <div class="flex justify-between text-xs bg-black/10 p-3 rounded-xl backdrop-blur-md">
+              <div><span class="opacity-80"><i class="fa-solid fa-arrow-down mr-1"></i>Total Masuk:</span> <br><span class="font-bold truncate" id="totalMasuk">Rp 0</span></div>
+              <div class="text-right"><span class="opacity-80"><i class="fa-solid fa-arrow-up mr-1"></i>Total Keluar:</span> <br><span class="font-bold truncate" id="totalKeluar">Rp 0</span></div>
             </div>
           </div>
 
@@ -88,16 +95,16 @@
             <p class="text-[10px] text-gray-500 text-right"><span id="targetTerkumpul" class="font-bold text-gray-700">Rp 0</span> / <span id="targetNominal">Rp 0</span> (<span id="targetPersen">0</span>%)</p>
           </div>
 
-          <!-- FITUR BARU: WEJANGAN NEKO AI -->
-          <div class="bg-white p-4 rounded-3xl shadow-sm border border-main-100 flex flex-col gap-2 relative">
+          <!-- KARTU WEJANGAN INLINE -->
+          <div class="bg-white p-4 rounded-3xl shadow-sm border border-main-100 flex flex-col gap-2 relative mt-4">
             <div class="flex justify-between items-center">
               <h4 class="font-bold text-gray-800 text-xs"><i class="fa-solid fa-cat text-accent-500 mr-1"></i> Wejangan Neko AI</h4>
-              <button onclick="mintaWejangan()" id="btnWejangan" class="text-[10px] bg-accent-50 text-accent-500 px-3 py-1.5 rounded-full font-bold hover:bg-accent-100 transition shadow-sm border border-accent-100 active:scale-95">
-                <i class="fa-solid fa-sparkles"></i> Analisis Uang
+              <button onclick="showNekoModal(true)" class="text-[10px] bg-accent-50 text-accent-500 px-3 py-1.5 rounded-full font-bold hover:bg-accent-100 transition shadow-sm border border-accent-100 active:scale-95">
+                <i class="fa-solid fa-rotate-right"></i> Panggil Ulang
               </button>
             </div>
             <div class="bg-gray-50 p-3 rounded-2xl text-xs text-gray-600 italic border border-gray-100 min-h-[60px] flex items-center justify-center" id="tempatWejangan">
-              Klik tombol di atas untuk melihat omelan atau pujian dari Neko terkait keuangan bulan ini! 🐾
+              Neko akan segera memberikan wejangannya di sini... 🐾
             </div>
           </div>
 
@@ -240,6 +247,23 @@
 
   </div>
 
+  <!-- POPUP MODAL NEKO AI -->
+  <div id="nekoModal" class="hide fixed inset-0 z-[100] bg-gray-900/60 flex items-center justify-center p-6 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative transform scale-95 transition-all duration-300" id="nekoModalContent">
+      <div class="absolute -top-12 left-1/2 -translate-x-1/2">
+         <div class="bg-gradient-to-tr from-accent-400 to-accent-300 rounded-full p-4 border-4 border-white shadow-lg">
+           <i class="fa-solid fa-cat text-4xl text-white"></i>
+         </div>
+      </div>
+      <h3 class="text-xl font-bold text-center text-gray-800 mt-8 mb-2">Wejangan Neko 🐾</h3>
+      <div id="nekoModalText" class="text-sm text-gray-600 text-center mb-6 min-h-[80px] flex flex-col items-center justify-center italic">
+        <i class="fa-solid fa-spinner fa-spin text-main-400 text-3xl mb-3"></i>
+        <p class="font-semibold text-main-400 animate-pulse">Neko sedang mengintip dompet kalian...</p>
+      </div>
+      <button onclick="closeNekoModal()" class="w-full bg-main-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-main-500/30 hover:bg-main-600 transition active:scale-95">Oke, Siap Neko!</button>
+    </div>
+  </div>
+
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzufhYyOQwVmj0qEPWd_vZwYHh-nnGo5iKNQrZFMXBHJcoFOvECMkr1qg0Y-VB7kpGf/exec";
 
@@ -266,7 +290,7 @@
     
     let pieChartAkuInstance = null;
     let pieChartPasanganInstance = null;
-    let pieChartTimeout = null; 
+    let isNekoCalled = false; // Mencegah Neko terpanggil berkali-kali
 
     const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
 
@@ -282,12 +306,6 @@
         prosesLogin();
       }
     });
-
-    function handleEnterKey(event) {
-      if (event.key === "Enter") {
-        prosesLogin();
-      }
-    }
 
     async function prosesLogin() {
       const u = document.getElementById('username').value;
@@ -313,6 +331,10 @@
           document.getElementById('bottomNav').classList.remove('hide');
           loadDataDashboard();
           loadKategori();
+          
+          // MUNCULKAN POPUP NEKO OTOMATIS SETELAH LOGIN (Delay 1 detik agar UI siap)
+          setTimeout(() => { showNekoModal(false); }, 1000);
+
         }, 300);
       } else {
         alert(res.pesan);
@@ -322,6 +344,7 @@
 
     function prosesLogout() {
       activeUser = "";
+      isNekoCalled = false;
       localStorage.removeItem('pawketActiveUser');
       localStorage.removeItem('pawketUsername');
       localStorage.removeItem('pawketPassword');
@@ -338,26 +361,45 @@
       switchTab('dashboard');
     }
 
-	async function mintaWejangan() {
-      const btn = document.getElementById('btnWejangan');
-      const wadah = document.getElementById('tempatWejangan');
+    // FUNGSI POPUP NEKO AI
+    function showNekoModal(forceRefresh = false) {
+      const modal = document.getElementById('nekoModal');
+      modal.classList.remove('hide');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        document.getElementById('nekoModalContent').classList.remove('scale-95');
+      }, 50);
+
+      if(!isNekoCalled || forceRefresh) {
+         mintaWejanganAuto();
+      }
+    }
+
+    function closeNekoModal() {
+      const modal = document.getElementById('nekoModal');
+      modal.classList.add('opacity-0');
+      document.getElementById('nekoModalContent').classList.add('scale-95');
+      setTimeout(() => modal.classList.add('hide'), 300);
+    }
+
+    async function mintaWejanganAuto() {
+      isNekoCalled = true;
+      const textContainer = document.getElementById('nekoModalText');
+      const inlineWadah = document.getElementById('tempatWejangan');
       
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mikir...';
-      btn.disabled = true;
-      wadah.innerHTML = '<p class="text-center w-full animate-pulse text-main-400 font-semibold">Neko sedang mengintip isi dompet kalian... 🐾</p>';
+      textContainer.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-main-400 text-3xl mb-3"></i><p class="font-semibold text-main-400 animate-pulse text-center">Neko sedang mengintip dompet kalian...</p>';
+      inlineWadah.innerHTML = '<p class="text-center w-full animate-pulse text-main-400 font-semibold">Neko sedang berpikir... 🐾</p>';
       
-      const res = await callAPI('analisisAI');
+      const res = await callAPI('analisisKeuanganAI');
       
       if(res && res.sukses) {
         let formattedText = res.hasil.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-        wadah.innerHTML = `<p class="w-full text-gray-700 leading-relaxed font-medium">"${formattedText}"</p>`;
+        textContainer.innerHTML = `<span class="text-gray-700 font-medium leading-relaxed">"${formattedText}"</span>`;
+        inlineWadah.innerHTML = `<p class="w-full text-gray-700 leading-relaxed font-medium">"${formattedText}"</p>`;
       } else {
-        // TAMPILKAN PESAN ASLI DARI BACKEND
-        wadah.innerHTML = `<p class="text-center w-full text-red-500 font-bold text-[10px]">${res.pesan || 'Gagal terhubung ke server Neko AI.'}</p>`;
+        textContainer.innerHTML = `<span class="text-red-500 font-bold">${res.pesan || 'Gagal terhubung ke Neko.'}</span>`;
+        inlineWadah.innerHTML = `<p class="text-center w-full text-red-500 font-bold text-[10px]">${res.pesan || 'Gagal terhubung'}</p>`;
       }
-      
-      btn.innerHTML = '<i class="fa-solid fa-sparkles"></i> Analisis Ulang';
-      btn.disabled = false;
     }
 
     async function loadDataDashboard() {
@@ -368,6 +410,22 @@
       document.getElementById('totalMasuk').innerText = formatRp(res.totalMasuk);
       document.getElementById('totalKeluar').innerText = formatRp(res.totalKeluar);
       
+      const uStats = res.userStats || {};
+      const usernames = Object.keys(uStats);
+      const myStats = uStats[activeUser] || { masuk: 0, keluar: 0 };
+      const partnerName = usernames.find(u => u !== activeUser) || 'Pasangan';
+      const partnerStats = uStats[partnerName] || { masuk: 0, keluar: 0 };
+      
+      document.getElementById('namaPasanganText').innerText = partnerName.split(' ')[0]; 
+      document.getElementById('namaPasanganDompet').innerText = partnerName.split(' ')[0]; 
+
+      // KALKULASI SALDO MASING-MASING (Pemasukan dikurang Pengeluaran)
+      const uangku = myStats.masuk - myStats.keluar;
+      const uangPasangan = partnerStats.masuk - partnerStats.keluar;
+      
+      document.getElementById('saldoAku').innerText = formatRp(uangku);
+      document.getElementById('saldoPasangan').innerText = formatRp(uangPasangan);
+
       const tabObj = res.tabungan || {};
       document.getElementById('tabSimpanan').innerText = formatRp(tabObj['Simpanan'] || 0);
       document.getElementById('tabLiburan').innerText = formatRp(tabObj['Liburan'] || 0);
@@ -421,13 +479,6 @@
       } else {
         listTrx.innerHTML = '<p class="text-center text-gray-400 text-xs py-2 italic">Belum ada transaksi.</p>';
       }
-
-      const uStats = res.userStats || {};
-      const usernames = Object.keys(uStats);
-      const myStats = uStats[activeUser] || { masuk: 0, keluar: 0 };
-      const partnerName = usernames.find(u => u !== activeUser) || 'Pasangan';
-      const partnerStats = uStats[partnerName] || { masuk: 0, keluar: 0 };
-      document.getElementById('namaPasanganText').innerText = partnerName.split(' ')[0]; 
 
       setTimeout(() => {
         const chartOptions = { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false } } };
