@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>NekoCash - Couple Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { neko: { 50: '#fdf8f5', 100: '#f4edea', 400: '#ff8a65', 500: '#f07147', 600: '#d95a33' } },
+          fontFamily: { sans: ['Quicksand', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #fdf8f5; -webkit-tap-highlight-color: transparent; }
+    .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); }
+    .hide { display: none; }
+  </style>
+</head>
+<body class="text-gray-700 antialiased pb-20">
+
+  <!-- ================= SCREEN LOGIN ================= -->
+  <div id="loginScreen" class="min-h-screen flex flex-col items-center justify-center p-6">
+    <i class="fa-solid fa-cat text-neko-500 text-6xl mb-4"></i>
+    <h1 class="text-3xl font-bold text-gray-800 mb-8 tracking-tight">NekoCash <i class="fa-solid fa-paw text-neko-400 text-xl"></i></h1>
+    <div class="glass w-full max-w-sm rounded-3xl p-6 shadow-xl">
+      <input type="text" id="username" placeholder="Username" class="w-full bg-white/60 border-0 rounded-xl px-4 py-3 mb-4 focus:ring-2 focus:ring-neko-400 outline-none font-semibold">
+      <input type="password" id="password" placeholder="Password" class="w-full bg-white/60 border-0 rounded-xl px-4 py-3 mb-6 focus:ring-2 focus:ring-neko-400 outline-none font-semibold">
+      <button onclick="prosesLogin()" id="btnLogin" class="w-full bg-neko-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-neko-500/30 hover:bg-neko-600 transition active:scale-95">Masuk</button>
+    </div>
+  </div>
+
+  <!-- ================= SCREEN MAIN APP ================= -->
+  <div id="appScreen" class="hide">
+    
+    <!-- Header -->
+    <header class="p-6 pb-2 glass sticky top-0 z-10 flex justify-between items-center rounded-b-3xl shadow-sm mb-6">
+      <div>
+        <p class="text-sm font-semibold text-gray-500">Halo, <span id="namaUser" class="text-neko-500"></span>! 🐱</p>
+        <h2 class="text-2xl font-bold text-gray-800">Keuangan Kita</h2>
+      </div>
+      <div class="h-10 w-10 bg-neko-100 rounded-full flex items-center justify-center shadow-inner">
+        <i class="fa-solid fa-fish text-neko-500"></i>
+      </div>
+    </header>
+
+    <!-- TAB: DASHBOARD -->
+    <div id="tab-dashboard" class="px-6 space-y-6">
+      <!-- Saldo Card -->
+      <div class="bg-gradient-to-br from-neko-500 to-neko-400 rounded-3xl p-6 text-white shadow-xl shadow-neko-500/20 relative overflow-hidden">
+        <i class="fa-solid fa-paw absolute -bottom-4 -right-4 text-8xl opacity-10"></i>
+        <p class="text-neko-50 font-semibold mb-1">Saldo Dompet Utama</p>
+        <h3 class="text-4xl font-bold mb-4" id="saldoUtama">Rp 0</h3>
+        <div class="flex justify-between text-sm bg-white/20 p-3 rounded-2xl backdrop-blur-md">
+          <div><span class="opacity-80">Masuk:</span> <br><span class="font-bold" id="totalMasuk">Rp 0</span></div>
+          <div class="text-right"><span class="opacity-80">Keluar:</span> <br><span class="font-bold" id="totalKeluar">Rp 0</span></div>
+        </div>
+      </div>
+
+      <!-- Tabungan Mini Cards -->
+      <h4 class="font-bold text-gray-800 mb-2 mt-6">Kantong Tabungan <i class="fa-solid fa-box text-neko-400"></i></h4>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="glass rounded-2xl p-4 shadow-sm">
+          <p class="text-xs text-gray-500 font-semibold">Simpanan</p>
+          <p class="font-bold text-gray-800" id="tabSimpanan">Rp 0</p>
+        </div>
+        <div class="glass rounded-2xl p-4 shadow-sm">
+          <p class="text-xs text-gray-500 font-semibold">Liburan</p>
+          <p class="font-bold text-gray-800" id="tabLiburan">Rp 0</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: CATAT TRANSAKSI -->
+    <div id="tab-catat" class="hide px-6">
+      <div class="glass rounded-3xl p-6 shadow-xl relative overflow-hidden">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Catat Transaksi <i class="fa-solid fa-pen text-neko-400 text-sm"></i></h3>
+        
+        <!-- Scan Struk AI Button -->
+        <div class="mb-5 relative">
+          <input type="file" id="fotoStruk" accept="image/*" capture="environment" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="prosesScanAI()">
+          <div id="btnScanUi" class="w-full bg-gray-800 text-white rounded-xl p-3 flex justify-center items-center gap-2 font-bold shadow-lg active:scale-95 transition">
+            <i class="fa-solid fa-camera"></i> Foto Struk (Scan AI)
+          </div>
+        </div>
+
+        <div class="flex gap-2 mb-4 bg-gray-100 p-1 rounded-xl">
+          <button id="btnPemasukan" onclick="setTipe('Pemasukan')" class="flex-1 py-2 rounded-lg font-bold text-gray-500 transition">Pemasukan</button>
+          <button id="btnPengeluaran" onclick="setTipe('Pengeluaran')" class="flex-1 py-2 rounded-lg font-bold bg-white text-neko-500 shadow transition">Pengeluaran</button>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="text-sm font-semibold text-gray-600 ml-1">Kategori</label>
+            <select id="inputKategori" onchange="cekKategoriBaru()" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-neko-400 outline-none font-semibold text-gray-700">
+              <!-- Diisi via JS -->
+            </select>
+          </div>
+          <div>
+            <label class="text-sm font-semibold text-gray-600 ml-1">Nominal (Rp)</label>
+            <input type="number" id="inputNominal" placeholder="Contoh: 50000" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-neko-400 outline-none font-bold text-lg text-gray-800">
+          </div>
+          <div>
+            <label class="text-sm font-semibold text-gray-600 ml-1">Catatan</label>
+            <input type="text" id="inputCatatan" placeholder="Makan sushi berdua..." class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-neko-400 outline-none font-semibold">
+          </div>
+          
+          <button onclick="simpanTransaksi()" id="btnSimpan" class="w-full mt-2 bg-neko-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-neko-500/30 hover:bg-neko-600 transition active:scale-95">Simpan Data</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 w-full glass border-t border-gray-100 rounded-t-3xl flex justify-around p-3 text-gray-400 z-50">
+      <button onclick="switchTab('dashboard')" class="flex flex-col items-center w-16 text-neko-500" id="nav-dashboard">
+        <i class="fa-solid fa-cat text-2xl mb-1"></i><span class="text-[10px] font-bold">Beranda</span>
+      </button>
+      <button onclick="switchTab('catat')" class="flex flex-col items-center w-16 hover:text-neko-400 transition" id="nav-catat">
+        <i class="fa-solid fa-paw text-2xl mb-1"></i><span class="text-[10px] font-bold">Catat</span>
+      </button>
+    </nav>
+  </div>
+
+  <script>
+    let activeUser = "";
+    let tipeAktif = "Pengeluaran";
+    let listKategori = { masuk: [], keluar: [] };
+
+    // --- Format Rupiah ---
+    const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+
+    // --- Login ---
+    function prosesLogin() {
+      const u = document.getElementById('username').value;
+      const p = document.getElementById('password').value;
+      const btn = document.getElementById('btnLogin');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+      
+      google.script.run.withSuccessHandler(res => {
+        if(res.sukses) {
+          activeUser = res.nama;
+          document.getElementById('namaUser').innerText = activeUser;
+          document.getElementById('loginScreen').classList.add('hide');
+          document.getElementById('appScreen').classList.remove('hide');
+          loadDataDashboard();
+          loadKategori();
+        } else {
+          alert(res.pesan);
+          btn.innerHTML = 'Masuk';
+        }
+      }).loginUser(u, p);
+    }
+
+    // --- Load Data Dashboard ---
+    function loadDataDashboard() {
+      google.script.run.withSuccessHandler(res => {
+        document.getElementById('saldoUtama').innerText = formatRp(res.saldoUtama);
+        document.getElementById('totalMasuk').innerText = formatRp(res.totalMasuk);
+        document.getElementById('totalKeluar').innerText = formatRp(res.totalKeluar);
+        document.getElementById('tabSimpanan').innerText = formatRp(res.tabungan['Simpanan'] || 0);
+        document.getElementById('tabLiburan').innerText = formatRp(res.tabungan['Liburan'] || 0);
+      }).getDashboardData();
+    }
+
+    // --- Load Kategori & Dinamis Kategori ---
+    function loadKategori() {
+      google.script.run.withSuccessHandler(res => {
+        listKategori = res;
+        renderKategori();
+      }).getKategori();
+    }
+
+    function renderKategori() {
+      const select = document.getElementById('inputKategori');
+      select.innerHTML = '';
+      const arr = tipeAktif === 'Pemasukan' ? listKategori.masuk : listKategori.keluar;
+      
+      arr.forEach(k => {
+        let opt = document.createElement('option');
+        opt.value = k; opt.innerText = k;
+        select.appendChild(opt);
+      });
+      // Opsi Tambah Baru
+      let optAdd = document.createElement('option');
+      optAdd.value = "ADD_NEW"; optAdd.innerText = "+ Tambah Kategori Baru";
+      optAdd.className = "text-neko-500 font-bold";
+      select.appendChild(optAdd);
+    }
+
+    function setTipe(tipe) {
+      tipeAktif = tipe;
+      document.getElementById('btnPemasukan').className = tipe === 'Pemasukan' ? "flex-1 py-2 rounded-lg font-bold bg-white text-neko-500 shadow transition" : "flex-1 py-2 rounded-lg font-bold text-gray-500 transition";
+      document.getElementById('btnPengeluaran').className = tipe === 'Pengeluaran' ? "flex-1 py-2 rounded-lg font-bold bg-white text-neko-500 shadow transition" : "flex-1 py-2 rounded-lg font-bold text-gray-500 transition";
+      renderKategori();
+    }
+
+    function cekKategoriBaru() {
+      const select = document.getElementById('inputKategori');
+      if (select.value === "ADD_NEW") {
+        let kategoriBaru = prompt(`Masukkan nama kategori ${tipeAktif} baru:`);
+        if (kategoriBaru && kategoriBaru.trim() !== "") {
+          select.disabled = true;
+          google.script.run.withSuccessHandler(res => {
+            listKategori = res;
+            renderKategori();
+            select.value = kategoriBaru.trim();
+            select.disabled = false;
+          }).tambahKategori(tipeAktif, kategoriBaru.trim());
+        } else {
+          renderKategori(); // Reset kembali jika dibatalkan
+        }
+      }
+    }
+
+    // --- AI Scan Struk (Compress to Base64) ---
+    function prosesScanAI() {
+      const file = document.getElementById('fotoStruk').files[0];
+      if(!file) return;
+
+      const btnUi = document.getElementById('btnScanUi');
+      btnUi.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Membaca Struk...';
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64 = e.target.result.split(',')[1];
+        google.script.run.withSuccessHandler(res => {
+          if(res.sukses) {
+            setTipe('Pengeluaran');
+            document.getElementById('inputNominal').value = res.hasil.nominal;
+            document.getElementById('inputCatatan').value = res.hasil.catatan;
+            
+            // Cek apakah AI memprediksi kategori yg ada, jika tidak masukkan ke catatan saja
+            if(listKategori.keluar.includes(res.hasil.kategori)) {
+              document.getElementById('inputKategori').value = res.hasil.kategori;
+            }
+            alert("Struk berhasil dibaca AI! 🐱 Cek kembali nominalnya.");
+          } else {
+            alert(res.pesan);
+          }
+          btnUi.innerHTML = '<i class="fa-solid fa-camera"></i> Foto Struk (Scan AI)';
+        }).scanStrukAI(base64, file.type);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // --- Simpan Transaksi ---
+    function simpanTransaksi() {
+      const form = {
+        tanggal: new Date().toISOString().split('T')[0],
+        oleh: activeUser,
+        tipe: tipeAktif,
+        kategori: document.getElementById('inputKategori').value,
+        nominal: document.getElementById('inputNominal').value,
+        catatan: document.getElementById('inputCatatan').value
+      };
+      
+      if(!form.nominal || !form.kategori) return alert('Nominal & Kategori wajib diisi!');
+      
+      const btn = document.getElementById('btnSimpan');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+      
+      google.script.run.withSuccessHandler(() => {
+        alert("Berhasil dicatat! 🐾");
+        document.getElementById('inputNominal').value = '';
+        document.getElementById('inputCatatan').value = '';
+        btn.innerHTML = 'Simpan Data';
+        loadDataDashboard();
+        switchTab('dashboard');
+      }).tambahTransaksi(form);
+    }
+
+    // --- Tab Navigation Switcher ---
+    function switchTab(tabId) {
+      document.getElementById('tab-dashboard').classList.add('hide');
+      document.getElementById('tab-catat').classList.add('hide');
+      
+      document.getElementById('nav-dashboard').classList.replace('text-neko-500', 'text-gray-400');
+      document.getElementById('nav-catat').classList.replace('text-neko-500', 'text-gray-400');
+      
+      document.getElementById('tab-' + tabId).classList.remove('hide');
+      document.getElementById('nav-' + tabId).classList.replace('text-gray-400', 'text-neko-500');
+    }
+  </script>
+</body>
+</html>
