@@ -41,7 +41,6 @@
       <i class="fa-solid fa-cat text-main-500 text-6xl mb-4"></i>
       <h1 class="text-3xl font-bold text-gray-800 mb-8 tracking-tight">PAWket <i class="fa-solid fa-paw text-accent-400 text-xl"></i></h1>
       <div class="glass w-full max-w-sm rounded-3xl p-6 shadow-xl">
-        <!-- Tambahan onkeydown untuk fitur tombol Enter -->
         <input type="text" id="username" placeholder="Username" class="w-full bg-white border border-gray-100 rounded-xl px-4 py-3 mb-4 focus:ring-2 focus:ring-main-400 outline-none font-semibold" onkeydown="if(event.key === 'Enter') prosesLogin()">
         <input type="password" id="password" placeholder="Password" class="w-full bg-white border border-gray-100 rounded-xl px-4 py-3 mb-6 focus:ring-2 focus:ring-main-400 outline-none font-semibold" onkeydown="if(event.key === 'Enter') prosesLogin()">
         <button onclick="prosesLogin()" id="btnLogin" class="w-full bg-main-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-main-500/30 hover:bg-main-600 transition active:scale-95">Masuk</button>
@@ -87,6 +86,19 @@
               <div id="targetBar" class="bg-accent-400 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
             </div>
             <p class="text-[10px] text-gray-500 text-right"><span id="targetTerkumpul" class="font-bold text-gray-700">Rp 0</span> / <span id="targetNominal">Rp 0</span> (<span id="targetPersen">0</span>%)</p>
+          </div>
+
+          <!-- FITUR BARU: WEJANGAN NEKO AI -->
+          <div class="bg-white p-4 rounded-3xl shadow-sm border border-main-100 flex flex-col gap-2 relative">
+            <div class="flex justify-between items-center">
+              <h4 class="font-bold text-gray-800 text-xs"><i class="fa-solid fa-cat text-accent-500 mr-1"></i> Wejangan Neko AI</h4>
+              <button onclick="mintaWejangan()" id="btnWejangan" class="text-[10px] bg-accent-50 text-accent-500 px-3 py-1.5 rounded-full font-bold hover:bg-accent-100 transition shadow-sm border border-accent-100 active:scale-95">
+                <i class="fa-solid fa-sparkles"></i> Analisis Uang
+              </button>
+            </div>
+            <div class="bg-gray-50 p-3 rounded-2xl text-xs text-gray-600 italic border border-gray-100 min-h-[60px] flex items-center justify-center" id="tempatWejangan">
+              Klik tombol di atas untuk melihat omelan atau pujian dari Neko terkait keuangan bulan ini! 🐾
+            </div>
           </div>
 
           <h4 class="font-bold text-gray-800 mb-1 mt-2">Kantong Tabungan <i class="fa-solid fa-box-archive text-gray-400 ml-1"></i></h4>
@@ -254,29 +266,28 @@
     
     let pieChartAkuInstance = null;
     let pieChartPasanganInstance = null;
+    let pieChartTimeout = null; 
 
     const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
 
-    // FITUR: INSTANT AUTO LOGIN & DEFAULT TANGGAL
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById('inputTanggal').value = new Date().toISOString().split('T')[0];
-      
       const savedUser = localStorage.getItem('pawketActiveUser');
-      if (savedUser) {
-        activeUser = savedUser;
-        document.getElementById('username').value = localStorage.getItem('pawketUsername') || '';
-        document.getElementById('password').value = localStorage.getItem('pawketPassword') || '';
-        
-        // Membuka UI seketika tanpa loading screen login
-        document.getElementById('namaUser').innerText = activeUser;
-        document.getElementById('loginScreen').classList.add('hide');
-        document.getElementById('appScreen').classList.remove('hide');
-        document.getElementById('bottomNav').classList.remove('hide');
-        
-        loadDataDashboard();
-        loadKategori();
+      const savedUsername = localStorage.getItem('pawketUsername');
+      const savedPassword = localStorage.getItem('pawketPassword');
+      
+      if (savedUser && savedUsername && savedPassword) {
+        document.getElementById('username').value = savedUsername;
+        document.getElementById('password').value = savedPassword;
+        prosesLogin();
       }
     });
+
+    function handleEnterKey(event) {
+      if (event.key === "Enter") {
+        prosesLogin();
+      }
+    }
 
     async function prosesLogin() {
       const u = document.getElementById('username').value;
@@ -314,7 +325,6 @@
       localStorage.removeItem('pawketActiveUser');
       localStorage.removeItem('pawketUsername');
       localStorage.removeItem('pawketPassword');
-      
       document.getElementById('username').value = '';
       document.getElementById('password').value = '';
       document.getElementById('btnLogin').innerHTML = 'Masuk';
@@ -326,6 +336,28 @@
       loginScr.classList.remove('hide');
       setTimeout(() => loginScr.classList.remove('opacity-0'), 50);
       switchTab('dashboard');
+    }
+
+    // FUNGSI BARU: MINTA WEJANGAN NEKO AI
+    async function mintaWejangan() {
+      const btn = document.getElementById('btnWejangan');
+      const wadah = document.getElementById('tempatWejangan');
+      
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mikir...';
+      btn.disabled = true;
+      wadah.innerHTML = '<p class="text-center w-full animate-pulse text-main-400 font-semibold">Neko sedang mengintip isi dompet kalian... 🐾</p>';
+      
+      const res = await callAPI('analisisAI');
+      
+      if(res && res.sukses) {
+        let formattedText = res.hasil.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+        wadah.innerHTML = `<p class="w-full text-gray-700 leading-relaxed font-medium">"${formattedText}"</p>`;
+      } else {
+        wadah.innerHTML = '<p class="text-center w-full text-red-400">Neko lagi ngambek, gagal ngasih petuah.</p>';
+      }
+      
+      btn.innerHTML = '<i class="fa-solid fa-sparkles"></i> Analisis Ulang';
+      btn.disabled = false;
     }
 
     async function loadDataDashboard() {
@@ -340,10 +372,8 @@
       document.getElementById('tabSimpanan').innerText = formatRp(tabObj['Simpanan'] || 0);
       document.getElementById('tabLiburan').innerText = formatRp(tabObj['Liburan'] || 0);
 
-      // PENGAMAN (Fallback) Jika Backend masih membacakan format data versi lama
       const targetObj = res.targetTabungan || {};
       const targetPos = targetObj.pos || "Semua";
-      // Cek apakah targetNominal berbentuk Objek baru atau masih Angka jadul
       const targetNominal = targetObj.nominal !== undefined ? targetObj.nominal : (typeof res.targetTabungan === 'number' ? res.targetTabungan : 0);
       
       let terkumpul = 0;
@@ -392,7 +422,6 @@
         listTrx.innerHTML = '<p class="text-center text-gray-400 text-xs py-2 italic">Belum ada transaksi.</p>';
       }
 
-      // PENGAMAN: Jika Backend lama (userStats undefined) agar halaman tidak error
       const uStats = res.userStats || {};
       const usernames = Object.keys(uStats);
       const myStats = uStats[activeUser] || { masuk: 0, keluar: 0 };
@@ -452,9 +481,7 @@
       }
 
       hutangAktif.forEach(h => {
-        // LOGIKA BARU: Jika cicilan 0 atau kosong, tampilkan "Sesuai Tagihan"
         const teksCicilan = (h.cicilanRutin && h.cicilanRutin > 0) ? formatRp(h.cicilanRutin) : "Sesuai Tagihan";
-
         listUi.innerHTML += `
           <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
             <div class="flex justify-between items-start mb-2">
@@ -477,19 +504,12 @@
     async function setPengingatHutang(id) {
       const tgl = prompt("Pengingat Jatuh Tempo setiap tanggal berapa? (Cth: 15, 28, Akhir Bulan)");
       if (tgl !== null) {
-        // Teks prompt disesuaikan agar user tahu bisa dikosongkan
         const cicilan = prompt("Berapa nominal cicilannya?\n(Kosongkan atau ketik 0 jika tagihan tiap bulan berbeda-beda)");
-        
-        if (cicilan !== null) { // Jika user tidak menekan tombol Cancel
-          const nominalCicilan = Number(cicilan) || 0; // Jika dikosongkan, otomatis terbaca 0
-          
+        if (cicilan !== null) { 
+          const nominalCicilan = Number(cicilan) || 0;
           const res = await callAPI('updatePengingatHutang', { id: id, tgl: tgl, cicilan: nominalCicilan });
-          if(res.sukses) { 
-            alert("Pengingat hutang berhasil disetel! ✨"); 
-            loadDataDashboard(); 
-          } else {
-            alert("Gagal menyetel pengingat.");
-          }
+          if(res.sukses) { alert("Pengingat hutang berhasil disetel! ✨"); loadDataDashboard(); } 
+          else alert("Gagal menyetel pengingat.");
         }
       }
     }
