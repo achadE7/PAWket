@@ -15,7 +15,6 @@
       theme: {
         extend: {
           colors: { 
-            // Palet Baru: Biru Muda & Pink Muda
             main: { 50: '#eff6ff', 100: '#dbeafe', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb' },
             accent: { 50: '#fdf2f8', 100: '#fce7f3', 400: '#f472b6', 500: '#ec4899', 600: '#db2777' } 
           },
@@ -114,20 +113,24 @@
               </div>
             </div>
 
-            <!-- Tiga Tombol Utama -->
             <div class="flex gap-1 mb-4 bg-gray-100 p-1 rounded-xl">
               <button id="btnPemasukan" onclick="setTipe('Pemasukan')" class="flex-1 py-1.5 rounded-lg text-sm font-bold text-gray-400 transition">Pemasukan</button>
               <button id="btnPengeluaran" onclick="setTipe('Pengeluaran')" class="flex-1 py-1.5 rounded-lg text-sm font-bold bg-white text-accent-500 shadow transition">Pengeluaran</button>
               <button id="btnTabungan" onclick="setTipe('Tabungan')" class="flex-1 py-1.5 rounded-lg text-sm font-bold text-gray-400 transition">Tabungan</button>
             </div>
 
-            <!-- Toggle Setor/Tarik khusus Tabungan -->
             <div id="opsiTabungan" class="hide flex gap-2 mb-4 bg-accent-50 p-1 rounded-xl">
               <button id="btnSetor" onclick="setJenisTabungan('Setor')" class="flex-1 py-1.5 rounded-lg text-sm font-bold bg-white text-main-500 shadow transition">Setor (+)</button>
               <button id="btnTarik" onclick="setJenisTabungan('Tarik')" class="flex-1 py-1.5 rounded-lg text-sm font-bold text-gray-400 transition">Tarik (-)</button>
             </div>
 
             <div class="space-y-4">
+              <!-- TAMBAHAN: FIELD TANGGAL -->
+              <div>
+                <label class="text-sm font-semibold text-gray-600 ml-1">Tanggal</label>
+                <input type="date" id="inputTanggal" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-main-400 outline-none font-bold text-gray-800">
+              </div>
+
               <div>
                 <label class="text-sm font-semibold text-gray-600 ml-1">Kategori / Pos</label>
                 <select id="inputKategori" onchange="cekKategoriBaru()" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-main-400 outline-none font-semibold text-gray-700"></select>
@@ -222,6 +225,11 @@
     let pieChartInstance = null;
 
     const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+
+    // Set Default Tanggal ke Hari Ini secara global saat halaman dimuat
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById('inputTanggal').value = new Date().toISOString().split('T')[0];
+    });
 
     async function prosesLogin() {
       const u = document.getElementById('username').value;
@@ -383,9 +391,13 @@
         const res = await callAPI('scanStruk', { base64: base64, mimeType: file.type });
         if(res.sukses) {
           setTipe('Pengeluaran');
+          
+          // Mengisi tanggal dari hasil AI, jika kosong tetap gunakan default (hari ini)
+          document.getElementById('inputTanggal').value = res.hasil.tanggal || new Date().toISOString().split('T')[0];
           document.getElementById('inputNominal').value = res.hasil.nominal;
           document.getElementById('inputCatatan').value = res.hasil.catatan;
-          alert("Struk terbaca AI! ✨ Periksa kembali angkanya.");
+          
+          alert("Struk terbaca AI! ✨ Periksa kembali tanggal & angkanya.");
         } else {
           alert("Gagal membaca struk.");
         }
@@ -396,7 +408,7 @@
 
     async function simpanTransaksi() {
       const form = {
-        tanggal: new Date().toISOString().split('T')[0],
+        tanggal: document.getElementById('inputTanggal').value, // Menggunakan tanggal dari form
         oleh: activeUser,
         tipe: tipeAktif,
         kategori: document.getElementById('inputKategori').value,
@@ -404,7 +416,7 @@
         catatan: document.getElementById('inputCatatan').value
       };
       
-      if(!form.nominal || !form.kategori) return alert('Nominal & Kategori wajib diisi!');
+      if(!form.tanggal || !form.nominal || !form.kategori) return alert('Tanggal, Nominal & Kategori wajib diisi!');
       
       const btn = document.getElementById('btnSimpan');
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
@@ -424,6 +436,10 @@
         document.getElementById('inputNominal').value = '';
         document.getElementById('inputCatatan').value = '';
         document.getElementById('inputKategori').value = '';
+        
+        // Reset tanggal kembali ke hari ini setelah berhasil tersimpan
+        document.getElementById('inputTanggal').value = new Date().toISOString().split('T')[0];
+        
         loadDataDashboard();
         switchTab('dashboard');
       } else {
@@ -464,7 +480,7 @@
           html = '<p class="text-center text-gray-400 text-sm py-4">Belum ada transaksi di bulan ini ✨</p>';
         } else {
           res.detail.forEach(d => {
-            const isMasuk = d.Tipe === 'Pemasukan' || (d.Tipe === 'Tabungan' && d.Catatan.includes('Setor')); // Styling bantuan
+            const isMasuk = d.Tipe === 'Pemasukan' || (d.Tipe === 'Tabungan' && d.Catatan.includes('Setor')); 
             const icon = isMasuk ? '<i class="fa-solid fa-arrow-down text-main-500 bg-main-100 p-2 rounded-lg"></i>' : '<i class="fa-solid fa-arrow-up text-accent-500 bg-accent-100 p-2 rounded-lg"></i>';
             const color = isMasuk ? 'text-main-500' : 'text-accent-500';
             
