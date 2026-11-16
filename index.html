@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>NekoCash - Couple Tracker</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
   
@@ -113,6 +114,37 @@
           </div>
           
           <button onclick="simpanTransaksi()" id="btnSimpan" class="w-full mt-2 bg-neko-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-neko-500/30 hover:bg-neko-600 transition active:scale-95">Simpan Data</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: REKAP BULANAN -->
+    <div id="tab-rekap" class="hide px-6">
+      <div class="glass rounded-3xl p-6 shadow-xl relative overflow-hidden">
+        <i class="fa-solid fa-calendar-days absolute -bottom-2 -right-4 text-8xl text-neko-400 opacity-5"></i>
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Rekap Bulanan <i class="fa-solid fa-chart-pie text-neko-400 text-sm"></i></h3>
+        
+        <!-- Input Pemilih Bulan -->
+        <input type="month" id="inputBulan" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 mb-4 focus:ring-2 focus:ring-neko-400 outline-none font-bold text-gray-700" onchange="loadRekap()">
+        
+        <div class="grid grid-cols-2 gap-4 mb-5">
+          <div class="bg-neko-50 rounded-2xl p-4 shadow-sm border border-neko-100">
+            <p class="text-xs text-gray-500 font-semibold mb-1">Pemasukan</p>
+            <p class="font-bold text-neko-500" id="rekapMasuk">Rp 0</p>
+          </div>
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <p class="text-xs text-gray-500 font-semibold mb-1">Pengeluaran</p>
+            <p class="font-bold text-gray-800" id="rekapKeluar">Rp 0</p>
+          </div>
+        </div>
+
+        <button onclick="exportXLS()" id="btnExport" class="w-full bg-[#107c41] text-white font-bold py-3 rounded-xl shadow-lg shadow-green-700/20 hover:bg-green-700 transition active:scale-95 mb-4 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-file-excel"></i> Download XLS
+        </button>
+        
+        <h4 class="font-bold text-gray-800 mb-3 text-sm">Rincian Transaksi</h4>
+        <div id="listRekap" class="space-y-3 max-h-72 overflow-y-auto pr-1 pb-4">
+          <p class="text-center text-gray-400 text-sm py-4">Pilih bulan terlebih dahulu 🐾</p>
         </div>
       </div>
     </div>
