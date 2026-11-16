@@ -41,8 +41,9 @@
       <i class="fa-solid fa-cat text-main-500 text-6xl mb-4"></i>
       <h1 class="text-3xl font-bold text-gray-800 mb-8 tracking-tight">PAWket <i class="fa-solid fa-paw text-accent-400 text-xl"></i></h1>
       <div class="glass w-full max-w-sm rounded-3xl p-6 shadow-xl">
-        <input type="text" id="username" placeholder="Username" class="w-full bg-white border border-gray-100 rounded-xl px-4 py-3 mb-4 focus:ring-2 focus:ring-main-400 outline-none font-semibold" onkeypress="handleEnterKey(event)">
-        <input type="password" id="password" placeholder="Password" class="w-full bg-white border border-gray-100 rounded-xl px-4 py-3 mb-6 focus:ring-2 focus:ring-main-400 outline-none font-semibold" onkeypress="handleEnterKey(event)">
+        <!-- Tambahan onkeydown untuk fitur tombol Enter -->
+        <input type="text" id="username" placeholder="Username" class="w-full bg-white border border-gray-100 rounded-xl px-4 py-3 mb-4 focus:ring-2 focus:ring-main-400 outline-none font-semibold" onkeydown="if(event.key === 'Enter') prosesLogin()">
+        <input type="password" id="password" placeholder="Password" class="w-full bg-white border border-gray-100 rounded-xl px-4 py-3 mb-6 focus:ring-2 focus:ring-main-400 outline-none font-semibold" onkeydown="if(event.key === 'Enter') prosesLogin()">
         <button onclick="prosesLogin()" id="btnLogin" class="w-full bg-main-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-main-500/30 hover:bg-main-600 transition active:scale-95">Masuk</button>
       </div>
     </div>
@@ -103,11 +104,11 @@
           <div class="grid grid-cols-2 gap-3 mb-4">
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
               <h4 class="font-bold text-gray-800 text-[10px] text-center mb-2"><i class="fa-solid fa-chart-pie text-main-400 mr-1"></i> Arus Kasku</h4>
-              <div style="width: 100px; height: 100px;"><canvas id="pieChartAku"></canvas></div>
+              <div style="position: relative; height: 80px; width: 80px;"><canvas id="pieChartAku"></canvas></div>
             </div>
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
               <h4 class="font-bold text-gray-800 text-[10px] text-center mb-2"><i class="fa-solid fa-chart-pie text-accent-400 mr-1"></i> Kas <span id="namaPasanganText">Pasangan</span></h4>
-              <div style="width: 100px; height: 100px;"><canvas id="pieChartPasangan"></canvas></div>
+              <div style="position: relative; height: 80px; width: 80px;"><canvas id="pieChartPasangan"></canvas></div>
             </div>
           </div>
 
@@ -116,7 +117,7 @@
             <button onclick="switchTab('rekap')" class="text-[10px] text-main-500 font-bold hover:underline">Lihat Semua</button>
           </h4>
           <div id="listTrxTerbaru" class="space-y-2 mb-6">
-            <p class="text-center text-gray-400 text-xs py-2 italic">Belum ada transaksi.</p>
+            <p class="text-center text-gray-400 text-xs py-2 italic">Memuat...</p>
           </div>
         </div>
 
@@ -253,28 +254,29 @@
     
     let pieChartAkuInstance = null;
     let pieChartPasanganInstance = null;
-    let pieChartTimeout = null; 
 
     const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
 
+    // FITUR: INSTANT AUTO LOGIN & DEFAULT TANGGAL
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById('inputTanggal').value = new Date().toISOString().split('T')[0];
-      const savedUser = localStorage.getItem('pawketActiveUser');
-      const savedUsername = localStorage.getItem('pawketUsername');
-      const savedPassword = localStorage.getItem('pawketPassword');
       
-      if (savedUser && savedUsername && savedPassword) {
-        document.getElementById('username').value = savedUsername;
-        document.getElementById('password').value = savedPassword;
-        prosesLogin();
+      const savedUser = localStorage.getItem('pawketActiveUser');
+      if (savedUser) {
+        activeUser = savedUser;
+        document.getElementById('username').value = localStorage.getItem('pawketUsername') || '';
+        document.getElementById('password').value = localStorage.getItem('pawketPassword') || '';
+        
+        // Membuka UI seketika tanpa loading screen login
+        document.getElementById('namaUser').innerText = activeUser;
+        document.getElementById('loginScreen').classList.add('hide');
+        document.getElementById('appScreen').classList.remove('hide');
+        document.getElementById('bottomNav').classList.remove('hide');
+        
+        loadDataDashboard();
+        loadKategori();
       }
     });
-
-    function handleEnterKey(event) {
-      if (event.key === "Enter") {
-        prosesLogin();
-      }
-    }
 
     async function prosesLogin() {
       const u = document.getElementById('username').value;
@@ -312,6 +314,7 @@
       localStorage.removeItem('pawketActiveUser');
       localStorage.removeItem('pawketUsername');
       localStorage.removeItem('pawketPassword');
+      
       document.getElementById('username').value = '';
       document.getElementById('password').value = '';
       document.getElementById('btnLogin').innerHTML = 'Masuk';
@@ -332,17 +335,22 @@
       document.getElementById('saldoUtama').innerText = formatRp(res.saldoUtama);
       document.getElementById('totalMasuk').innerText = formatRp(res.totalMasuk);
       document.getElementById('totalKeluar').innerText = formatRp(res.totalKeluar);
-      document.getElementById('tabSimpanan').innerText = formatRp(res.tabungan['Simpanan'] || 0);
-      document.getElementById('tabLiburan').innerText = formatRp(res.tabungan['Liburan'] || 0);
-
-      const targetPos = res.targetTabungan.pos || "Semua";
-      const targetNominal = res.targetTabungan.nominal || 0;
-      let terkumpul = 0;
       
+      const tabObj = res.tabungan || {};
+      document.getElementById('tabSimpanan').innerText = formatRp(tabObj['Simpanan'] || 0);
+      document.getElementById('tabLiburan').innerText = formatRp(tabObj['Liburan'] || 0);
+
+      // PENGAMAN (Fallback) Jika Backend masih membacakan format data versi lama
+      const targetObj = res.targetTabungan || {};
+      const targetPos = targetObj.pos || "Semua";
+      // Cek apakah targetNominal berbentuk Objek baru atau masih Angka jadul
+      const targetNominal = targetObj.nominal !== undefined ? targetObj.nominal : (typeof res.targetTabungan === 'number' ? res.targetTabungan : 0);
+      
+      let terkumpul = 0;
       if (targetPos === "Semua") {
-        terkumpul = (res.tabungan['Simpanan'] || 0) + (res.tabungan['Liburan'] || 0) + (res.tabungan['Keperluan Lainnya'] || 0);
+        terkumpul = (tabObj['Simpanan'] || 0) + (tabObj['Liburan'] || 0) + (tabObj['Keperluan Lainnya'] || 0);
       } else {
-        terkumpul = res.tabungan[targetPos] || 0;
+        terkumpul = tabObj[targetPos] || 0;
       }
       
       const persen = targetNominal > 0 ? Math.min(100, Math.round((terkumpul / targetNominal) * 100)) : 0;
@@ -352,7 +360,11 @@
       document.getElementById('targetPersen').innerText = persen;
       document.getElementById('targetBar').style.width = persen + "%";
 
-      if(res.daftarHutang) renderHutang(res.daftarHutang);
+      if(res.daftarHutang && Array.isArray(res.daftarHutang)) {
+        renderHutang(res.daftarHutang);
+      } else {
+        document.getElementById('listHutang').innerHTML = '<p class="text-center text-gray-400 text-xs py-2 italic">Belum ada hutang dicatat.</p>';
+      }
 
       const listTrx = document.getElementById('listTrxTerbaru');
       listTrx.innerHTML = '';
@@ -380,14 +392,15 @@
         listTrx.innerHTML = '<p class="text-center text-gray-400 text-xs py-2 italic">Belum ada transaksi.</p>';
       }
 
-      const usernames = Object.keys(res.userStats);
-      const myStats = res.userStats[activeUser] || { masuk: 0, keluar: 0 };
+      // PENGAMAN: Jika Backend lama (userStats undefined) agar halaman tidak error
+      const uStats = res.userStats || {};
+      const usernames = Object.keys(uStats);
+      const myStats = uStats[activeUser] || { masuk: 0, keluar: 0 };
       const partnerName = usernames.find(u => u !== activeUser) || 'Pasangan';
-      const partnerStats = res.userStats[partnerName] || { masuk: 0, keluar: 0 };
+      const partnerStats = uStats[partnerName] || { masuk: 0, keluar: 0 };
       document.getElementById('namaPasanganText').innerText = partnerName.split(' ')[0]; 
 
-      clearTimeout(pieChartTimeout);
-      pieChartTimeout = setTimeout(() => {
+      setTimeout(() => {
         const chartOptions = { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false } } };
 
         const ctxAku = document.getElementById('pieChartAku').getContext('2d');
@@ -407,7 +420,7 @@
           data: { labels: ['Pemasukan', 'Pengeluaran'], datasets: [{ data: isEmptyPasangan ? [1] : [partnerStats.masuk, partnerStats.keluar], backgroundColor: isEmptyPasangan ? ['#e5e7eb'] : ['#60a5fa', '#ec4899'], borderWidth: 0 }] },
           options: chartOptions
         });
-      }, 400); 
+      }, 300); 
     }
 
     async function editTargetBaru() {
@@ -449,7 +462,7 @@
               <p class="font-bold text-accent-500 text-sm">${formatRp(h.sisaHutang)}</p>
             </div>
             <div class="bg-main-50 p-2 rounded-lg flex justify-between items-center mb-3">
-              <p class="text-[10px] text-gray-500">Jatuh Tempo: <b class="text-main-600">Tgl ${h.tglJatuhTempo || '-'}</b><br>Cicilan: <b class="text-main-600">${formatRp(h.cicilanRutin)}</b></p>
+              <p class="text-[10px] text-gray-500">Jatuh Tempo: <b class="text-main-600">Tgl ${h.tglJatuhTempo || '-'}</b><br>Cicilan: <b class="text-main-600">${formatRp(h.cicilanRutin || 0)}</b></p>
               <button onclick="setPengingatHutang('${h.id}')" class="text-main-500 text-[10px] font-bold hover:underline"><i class="fa-solid fa-gear"></i> Setting</button>
             </div>
             <button onclick="bayarHutang('${h.id}', ${h.sisaHutang}, '${h.namaHutang}')" class="w-full bg-main-100 text-main-600 py-1.5 rounded-lg text-xs font-bold hover:bg-main-200 transition active:scale-95">Bayar Cicilan via Saldo Utama</button>
