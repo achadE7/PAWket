@@ -452,6 +452,9 @@
       }
 
       hutangAktif.forEach(h => {
+        // LOGIKA BARU: Jika cicilan 0 atau kosong, tampilkan "Sesuai Tagihan"
+        const teksCicilan = (h.cicilanRutin && h.cicilanRutin > 0) ? formatRp(h.cicilanRutin) : "Sesuai Tagihan";
+
         listUi.innerHTML += `
           <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
             <div class="flex justify-between items-start mb-2">
@@ -462,7 +465,7 @@
               <p class="font-bold text-accent-500 text-sm">${formatRp(h.sisaHutang)}</p>
             </div>
             <div class="bg-main-50 p-2 rounded-lg flex justify-between items-center mb-3">
-              <p class="text-[10px] text-gray-500">Jatuh Tempo: <b class="text-main-600">Tgl ${h.tglJatuhTempo || '-'}</b><br>Cicilan: <b class="text-main-600">${formatRp(h.cicilanRutin || 0)}</b></p>
+              <p class="text-[10px] text-gray-500">Jatuh Tempo: <b class="text-main-600">Tgl ${h.tglJatuhTempo || '-'}</b><br>Cicilan: <b class="text-main-600">${teksCicilan}</b></p>
               <button onclick="setPengingatHutang('${h.id}')" class="text-main-500 text-[10px] font-bold hover:underline"><i class="fa-solid fa-gear"></i> Setting</button>
             </div>
             <button onclick="bayarHutang('${h.id}', ${h.sisaHutang}, '${h.namaHutang}')" class="w-full bg-main-100 text-main-600 py-1.5 rounded-lg text-xs font-bold hover:bg-main-200 transition active:scale-95">Bayar Cicilan via Saldo Utama</button>
@@ -474,11 +477,19 @@
     async function setPengingatHutang(id) {
       const tgl = prompt("Pengingat Jatuh Tempo setiap tanggal berapa? (Cth: 15, 28, Akhir Bulan)");
       if (tgl !== null) {
-        const cicilan = prompt("Berapa nominal cicilan yang harus dibayar setiap bulannya? (Angka saja)");
-        if (cicilan && !isNaN(cicilan)) {
-          const res = await callAPI('updatePengingatHutang', { id: id, tgl: tgl, cicilan: Number(cicilan) });
-          if(res.sukses) { alert("Pengingat hutang berhasil disetel!"); loadDataDashboard(); } 
-          else alert("Gagal menyetel pengingat.");
+        // Teks prompt disesuaikan agar user tahu bisa dikosongkan
+        const cicilan = prompt("Berapa nominal cicilannya?\n(Kosongkan atau ketik 0 jika tagihan tiap bulan berbeda-beda)");
+        
+        if (cicilan !== null) { // Jika user tidak menekan tombol Cancel
+          const nominalCicilan = Number(cicilan) || 0; // Jika dikosongkan, otomatis terbaca 0
+          
+          const res = await callAPI('updatePengingatHutang', { id: id, tgl: tgl, cicilan: nominalCicilan });
+          if(res.sukses) { 
+            alert("Pengingat hutang berhasil disetel! ✨"); 
+            loadDataDashboard(); 
+          } else {
+            alert("Gagal menyetel pengingat.");
+          }
         }
       }
     }
