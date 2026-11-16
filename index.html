@@ -29,13 +29,12 @@
     .app-container { max-w-md mx-auto min-h-screen bg-[#fdf8f5] shadow-2xl relative overflow-x-hidden }
   </style>
 </head>
-<body class="text-gray-700 antialiased bg-gray-100 flex justify-center">
+<body class="text-gray-700 antialiased bg-gray-100 flex justify-center min-h-screen">
 
-  <!-- Container Pembatas Layar -->
-  <div class="w-full max-w-md min-h-screen bg-neko-50 shadow-2xl relative pb-20 overflow-hidden">
+  <!-- Container Pembatas Layar (Maksimal Ukuran HP) -->
+  <div class="w-full max-w-md bg-neko-50 shadow-2xl relative flex flex-col min-h-screen overflow-hidden">
 
     <!-- ================= SCREEN LOGIN ================= -->
-    <!-- Tambahkan bg-neko-50 z-50 absolute inset-0 agar menutupi layar sepenuhnya -->
     <div id="loginScreen" class="absolute inset-0 z-50 bg-neko-50 flex flex-col items-center justify-center p-6">
       <i class="fa-solid fa-cat text-neko-500 text-6xl mb-4"></i>
       <h1 class="text-3xl font-bold text-gray-800 mb-8 tracking-tight">PAWket <i class="fa-solid fa-paw text-neko-400 text-xl"></i></h1>
@@ -46,146 +45,148 @@
       </div>
     </div>
 
-  <!-- ================= SCREEN MAIN APP ================= -->
-  <div id="appScreen" class="hide">
-    
-    <!-- Header -->
-    <header class="p-6 pb-2 glass sticky top-0 z-10 flex justify-between items-center rounded-b-3xl shadow-sm mb-6">
-      <div>
-        <p class="text-sm font-semibold text-gray-500">Halo, <span id="namaUser" class="text-neko-500"></span>! 🐱</p>
-        <h2 class="text-2xl font-bold text-gray-800">Keuangan Kita</h2>
-      </div>
-      <div class="h-10 w-10 bg-neko-100 rounded-full flex items-center justify-center shadow-inner">
-        <i class="fa-solid fa-fish text-neko-500"></i>
-      </div>
-    </header>
-
-    <!-- TAB: DASHBOARD -->
-    <div id="tab-dashboard" class="px-6 space-y-6">
-      <!-- Saldo Card -->
-      <div class="bg-gradient-to-br from-neko-500 to-neko-400 rounded-3xl p-6 text-white shadow-xl shadow-neko-500/20 relative overflow-hidden">
-        <i class="fa-solid fa-paw absolute -bottom-4 -right-4 text-8xl opacity-10"></i>
-        <p class="text-neko-50 font-semibold mb-1">Saldo Dompet Utama</p>
-        <h3 class="text-4xl font-bold mb-4" id="saldoUtama">Rp 0</h3>
-        <div class="flex justify-between text-sm bg-white/20 p-3 rounded-2xl backdrop-blur-md">
-          <div><span class="opacity-80">Masuk:</span> <br><span class="font-bold" id="totalMasuk">Rp 0</span></div>
-          <div class="text-right"><span class="opacity-80">Keluar:</span> <br><span class="font-bold" id="totalKeluar">Rp 0</span></div>
+    <!-- ================= SCREEN MAIN APP ================= -->
+    <!-- flex-1 memastikan area konten mengisi sisa ruang di atas navigasi -->
+    <div id="appScreen" class="hide flex-1 flex flex-col h-full overflow-y-auto pb-24">
+      
+      <!-- Header -->
+      <header class="p-6 pb-4 glass sticky top-0 z-20 flex justify-between items-center rounded-b-3xl shadow-sm mb-6">
+        <div>
+          <p class="text-sm font-semibold text-gray-500">Halo, <span id="namaUser" class="text-neko-500"></span>! 🐱</p>
+          <h2 class="text-2xl font-bold text-gray-800">Keuangan Kita</h2>
         </div>
-      </div>
-
-      <!-- Tabungan Mini Cards -->
-      <h4 class="font-bold text-gray-800 mb-2 mt-6">Kantong Tabungan <i class="fa-solid fa-box text-neko-400"></i></h4>
-      <div class="grid grid-cols-2 gap-4">
-        <div class="glass rounded-2xl p-4 shadow-sm">
-          <p class="text-xs text-gray-500 font-semibold">Simpanan</p>
-          <p class="font-bold text-gray-800" id="tabSimpanan">Rp 0</p>
+        <div class="h-10 w-10 bg-neko-100 rounded-full flex items-center justify-center shadow-inner">
+          <i class="fa-solid fa-fish text-neko-500"></i>
         </div>
-        <div class="glass rounded-2xl p-4 shadow-sm">
-          <p class="text-xs text-gray-500 font-semibold">Liburan</p>
-          <p class="font-bold text-gray-800" id="tabLiburan">Rp 0</p>
-        </div>
-      </div>
+      </header>
 
-      <!-- Area Grafik Minimalis -->
-      <div class="mt-4 grid grid-cols-1 gap-4 mb-6">
+      <!-- Area Konten (Tabs) -->
+      <div class="flex-1 relative">
         
-        <!-- Grafik Bar: Rekap Keseluruhan -->
-        <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100">
-          <div class="flex justify-between items-center mb-2">
-            <h4 class="font-bold text-gray-800 text-xs"><i class="fa-solid fa-chart-column text-neko-400"></i> Rekap</h4>
-            <button onclick="editTarget()" id="btnEditTarget" class="text-[10px] bg-neko-50 text-neko-500 px-2 py-1 rounded-full font-bold hover:bg-neko-100 transition shadow-sm border border-neko-100">
-              <i class="fa-solid fa-pen"></i> Edit Target
+        <!-- TAB: DASHBOARD -->
+        <div id="tab-dashboard" class="px-6 space-y-6">
+          <!-- Saldo Card -->
+          <div class="bg-gradient-to-br from-neko-500 to-neko-400 rounded-3xl p-6 text-white shadow-xl shadow-neko-500/20 relative overflow-hidden">
+            <i class="fa-solid fa-paw absolute -bottom-4 -right-4 text-8xl opacity-10"></i>
+            <p class="text-neko-50 font-semibold mb-1">Saldo Dompet Utama</p>
+            <h3 class="text-4xl font-bold mb-4 truncate" id="saldoUtama">Rp 0</h3>
+            <div class="flex justify-between text-sm bg-white/20 p-3 rounded-2xl backdrop-blur-md">
+              <div><span class="opacity-80">Masuk:</span> <br><span class="font-bold truncate" id="totalMasuk">Rp 0</span></div>
+              <div class="text-right"><span class="opacity-80">Keluar:</span> <br><span class="font-bold truncate" id="totalKeluar">Rp 0</span></div>
+            </div>
+          </div>
+
+          <!-- Tabungan Mini Cards -->
+          <h4 class="font-bold text-gray-800 mb-2 mt-6">Kantong Tabungan <i class="fa-solid fa-box text-neko-400"></i></h4>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="glass rounded-2xl p-4 shadow-sm">
+              <p class="text-xs text-gray-500 font-semibold">Simpanan</p>
+              <p class="font-bold text-gray-800 truncate" id="tabSimpanan">Rp 0</p>
+            </div>
+            <div class="glass rounded-2xl p-4 shadow-sm">
+              <p class="text-xs text-gray-500 font-semibold">Liburan</p>
+              <p class="font-bold text-gray-800 truncate" id="tabLiburan">Rp 0</p>
+            </div>
+          </div>
+
+          <!-- Area Grafik Minimalis -->
+          <div class="mt-4 grid grid-cols-1 gap-4 mb-6">
+            <!-- Grafik Bar: Rekap Keseluruhan -->
+            <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100">
+              <div class="flex justify-between items-center mb-2">
+                <h4 class="font-bold text-gray-800 text-xs"><i class="fa-solid fa-chart-column text-neko-400"></i> Rekap</h4>
+                <button onclick="editTarget()" id="btnEditTarget" class="text-[10px] bg-neko-50 text-neko-500 px-2 py-1 rounded-full font-bold hover:bg-neko-100 transition shadow-sm border border-neko-100">
+                  <i class="fa-solid fa-pen"></i> Edit Target
+                </button>
+              </div>
+              <div class="relative h-40 w-full">
+                <canvas id="barChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Grafik Pie: Rasio Arus Kas -->
+            <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between">
+              <h4 class="font-bold text-gray-800 text-xs"><i class="fa-solid fa-chart-pie text-neko-400"></i> Arus Kas</h4>
+              <div class="relative h-24 w-24">
+                <canvas id="pieChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: CATAT TRANSAKSI -->
+        <div id="tab-catat" class="hide px-6">
+          <div class="glass rounded-3xl p-6 shadow-xl relative overflow-hidden">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Catat Transaksi <i class="fa-solid fa-pen text-neko-400 text-sm"></i></h3>
+            
+            <div class="mb-5 relative">
+              <input type="file" id="fotoStruk" accept="image/*" capture="environment" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="prosesScanAI()">
+              <div id="btnScanUi" class="w-full bg-gray-800 text-white rounded-xl p-3 flex justify-center items-center gap-2 font-bold shadow-lg active:scale-95 transition">
+                <i class="fa-solid fa-camera"></i> Foto Struk (Scan AI)
+              </div>
+            </div>
+
+            <div class="flex gap-2 mb-4 bg-gray-100 p-1 rounded-xl">
+              <button id="btnPemasukan" onclick="setTipe('Pemasukan')" class="flex-1 py-2 rounded-lg font-bold text-gray-500 transition">Pemasukan</button>
+              <button id="btnPengeluaran" onclick="setTipe('Pengeluaran')" class="flex-1 py-2 rounded-lg font-bold bg-white text-neko-500 shadow transition">Pengeluaran</button>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label class="text-sm font-semibold text-gray-600 ml-1">Kategori</label>
+                <select id="inputKategori" onchange="cekKategoriBaru()" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-neko-400 outline-none font-semibold text-gray-700"></select>
+              </div>
+              <div>
+                <label class="text-sm font-semibold text-gray-600 ml-1">Nominal (Rp)</label>
+                <input type="number" id="inputNominal" placeholder="Contoh: 50000" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-neko-400 outline-none font-bold text-lg text-gray-800">
+              </div>
+              <div>
+                <label class="text-sm font-semibold text-gray-600 ml-1">Catatan</label>
+                <input type="text" id="inputCatatan" placeholder="Makan sushi berdua..." class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-neko-400 outline-none font-semibold">
+              </div>
+              
+              <button onclick="simpanTransaksi()" id="btnSimpan" class="w-full mt-2 bg-neko-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-neko-500/30 hover:bg-neko-600 transition active:scale-95">Simpan Data</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: REKAP BULANAN -->
+        <div id="tab-rekap" class="hide px-6 h-full flex flex-col">
+          <div class="glass rounded-3xl p-6 shadow-xl relative overflow-hidden flex-1 flex flex-col">
+            <i class="fa-solid fa-calendar-days absolute -bottom-2 -right-4 text-8xl text-neko-400 opacity-5"></i>
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Rekap Bulanan <i class="fa-solid fa-chart-pie text-neko-400 text-sm"></i></h3>
+            
+            <input type="month" id="inputBulan" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 mb-4 focus:ring-2 focus:ring-neko-400 outline-none font-bold text-gray-700 shrink-0" onchange="loadRekap()">
+            
+            <div class="grid grid-cols-2 gap-4 mb-5 shrink-0">
+              <div class="bg-neko-50 rounded-2xl p-4 shadow-sm border border-neko-100">
+                <p class="text-xs text-gray-500 font-semibold mb-1">Pemasukan</p>
+                <p class="font-bold text-neko-500 truncate" id="rekapMasuk">Rp 0</p>
+              </div>
+              <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                <p class="text-xs text-gray-500 font-semibold mb-1">Pengeluaran</p>
+                <p class="font-bold text-gray-800 truncate" id="rekapKeluar">Rp 0</p>
+              </div>
+            </div>
+
+            <button onclick="exportXLS()" id="btnExport" class="w-full bg-[#107c41] text-white font-bold py-3 rounded-xl shadow-lg shadow-green-700/20 hover:bg-green-700 transition active:scale-95 mb-4 flex items-center justify-center gap-2 shrink-0">
+              <i class="fa-solid fa-file-excel"></i> Download XLS
             </button>
-          </div>
-          <!-- Batasi tinggi kanvas menjadi 160px -->
-          <div class="relative h-40 w-full">
-            <canvas id="barChart"></canvas>
-          </div>
-        </div>
-
-        <!-- Grafik Pie: Rasio Arus Kas -->
-        <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between">
-          <h4 class="font-bold text-gray-800 text-xs"><i class="fa-solid fa-chart-pie text-neko-400"></i> Arus Kas</h4>
-          <!-- Batasi lebar dan tinggi container pie chart -->
-          <div class="relative h-24 w-24">
-            <canvas id="pieChart"></canvas>
-          </div>
-        </div>
-        
-      </div>
-
-    <!-- TAB: CATAT TRANSAKSI -->
-    <div id="tab-catat" class="hide px-6">
-      <div class="glass rounded-3xl p-6 shadow-xl relative overflow-hidden">
-        <h3 class="text-xl font-bold text-gray-800 mb-4">Catat Transaksi <i class="fa-solid fa-pen text-neko-400 text-sm"></i></h3>
-        
-        <!-- Scan Struk AI Button -->
-        <div class="mb-5 relative">
-          <input type="file" id="fotoStruk" accept="image/*" capture="environment" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="prosesScanAI()">
-          <div id="btnScanUi" class="w-full bg-gray-800 text-white rounded-xl p-3 flex justify-center items-center gap-2 font-bold shadow-lg active:scale-95 transition">
-            <i class="fa-solid fa-camera"></i> Foto Struk (Scan AI)
+            
+            <h4 class="font-bold text-gray-800 mb-3 text-sm shrink-0">Rincian Transaksi</h4>
+            <!-- Area riwayat transaksi yang bisa discroll -->
+            <div id="listRekap" class="space-y-3 flex-1 overflow-y-auto pr-1">
+              <p class="text-center text-gray-400 text-sm py-4">Pilih bulan terlebih dahulu 🐾</p>
+            </div>
           </div>
         </div>
 
-        <div class="flex gap-2 mb-4 bg-gray-100 p-1 rounded-xl">
-          <button id="btnPemasukan" onclick="setTipe('Pemasukan')" class="flex-1 py-2 rounded-lg font-bold text-gray-500 transition">Pemasukan</button>
-          <button id="btnPengeluaran" onclick="setTipe('Pengeluaran')" class="flex-1 py-2 rounded-lg font-bold bg-white text-neko-500 shadow transition">Pengeluaran</button>
-        </div>
-
-        <div class="space-y-4">
-          <div>
-            <label class="text-sm font-semibold text-gray-600 ml-1">Kategori</label>
-            <select id="inputKategori" onchange="cekKategoriBaru()" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-neko-400 outline-none font-semibold text-gray-700">
-              <!-- Diisi via JS -->
-            </select>
-          </div>
-          <div>
-            <label class="text-sm font-semibold text-gray-600 ml-1">Nominal (Rp)</label>
-            <input type="number" id="inputNominal" placeholder="Contoh: 50000" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-neko-400 outline-none font-bold text-lg text-gray-800">
-          </div>
-          <div>
-            <label class="text-sm font-semibold text-gray-600 ml-1">Catatan</label>
-            <input type="text" id="inputCatatan" placeholder="Makan sushi berdua..." class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-neko-400 outline-none font-semibold">
-          </div>
-          
-          <button onclick="simpanTransaksi()" id="btnSimpan" class="w-full mt-2 bg-neko-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-neko-500/30 hover:bg-neko-600 transition active:scale-95">Simpan Data</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB: REKAP BULANAN -->
-    <div id="tab-rekap" class="hide px-6">
-      <div class="glass rounded-3xl p-6 shadow-xl relative overflow-hidden">
-        <i class="fa-solid fa-calendar-days absolute -bottom-2 -right-4 text-8xl text-neko-400 opacity-5"></i>
-        <h3 class="text-xl font-bold text-gray-800 mb-4">Rekap Bulanan <i class="fa-solid fa-chart-pie text-neko-400 text-sm"></i></h3>
-        
-        <!-- Input Pemilih Bulan -->
-        <input type="month" id="inputBulan" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 mb-4 focus:ring-2 focus:ring-neko-400 outline-none font-bold text-gray-700" onchange="loadRekap()">
-        
-        <div class="grid grid-cols-2 gap-4 mb-5">
-          <div class="bg-neko-50 rounded-2xl p-4 shadow-sm border border-neko-100">
-            <p class="text-xs text-gray-500 font-semibold mb-1">Pemasukan</p>
-            <p class="font-bold text-neko-500" id="rekapMasuk">Rp 0</p>
-          </div>
-          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-            <p class="text-xs text-gray-500 font-semibold mb-1">Pengeluaran</p>
-            <p class="font-bold text-gray-800" id="rekapKeluar">Rp 0</p>
-          </div>
-        </div>
-
-        <button onclick="exportXLS()" id="btnExport" class="w-full bg-[#107c41] text-white font-bold py-3 rounded-xl shadow-lg shadow-green-700/20 hover:bg-green-700 transition active:scale-95 mb-4 flex items-center justify-center gap-2">
-          <i class="fa-solid fa-file-excel"></i> Download XLS
-        </button>
-        
-        <h4 class="font-bold text-gray-800 mb-3 text-sm">Rincian Transaksi</h4>
-        <div id="listRekap" class="space-y-3 max-h-72 overflow-y-auto pr-1 pb-4">
-          <p class="text-center text-gray-400 text-sm py-4">Pilih bulan terlebih dahulu 🐾</p>
-        </div>
-      </div>
-    </div>
+      </div> <!-- End of Tabs Area -->
+    </div> <!-- End of appScreen -->
 
     <!-- Bottom Navigation -->
-    <nav class="fixed bottom-0 w-full glass border-t border-gray-100 rounded-t-3xl flex justify-around p-3 text-gray-400 z-50">
+    <!-- Memastikan absolute terhadap parent (max-w-md), bukan layar penuh -->
+    <nav class="absolute bottom-0 left-0 w-full glass border-t border-gray-100 rounded-t-3xl flex justify-around p-3 text-gray-400 z-50">
       <button onclick="switchTab('dashboard')" class="flex flex-col items-center w-16 text-neko-500" id="nav-dashboard">
         <i class="fa-solid fa-cat text-2xl mb-1"></i><span class="text-[10px] font-bold">Beranda</span>
       </button>
@@ -196,7 +197,10 @@
         <i class="fa-solid fa-chart-simple text-2xl mb-1"></i><span class="text-[10px] font-bold">Rekap</span>
       </button>
     </nav>
-  </div>
+
+  </div> <!-- End of Container Pembatas Layar -->
+
+<!-- Pastikan blok <script> milikmu yang berisi semua fungsi Javascript berada tepat di bawah sini sebelum </body> -->
 
   <script>
     // URL Web App Apps Script (REST API Endpoint)
