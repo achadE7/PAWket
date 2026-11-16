@@ -60,7 +60,8 @@
       <div class="flex-1 relative">
         
         <!-- TAB: DASHBOARD -->
-        <div id="tab-dashboard" class="px-6 space-y-6">
+        <div id="tab-dashboard" class="px-6 space-y-4">
+          
           <div class="bg-gradient-to-br from-main-500 to-accent-400 rounded-3xl p-6 text-white shadow-xl shadow-main-500/20 relative overflow-hidden">
             <i class="fa-solid fa-paw absolute -bottom-4 -right-4 text-8xl opacity-10"></i>
             <p class="text-main-50 font-semibold mb-1">Saldo Dompet Utama</p>
@@ -71,34 +72,44 @@
             </div>
           </div>
 
-          <h4 class="font-bold text-gray-800 mb-2 mt-6">Kantong Tabungan 🗃️</h4>
-          <div class="grid grid-cols-2 gap-4">
-            <div class="glass rounded-2xl p-4 shadow-sm border border-main-100">
-              <p class="text-xs text-main-500 font-semibold">🏦 Simpanan</p>
-              <p class="font-bold text-gray-800 truncate" id="tabSimpanan">Rp 0</p>
+          <!-- Target Tabungan (Baru dengan Progress Bar) -->
+          <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100">
+            <div class="flex justify-between items-center mb-1">
+              <h4 class="font-bold text-gray-800 text-xs">🎯 Target: <span id="targetPosText" class="text-main-500">Semua</span></h4>
+              <button onclick="editTargetBaru()" class="text-[10px] bg-main-50 text-main-500 px-2 py-1 rounded-full font-bold hover:bg-main-100 transition shadow-sm border border-main-100">
+                <i class="fa-solid fa-pen"></i> Set Target
+              </button>
             </div>
-            <div class="glass rounded-2xl p-4 shadow-sm border border-accent-100">
-              <p class="text-xs text-accent-500 font-semibold">✈️ Liburan</p>
-              <p class="font-bold text-gray-800 truncate" id="tabLiburan">Rp 0</p>
+            <div class="w-full bg-gray-100 rounded-full h-2.5 my-2">
+              <div id="targetBar" class="bg-accent-400 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <p class="text-[10px] text-gray-500 text-right"><span id="targetTerkumpul" class="font-bold text-gray-700">Rp 0</span> / <span id="targetNominal">Rp 0</span> (<span id="targetPersen">0</span>%)</p>
+          </div>
+
+          <h4 class="font-bold text-gray-800 mb-1 mt-2">Kantong Tabungan 🗃️</h4>
+          <div class="grid grid-cols-2 gap-3 mb-2">
+            <div class="glass rounded-2xl p-3 shadow-sm border border-main-100">
+              <p class="text-[11px] text-main-500 font-semibold">🏦 Simpanan</p>
+              <p class="font-bold text-gray-800 text-sm truncate" id="tabSimpanan">Rp 0</p>
+            </div>
+            <div class="glass rounded-2xl p-3 shadow-sm border border-accent-100">
+              <p class="text-[11px] text-accent-500 font-semibold">✈️ Liburan</p>
+              <p class="font-bold text-gray-800 text-sm truncate" id="tabLiburan">Rp 0</p>
             </div>
           </div>
 
-          <div class="mt-4 grid grid-cols-1 gap-4 mb-6">
-            <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100">
-              <div class="flex justify-between items-center mb-2">
-                <h4 class="font-bold text-gray-800 text-xs"><i class="fa-solid fa-chart-column text-main-400"></i> Rekap</h4>
-                <button onclick="editTarget()" id="btnEditTarget" class="text-[10px] bg-main-50 text-main-500 px-2 py-1 rounded-full font-bold hover:bg-main-100 transition shadow-sm border border-main-100">
-                  <i class="fa-solid fa-pen"></i> Edit Target
-                </button>
-              </div>
-              <div class="relative h-40 w-full"><canvas id="barChart"></canvas></div>
+          <!-- Grafik Ganda (Aku & Pasangan) -->
+          <div class="grid grid-cols-2 gap-3 mb-6">
+            <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
+              <h4 class="font-bold text-gray-800 text-[10px] text-center mb-2">Arus Kasku</h4>
+              <div class="relative h-20 w-20"><canvas id="pieChartAku"></canvas></div>
             </div>
-
-            <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between">
-              <h4 class="font-bold text-gray-800 text-xs"><i class="fa-solid fa-chart-pie text-accent-400"></i> Arus Kas</h4>
-              <div class="relative h-24 w-24"><canvas id="pieChart"></canvas></div>
+            <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
+              <h4 class="font-bold text-gray-800 text-[10px] text-center mb-2">Arus Kas <span id="namaPasanganText">Pasangan</span></h4>
+              <div class="relative h-20 w-20"><canvas id="pieChartPasangan"></canvas></div>
             </div>
           </div>
+
         </div>
 
         <!-- TAB: CATAT TRANSAKSI -->
@@ -148,20 +159,20 @@
           </div>
         </div>
 
-        <!-- TAB: HUTANG (BARU) -->
+        <!-- TAB: HUTANG -->
         <div id="tab-hutang" class="hide px-6 space-y-6">
-          <div class="glass rounded-3xl p-6 shadow-xl relative overflow-hidden">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">Daftar Hutang Aktif 💳</h3>
+          <div class="glass rounded-3xl p-6 shadow-xl relative overflow-hidden flex-1 flex flex-col max-h-[75vh]">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 shrink-0">Daftar Hutang Aktif 💳</h3>
             
-            <div id="listHutang" class="space-y-3 mb-6 max-h-60 overflow-y-auto pr-1">
+            <div id="listHutang" class="space-y-3 mb-4 overflow-y-auto pr-1 flex-1">
               <!-- Dirender via Javascript -->
             </div>
 
-            <hr class="border-gray-200 mb-4">
-            <h4 class="font-bold text-gray-800 mb-3 text-sm">Catat Hutang Baru</h4>
-            <div class="space-y-4">
+            <hr class="border-gray-200 mb-4 shrink-0">
+            <h4 class="font-bold text-gray-800 mb-3 text-sm shrink-0">Catat Hutang Baru</h4>
+            <div class="space-y-4 shrink-0">
               <div>
-                <input type="text" id="inputNamaHutang" placeholder="Nama Hutang (Cth: Paylater Lebaran)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-main-400 outline-none font-semibold text-gray-700">
+                <input type="text" id="inputNamaHutang" placeholder="Nama Hutang (Cth: Paylater)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-main-400 outline-none font-semibold text-gray-700">
               </div>
               <div>
                 <input type="number" id="inputNominalHutang" placeholder="Total Hutang (Rp)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-main-400 outline-none font-bold text-gray-800">
@@ -189,10 +200,6 @@
                 <p class="font-bold text-accent-500 truncate" id="rekapKeluar">Rp 0</p>
               </div>
             </div>
-
-            <button onclick="exportXLS()" id="btnExport" class="w-full bg-[#107c41] text-white font-bold py-3 rounded-xl shadow-lg shadow-green-700/20 hover:bg-green-700 transition active:scale-95 mb-4 flex items-center justify-center gap-2 shrink-0">
-              <i class="fa-solid fa-file-excel"></i> Download XLS
-            </button>
             
             <h4 class="font-bold text-gray-800 mb-3 text-sm shrink-0">Rincian Transaksi</h4>
             <div id="listRekap" class="space-y-3 flex-1 overflow-y-auto pr-1">
@@ -216,7 +223,7 @@
         <i class="fa-solid fa-credit-card text-2xl mb-1"></i><span class="text-[10px] font-bold">Hutang</span>
       </button>
       <button onclick="switchTab('rekap')" class="flex flex-col items-center w-14 hover:text-main-400 transition" id="nav-rekap">
-        <i class="fa-solid fa-chart-simple text-2xl mb-1"></i><span class="text-[10px] font-bold">Rekap</span>
+        <i class="fa-solid fa-list text-2xl mb-1"></i><span class="text-[10px] font-bold">Rekap</span>
       </button>
     </nav>
 
@@ -246,8 +253,10 @@
     let jenisTabunganAktif = "Setor";
     let listKategori = { masuk: [], keluar: [] };
     let dataRekapBulanIni = [];
-    let barChartInstance = null;
-    let pieChartInstance = null;
+    
+    // Variabel Chart
+    let pieChartAkuInstance = null;
+    let pieChartPasanganInstance = null;
 
     const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
 
@@ -287,6 +296,19 @@
       switchTab('dashboard');
     }
 
+    async function hapusCatatan(id) {
+      if(confirm("Apakah kamu yakin ingin menghapus catatan ini?")) {
+        const res = await callAPI('hapusCatatan', { id: id });
+        if(res.sukses) {
+          alert("Catatan terhapus! ✨");
+          loadRekap();
+          loadDataDashboard();
+        } else {
+          alert("Gagal menghapus catatan.");
+        }
+      }
+    }
+
     async function loadDataDashboard() {
       const res = await callAPI('getDashboard');
       if (!res || res.sukses === false) return;
@@ -297,49 +319,94 @@
       document.getElementById('tabSimpanan').innerText = formatRp(res.tabungan['Simpanan'] || 0);
       document.getElementById('tabLiburan').innerText = formatRp(res.tabungan['Liburan'] || 0);
 
-      // Render Daftar Hutang di Tab Hutang
       if(res.daftarHutang) renderHutang(res.daftarHutang);
 
-      const totalTabungan = (res.tabungan['Simpanan'] || 0) + (res.tabungan['Liburan'] || 0) + (res.tabungan['Keperluan Lainnya'] || 0);
-      const sisaTarget = Math.max(0, res.targetTabungan - totalTabungan);
+      // --- LOGIKA PROGRESS BAR TARGET ---
+      const targetPos = res.targetTabungan.pos || "Semua";
+      const targetNominal = res.targetTabungan.nominal || 0;
+      let terkumpul = 0;
+      
+      if (targetPos === "Semua") {
+        terkumpul = (res.tabungan['Simpanan'] || 0) + (res.tabungan['Liburan'] || 0) + (res.tabungan['Keperluan Lainnya'] || 0);
+      } else {
+        terkumpul = res.tabungan[targetPos] || 0;
+      }
+      
+      const persen = targetNominal > 0 ? Math.min(100, Math.round((terkumpul / targetNominal) * 100)) : 0;
+      document.getElementById('targetPosText').innerText = targetPos;
+      document.getElementById('targetTerkumpul').innerText = formatRp(terkumpul);
+      document.getElementById('targetNominal').innerText = formatRp(targetNominal);
+      document.getElementById('targetPersen').innerText = persen;
+      document.getElementById('targetBar').style.width = persen + "%";
 
-      const ctxBar = document.getElementById('barChart').getContext('2d');
-      if (barChartInstance) barChartInstance.destroy();
-      barChartInstance = new Chart(ctxBar, {
-        type: 'bar',
-        data: {
-          labels: ['Sisa Uang', 'Pemasukan', 'Pengeluaran', 'Hutang', 'Sisa Target'],
-          datasets: [{
-            data: [res.saldoUtama, res.totalMasuk, res.totalKeluar, (res.totalSisaHutang || 0), sisaTarget],
-            backgroundColor: ['#60a5fa', '#3b82f6', '#f472b6', '#ef4444', '#a855f7'],
-            borderRadius: 6
-          }]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => formatRp(c.raw) } } },
-          scales: { 
-            y: { beginAtZero: true, ticks: { callback: v => 'Rp ' + (v/1000) + 'k', font: { family: 'Quicksand', size: 10 } } },
-            x: { ticks: { font: { family: 'Quicksand', size: 9 } } }
-          }
-        }
-      });
+      // --- LOGIKA DUAL PIE CHARTS (AKU VS PASANGAN) ---
+      const usernames = Object.keys(res.userStats);
+      const myStats = res.userStats[activeUser] || { masuk: 0, keluar: 0 };
+      
+      // Mencari nama pasangan yang bukan nama user aktif saat ini
+      const partnerName = usernames.find(u => u !== activeUser) || 'Pasangan';
+      const partnerStats = res.userStats[partnerName] || { masuk: 0, keluar: 0 };
+      
+      document.getElementById('namaPasanganText').innerText = partnerName.split(' ')[0]; // Ambil nama depan saja
 
-      const ctxPie = document.getElementById('pieChart').getContext('2d');
-      if (pieChartInstance) pieChartInstance.destroy();
-      const isDataKosong = res.totalMasuk === 0 && res.totalKeluar === 0;
-      pieChartInstance = new Chart(ctxPie, {
+      const chartOptions = { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false } } };
+
+      // Render Chart Aku
+      const ctxAku = document.getElementById('pieChartAku').getContext('2d');
+      if (pieChartAkuInstance) pieChartAkuInstance.destroy();
+      const isEmptyAku = myStats.masuk === 0 && myStats.keluar === 0;
+      pieChartAkuInstance = new Chart(ctxAku, {
         type: 'doughnut',
         data: {
           labels: ['Pemasukan', 'Pengeluaran'],
           datasets: [{
-            data: isDataKosong ? [1] : [res.totalMasuk, res.totalKeluar],
-            backgroundColor: isDataKosong ? ['#e5e7eb'] : ['#3b82f6', '#f472b6'],
-            borderWidth: 0, hoverOffset: 4
+            data: isEmptyAku ? [1] : [myStats.masuk, myStats.keluar],
+            backgroundColor: isEmptyAku ? ['#e5e7eb'] : ['#3b82f6', '#f472b6'],
+            borderWidth: 0
           }]
         },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false } } }
+        options: chartOptions
       });
+
+      // Render Chart Pasangan
+      const ctxPasangan = document.getElementById('pieChartPasangan').getContext('2d');
+      if (pieChartPasanganInstance) pieChartPasanganInstance.destroy();
+      const isEmptyPasangan = partnerStats.masuk === 0 && partnerStats.keluar === 0;
+      pieChartPasanganInstance = new Chart(ctxPasangan, {
+        type: 'doughnut',
+        data: {
+          labels: ['Pemasukan', 'Pengeluaran'],
+          datasets: [{
+            data: isEmptyPasangan ? [1] : [partnerStats.masuk, partnerStats.keluar],
+            backgroundColor: isEmptyPasangan ? ['#e5e7eb'] : ['#60a5fa', '#ec4899'],
+            borderWidth: 0
+          }]
+        },
+        options: chartOptions
+      });
+    }
+
+    async function editTargetBaru() {
+      const posSelect = prompt("Pilih pos tabungan yang ingin dilacak di beranda:\n1. Semua\n2. Simpanan\n3. Liburan\n4. Keperluan Lainnya\n\nKetik angkanya saja:");
+      
+      let posTerpilih = "Semua";
+      if (posSelect === "2") posTerpilih = "Simpanan";
+      else if (posSelect === "3") posTerpilih = "Liburan";
+      else if (posSelect === "4") posTerpilih = "Keperluan Lainnya";
+      else if (posSelect !== "1" && posSelect !== null) return alert("Pilihan tidak valid.");
+
+      if (posSelect !== null) {
+        const nominal = prompt(`Masukkan nominal target untuk pos "${posTerpilih}" (angka saja):`);
+        if (nominal && !isNaN(nominal) && nominal.trim() !== "") {
+          const res = await callAPI('setTarget', { pos: posTerpilih, nominal: Number(nominal) });
+          if (res && res.sukses) {
+            alert('Target tabungan berhasil diperbarui! ✨');
+            loadDataDashboard(); 
+          } else {
+            alert('Gagal memperbarui target.');
+          }
+        }
+      }
     }
 
     function renderHutang(daftarHutang) {
@@ -347,7 +414,6 @@
       listUi.innerHTML = '';
       
       const hutangAktif = daftarHutang.filter(h => h.status === 'Aktif');
-      
       if(hutangAktif.length === 0) {
         listUi.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">Yeay! Tidak ada hutang yang belum lunas. 🎉</p>';
         return;
@@ -355,21 +421,41 @@
 
       hutangAktif.forEach(h => {
         listUi.innerHTML += `
-          <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
-            <div>
-              <p class="font-bold text-gray-800 text-sm">${h.namaHutang}</p>
-              <p class="text-[10px] text-gray-400">Sisa: <span class="font-bold text-accent-500 text-xs">${formatRp(h.sisaHutang)}</span> <br>(Total awal: ${formatRp(h.totalAwal)})</p>
+          <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+            <div class="flex justify-between items-start mb-2">
+              <div>
+                <p class="font-bold text-gray-800 text-sm">${h.namaHutang}</p>
+                <p class="text-[10px] text-gray-400">Total awal: ${formatRp(h.totalAwal)}</p>
+              </div>
+              <p class="font-bold text-accent-500 text-sm">${formatRp(h.sisaHutang)}</p>
             </div>
-            <button onclick="bayarHutang('${h.id}', ${h.sisaHutang}, '${h.namaHutang}')" class="bg-main-50 text-main-500 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-main-100 border border-main-100 transition active:scale-95">Bayar</button>
+            <div class="bg-main-50 p-2 rounded-lg flex justify-between items-center mb-3">
+              <p class="text-[10px] text-gray-500">Jatuh Tempo: <b class="text-main-600">Tgl ${h.tglJatuhTempo || '-'}</b><br>Cicilan: <b class="text-main-600">${formatRp(h.cicilanRutin)}</b></p>
+              <button onclick="setPengingatHutang('${h.id}')" class="text-main-500 text-[10px] font-bold hover:underline"><i class="fa-solid fa-gear"></i> Setting</button>
+            </div>
+            <button onclick="bayarHutang('${h.id}', ${h.sisaHutang}, '${h.namaHutang}')" class="w-full bg-main-100 text-main-600 py-1.5 rounded-lg text-xs font-bold hover:bg-main-200 transition active:scale-95">Bayar Cicilan via Saldo Utama</button>
           </div>
         `;
       });
     }
 
+    async function setPengingatHutang(id) {
+      const tgl = prompt("Pengingat Jatuh Tempo setiap tanggal berapa? (Cth: 15, 28, Akhir Bulan)");
+      if (tgl !== null) {
+        const cicilan = prompt("Berapa nominal cicilan yang harus dibayar setiap bulannya? (Angka saja)");
+        if (cicilan && !isNaN(cicilan)) {
+          const res = await callAPI('updatePengingatHutang', { id: id, tgl: tgl, cicilan: Number(cicilan) });
+          if(res.sukses) {
+             alert("Pengingat hutang berhasil disetel!");
+             loadDataDashboard();
+          } else alert("Gagal menyetel pengingat.");
+        }
+      }
+    }
+
     async function simpanHutangBaru() {
       const nama = document.getElementById('inputNamaHutang').value;
       const nominal = document.getElementById('inputNominalHutang').value;
-      
       if(!nama || !nominal) return alert('Nama dan Total Hutang wajib diisi!');
       
       const btn = document.getElementById('btnSimpanHutang');
@@ -379,14 +465,11 @@
       const res = await callAPI('tambahHutang', { 
         form: { tanggal: new Date().toISOString().split('T')[0], oleh: activeUser, namaHutang: nama, nominal: nominal }
       });
-      
       if (res && res.sukses) {
         alert("Hutang baru berhasil dicatat! ✨");
         document.getElementById('inputNamaHutang').value = '';
         document.getElementById('inputNominalHutang').value = '';
         loadDataDashboard(); 
-      } else {
-        alert("Gagal mencatat hutang.");
       }
       btn.innerHTML = 'Catat Hutang Baru';
       btn.disabled = false;
@@ -394,18 +477,13 @@
 
     async function bayarHutang(idHutang, sisaSekarang, namaHutang) {
       const input = prompt(`Bayar cicilan untuk "${namaHutang}"\n(Sisa saat ini: ${formatRp(sisaSekarang)})\n\nMasukkan nominal pembayaran:`);
-      
       if (input && !isNaN(input) && Number(input) > 0) {
         const nominalBayar = Number(input);
         if (nominalBayar > sisaSekarang) return alert("Gagal. Nominal bayar melebihi sisa hutang!");
-        
         const res = await callAPI('bayarHutang', { idHutang: idHutang, nominalBayar: nominalBayar, oleh: activeUser });
-        
         if (res && res.sukses) {
           alert("Pembayaran berhasil dicatat & otomatis memotong Saldo Utama! ✨");
           loadDataDashboard(); 
-        } else {
-          alert("Gagal memproses pembayaran cicilan.");
         }
       }
     }
@@ -418,12 +496,10 @@
     function renderKategori() {
       const select = document.getElementById('inputKategori');
       select.innerHTML = '<option value="" disabled selected>-- Pilih Kategori --</option>'; 
-      
       const arr = tipeAktif === 'Pemasukan' ? listKategori.masuk : listKategori.keluar;
       arr.forEach(k => {
         let opt = document.createElement('option'); opt.value = k; opt.innerText = k; select.appendChild(opt);
       });
-      
       let optAdd = document.createElement('option');
       optAdd.value = "ADD_NEW"; optAdd.innerText = "+ Tambah Kategori Baru"; optAdd.className = "text-main-500 font-bold";
       select.appendChild(optAdd);
@@ -445,11 +521,9 @@
       document.getElementById('btnTabungan').className = tipe === 'Tabungan' ? "flex-1 py-1.5 rounded-lg text-sm font-bold bg-white text-purple-500 shadow transition" : "flex-1 py-1.5 rounded-lg text-sm font-bold text-gray-400 transition";
       
       if(tipe === 'Tabungan') {
-        document.getElementById('opsiTabungan').classList.remove('hide');
-        renderKategoriTabungan();
+        document.getElementById('opsiTabungan').classList.remove('hide'); renderKategoriTabungan();
       } else {
-        document.getElementById('opsiTabungan').classList.add('hide');
-        renderKategori();
+        document.getElementById('opsiTabungan').classList.add('hide'); renderKategori();
       }
     }
 
@@ -490,8 +564,6 @@
           document.getElementById('inputNominal').value = res.hasil.nominal;
           document.getElementById('inputCatatan').value = res.hasil.catatan;
           alert("Struk terbaca AI! ✨ Periksa kembali tanggal & angkanya.");
-        } else {
-          alert("Gagal membaca struk.");
         }
         btnUi.innerHTML = '<i class="fa-solid fa-camera"></i> Foto Struk (Scan AI)';
       };
@@ -501,13 +573,11 @@
     async function simpanTransaksi() {
       const form = {
         tanggal: document.getElementById('inputTanggal').value,
-        oleh: activeUser,
-        tipe: tipeAktif,
+        oleh: activeUser, tipe: tipeAktif,
         kategori: document.getElementById('inputKategori').value,
         nominal: document.getElementById('inputNominal').value,
         catatan: document.getElementById('inputCatatan').value
       };
-      
       if(!form.tanggal || !form.nominal || !form.kategori) return alert('Tanggal, Nominal & Kategori wajib diisi!');
       
       const btn = document.getElementById('btnSimpan');
@@ -516,8 +586,7 @@
       
       let res;
       if(tipeAktif === 'Tabungan') {
-        form.pos = form.kategori;
-        form.jenis = jenisTabunganAktif;
+        form.pos = form.kategori; form.jenis = jenisTabunganAktif;
         res = await callAPI('tambahTabungan', { form: form });
       } else {
         res = await callAPI('tambahTransaksi', { form: form });
@@ -529,35 +598,23 @@
         document.getElementById('inputCatatan').value = '';
         document.getElementById('inputKategori').value = '';
         document.getElementById('inputTanggal').value = new Date().toISOString().split('T')[0];
-        
-        loadDataDashboard();
-        switchTab('dashboard');
-      } else {
-        alert("Gagal menyimpan transaksi.");
+        loadDataDashboard(); switchTab('dashboard');
       }
-      btn.innerHTML = 'Simpan Data';
-      btn.disabled = false;
+      btn.innerHTML = 'Simpan Data'; btn.disabled = false;
     }
 
     function switchTab(tabId) {
-      document.getElementById('tab-dashboard').classList.add('hide');
-      document.getElementById('tab-catat').classList.add('hide');
-      document.getElementById('tab-hutang').classList.add('hide');
-      document.getElementById('tab-rekap').classList.add('hide');
-      
-      document.getElementById('nav-dashboard').classList.replace('text-main-500', 'text-gray-400');
-      document.getElementById('nav-catat').classList.replace('text-main-500', 'text-gray-400');
-      document.getElementById('nav-hutang').classList.replace('text-main-500', 'text-gray-400');
-      document.getElementById('nav-rekap').classList.replace('text-main-500', 'text-gray-400');
-      
-      document.getElementById('tab-' + tabId).classList.remove('hide');
-      document.getElementById('nav-' + tabId).classList.replace('text-gray-400', 'text-main-500');
+      ['dashboard', 'catat', 'hutang', 'rekap'].forEach(id => {
+        document.getElementById(`tab-${id}`).classList.add('hide');
+        document.getElementById(`nav-${id}`).classList.replace('text-main-500', 'text-gray-400');
+      });
+      document.getElementById(`tab-${tabId}`).classList.remove('hide');
+      document.getElementById(`nav-${tabId}`).classList.replace('text-gray-400', 'text-main-500');
     }
 
     async function loadRekap() {
       const bln = document.getElementById('inputBulan').value;
       if(!bln) return;
-      
       const listUi = document.getElementById('listRekap');
       listUi.innerHTML = '<p class="text-center text-gray-400 text-sm py-4"><i class="fa-solid fa-spinner fa-spin text-main-400 text-2xl mb-2"></i><br>Membongkar catatan...</p>';
       
@@ -577,53 +634,25 @@
             const color = isMasuk ? 'text-main-500' : 'text-accent-500';
             
             html += `
-              <div class="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm border border-gray-50">
-                <div class="flex items-center gap-3">
+              <div class="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm border border-gray-50 relative group">
+                <div class="flex items-center gap-3 w-full pr-8">
                   ${icon}
-                  <div>
+                  <div class="w-full">
                     <p class="font-bold text-sm text-gray-800">${d.Kategori}</p>
-                    <p class="text-[10px] text-gray-400">${d.Tanggal} • ${d.Oleh} <br> <span class="italic">${d.Catatan}</span></p>
+                    <p class="text-[10px] text-gray-400">${d.Tanggal} • ${d.Oleh} <br> <span class="italic truncate block">${d.Catatan}</span></p>
                   </div>
                 </div>
-                <div class="font-bold text-sm ${color}">${formatRp(d.Nominal)}</div>
+                <div class="font-bold text-sm ${color} absolute right-3 top-3">${formatRp(d.Nominal)}</div>
+                
+                <!-- Tombol Hapus (Tersembunyi & muncul saat hover/klik) -->
+                <button onclick="hapusCatatan('${d.id}')" class="absolute right-3 bottom-3 text-red-300 hover:text-red-500 transition text-[10px] font-bold">
+                  <i class="fa-solid fa-trash"></i> Hapus
+                </button>
               </div>
             `;
           });
         }
         listUi.innerHTML = html;
-      }
-    }
-
-    function exportXLS() {
-      if(dataRekapBulanIni.length === 0) return alert("Tidak ada data untuk diexport! Pilih bulan yang ada transaksinya.");
-      const bln = document.getElementById('inputBulan').value;
-      const ws = XLSX.utils.json_to_sheet(dataRekapBulanIni);
-      const wscols = [{wch: 15}, {wch: 10}, {wch: 12}, {wch: 20}, {wch: 15}, {wch: 30}];
-      ws['!cols'] = wscols;
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Rekap_" + bln);
-      XLSX.writeFile(wb, `PAWket_Rekap_${bln}.xlsx`);
-    }
-
-    async function editTarget() {
-      const input = prompt("Masukkan target tabungan keseluruhan yang baru (angka saja, tanpa titik/koma):");
-      if (input && !isNaN(input) && input.trim() !== "") {
-        const btn = document.getElementById('btnEditTarget');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-        btn.disabled = true;
-
-        const res = await callAPI('setTarget', { nominal: Number(input) });
-        if (res && res.sukses) {
-          alert('Target tabungan berhasil diperbarui! ✨');
-          loadDataDashboard(); 
-        } else {
-          alert('Gagal memperbarui target.');
-        }
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-      } else if (input !== null) {
-        alert("Gagal. Harap masukkan format angka yang valid.");
       }
     }
   </script>
