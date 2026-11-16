@@ -81,7 +81,12 @@
 
       <!-- Grafik Bar: Rekap Keseluruhan -->
       <div class="mt-6 bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
-        <h4 class="font-bold text-gray-800 mb-4 text-sm"><i class="fa-solid fa-chart-column text-neko-400"></i> Rekap Keuangan</h4>
+        <div class="flex justify-between items-center mb-4">
+          <h4 class="font-bold text-gray-800 text-sm"><i class="fa-solid fa-chart-column text-neko-400"></i> Rekap Keuangan</h4>
+          <button onclick="editTarget()" id="btnEditTarget" class="text-xs bg-neko-50 text-neko-500 px-3 py-1.5 rounded-full font-bold hover:bg-neko-100 transition active:scale-95 shadow-sm border border-neko-100">
+            <i class="fa-solid fa-pen text-[10px]"></i> Edit Target
+          </button>
+        </div>
         <canvas id="barChart" height="220"></canvas>
       </div>
 
@@ -414,7 +419,6 @@
     // --- Variabel Global Grafik & Target ---
     let barChartInstance = null;
     let pieChartInstance = null;
-    const TARGET_TABUNGAN = 10000000; // Contoh: Target 10 Juta (Silakan ubah sesuai target kalian)
 
     // --- Load Data Dashboard (Versi Update Grafik) ---
     function loadDataDashboard() {
@@ -433,7 +437,9 @@
         const sisaHutang = res.totalSisaHutang || 0; // Didapat dari update backend sebelumnya
         
         const totalTabunganTerkumpul = (res.tabungan['Simpanan'] || 0) + (res.tabungan['Liburan'] || 0) + (res.tabungan['Keperluan Lainnya'] || 0);
-        const sisaTargetTabungan = Math.max(0, TARGET_TABUNGAN - totalTabunganTerkumpul);
+        
+        // Menggunakan targetTabungan dari database
+        const sisaTargetTabungan = Math.max(0, res.targetTabungan - totalTabunganTerkumpul);
 
         // 3. Render Bar Chart (Rekap Keseluruhan)
         const ctxBar = document.getElementById('barChart').getContext('2d');
@@ -513,6 +519,27 @@
         });
 
       }).getDashboardData();
+    }
+
+    // --- Edit Target Tabungan Dinamis ---
+    function editTarget() {
+      const input = prompt("Masukkan target tabungan keseluruhan yang baru (angka saja, tanpa titik/koma):");
+      
+      if (input && !isNaN(input) && input.trim() !== "") {
+        const btn = document.getElementById('btnEditTarget');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+        btn.disabled = true;
+
+        google.script.run.withSuccessHandler(() => {
+          alert('Target tabungan berhasil diperbarui! 🐾');
+          loadDataDashboard(); // Reload data agar grafik otomatis berubah
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }).setTargetTabungan(Number(input));
+      } else if (input !== null) {
+        alert("Gagal. Harap masukkan format angka yang valid.");
+      }
     }
   </script>
 </body>
