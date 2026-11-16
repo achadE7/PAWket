@@ -23,21 +23,28 @@
   <style>
     body { background-color: #fdf8f5; -webkit-tap-highlight-color: transparent; }
     .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); }
-    .hide { display: none; }
+    /* Pastikan .hide menggunakan !important agar elemen benar-benar hilang dari layout */
+    .hide { display: none !important; }
+    /* Bungkus aplikasi agar memusat (berguna jika diakses di PC/Tablet) */
+    .app-container { max-w-md mx-auto min-h-screen bg-[#fdf8f5] shadow-2xl relative overflow-x-hidden }
   </style>
 </head>
-<body class="text-gray-700 antialiased pb-20">
+<body class="text-gray-700 antialiased bg-gray-100 flex justify-center">
 
-  <!-- ================= SCREEN LOGIN ================= -->
-  <div id="loginScreen" class="min-h-screen flex flex-col items-center justify-center p-6">
-    <i class="fa-solid fa-cat text-neko-500 text-6xl mb-4"></i>
-    <h1 class="text-3xl font-bold text-gray-800 mb-8 tracking-tight">PAWket <i class="fa-solid fa-paw text-neko-400 text-xl"></i></h1>
-    <div class="glass w-full max-w-sm rounded-3xl p-6 shadow-xl">
-      <input type="text" id="username" placeholder="Username" class="w-full bg-white/60 border-0 rounded-xl px-4 py-3 mb-4 focus:ring-2 focus:ring-neko-400 outline-none font-semibold">
-      <input type="password" id="password" placeholder="Password" class="w-full bg-white/60 border-0 rounded-xl px-4 py-3 mb-6 focus:ring-2 focus:ring-neko-400 outline-none font-semibold">
-      <button onclick="prosesLogin()" id="btnLogin" class="w-full bg-neko-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-neko-500/30 hover:bg-neko-600 transition active:scale-95">Masuk</button>
+  <!-- Container Pembatas Layar -->
+  <div class="w-full max-w-md min-h-screen bg-neko-50 shadow-2xl relative pb-20 overflow-hidden">
+
+    <!-- ================= SCREEN LOGIN ================= -->
+    <!-- Tambahkan bg-neko-50 z-50 absolute inset-0 agar menutupi layar sepenuhnya -->
+    <div id="loginScreen" class="absolute inset-0 z-50 bg-neko-50 flex flex-col items-center justify-center p-6">
+      <i class="fa-solid fa-cat text-neko-500 text-6xl mb-4"></i>
+      <h1 class="text-3xl font-bold text-gray-800 mb-8 tracking-tight">PAWket <i class="fa-solid fa-paw text-neko-400 text-xl"></i></h1>
+      <div class="glass w-full max-w-sm rounded-3xl p-6 shadow-xl">
+        <input type="text" id="username" placeholder="Username" class="w-full bg-white border border-gray-100 rounded-xl px-4 py-3 mb-4 focus:ring-2 focus:ring-neko-400 outline-none font-semibold">
+        <input type="password" id="password" placeholder="Password" class="w-full bg-white border border-gray-100 rounded-xl px-4 py-3 mb-6 focus:ring-2 focus:ring-neko-400 outline-none font-semibold">
+        <button onclick="prosesLogin()" id="btnLogin" class="w-full bg-neko-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-neko-500/30 hover:bg-neko-600 transition active:scale-95">Masuk</button>
+      </div>
     </div>
-  </div>
 
   <!-- ================= SCREEN MAIN APP ================= -->
   <div id="appScreen" class="hide">
@@ -79,25 +86,33 @@
         </div>
       </div>
 
-      <!-- Grafik Bar: Rekap Keseluruhan -->
-      <div class="mt-6 bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
-        <div class="flex justify-between items-center mb-4">
-          <h4 class="font-bold text-gray-800 text-sm"><i class="fa-solid fa-chart-column text-neko-400"></i> Rekap Keuangan</h4>
-          <button onclick="editTarget()" id="btnEditTarget" class="text-xs bg-neko-50 text-neko-500 px-3 py-1.5 rounded-full font-bold hover:bg-neko-100 transition active:scale-95 shadow-sm border border-neko-100">
-            <i class="fa-solid fa-pen text-[10px]"></i> Edit Target
-          </button>
+      <!-- Area Grafik Minimalis -->
+      <div class="mt-4 grid grid-cols-1 gap-4 mb-6">
+        
+        <!-- Grafik Bar: Rekap Keseluruhan -->
+        <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100">
+          <div class="flex justify-between items-center mb-2">
+            <h4 class="font-bold text-gray-800 text-xs"><i class="fa-solid fa-chart-column text-neko-400"></i> Rekap</h4>
+            <button onclick="editTarget()" id="btnEditTarget" class="text-[10px] bg-neko-50 text-neko-500 px-2 py-1 rounded-full font-bold hover:bg-neko-100 transition shadow-sm border border-neko-100">
+              <i class="fa-solid fa-pen"></i> Edit Target
+            </button>
+          </div>
+          <!-- Batasi tinggi kanvas menjadi 160px -->
+          <div class="relative h-40 w-full">
+            <canvas id="barChart"></canvas>
+          </div>
         </div>
-        <canvas id="barChart" height="220"></canvas>
-      </div>
 
-      <!-- Grafik Pie/Doughnut: Rasio Arus Kas -->
-      <div class="mt-4 bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center mb-6">
-        <h4 class="font-bold text-gray-800 mb-2 text-sm w-full"><i class="fa-solid fa-chart-pie text-neko-400"></i> Persentase Arus Kas</h4>
-        <div class="w-56 relative">
-          <canvas id="pieChart"></canvas>
+        <!-- Grafik Pie: Rasio Arus Kas -->
+        <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between">
+          <h4 class="font-bold text-gray-800 text-xs"><i class="fa-solid fa-chart-pie text-neko-400"></i> Arus Kas</h4>
+          <!-- Batasi lebar dan tinggi container pie chart -->
+          <div class="relative h-24 w-24">
+            <canvas id="pieChart"></canvas>
+          </div>
         </div>
+        
       </div>
-    </div>
 
     <!-- TAB: CATAT TRANSAKSI -->
     <div id="tab-catat" class="hide px-6">
@@ -269,10 +284,17 @@
         },
         options: {
           responsive: true,
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: (context) => formatRp(context.raw) } } },
+          maintainAspectRatio: false, // Tambahkan baris ini
+          plugins: { 
+            legend: { display: false }, 
+            tooltip: { callbacks: { label: (context) => formatRp(context.raw) } } 
+          },
           scales: { 
-            y: { beginAtZero: true, ticks: { callback: value => 'Rp ' + (value/1000) + 'k', font: { family: 'Quicksand' } } },
-            x: { ticks: { font: { family: 'Quicksand', size: 10 } } }
+            y: { 
+              beginAtZero: true, 
+              ticks: { callback: value => 'Rp ' + (value/1000) + 'k', font: { family: 'Quicksand', size: 10 } } 
+            },
+            x: { ticks: { font: { family: 'Quicksand', size: 9 } } }
           }
         }
       });
@@ -295,10 +317,11 @@
         },
         options: {
           responsive: true,
-          cutout: '70%',
+          maintainAspectRatio: false, // Tambahkan baris ini
+          cutout: '65%',
           plugins: { 
-            legend: { position: 'bottom', labels: { font: { family: 'Quicksand', weight: 'bold' }, usePointStyle: true, padding: 20 } },
-            tooltip: { callbacks: { label: (context) => isDataKosong ? ' Belum ada data' : ' ' + formatRp(context.raw) } }
+            legend: { display: false }, // Sembunyikan legend untuk menghemat tempat
+            tooltip: { callbacks: { label: (context) => isDataKosong ? ' Kosong' : ' ' + formatRp(context.raw) } }
           }
         }
       });
