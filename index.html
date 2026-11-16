@@ -27,6 +27,10 @@
     body { background-color: #eff6ff; -webkit-tap-highlight-color: transparent; }
     .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); }
     .hide { display: none !important; }
+    /* Memastikan scrollbar tidak merusak layout */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #dbeafe; border-radius: 10px; }
   </style>
 </head>
 <body class="text-gray-700 antialiased bg-gray-100 flex justify-center min-h-screen">
@@ -34,7 +38,7 @@
   <div class="w-full max-w-md bg-main-50 shadow-2xl relative flex flex-col min-h-screen overflow-hidden">
 
     <!-- ================= SCREEN LOGIN ================= -->
-    <div id="loginScreen" class="absolute inset-0 z-50 bg-main-50 flex flex-col items-center justify-center p-6">
+    <div id="loginScreen" class="absolute inset-0 z-50 bg-main-50 flex flex-col items-center justify-center p-6 transition-opacity duration-300">
       <i class="fa-solid fa-cat text-main-500 text-6xl mb-4"></i>
       <h1 class="text-3xl font-bold text-gray-800 mb-8 tracking-tight">PAWket <i class="fa-solid fa-paw text-accent-400 text-xl"></i></h1>
       <div class="glass w-full max-w-sm rounded-3xl p-6 shadow-xl">
@@ -47,13 +51,14 @@
     <!-- ================= SCREEN MAIN APP ================= -->
     <div id="appScreen" class="hide flex-1 flex flex-col h-full overflow-y-auto pb-24">
       
+      <!-- Header -->
       <header class="p-6 pb-4 glass sticky top-0 z-20 flex justify-between items-center rounded-b-3xl shadow-sm mb-6">
         <div>
-          <p class="text-sm font-semibold text-gray-500">Halo, <span id="namaUser" class="text-main-500"></span>! ✨</p>
+          <p class="text-sm font-semibold text-gray-500">Halo, <span id="namaUser" class="text-main-500"></span>! <i class="fa-solid fa-cat text-main-400"></i></p>
           <h2 class="text-2xl font-bold text-gray-800">Keuangan Kita</h2>
         </div>
-        <button onclick="prosesLogout()" class="h-10 w-10 bg-accent-100 rounded-full flex items-center justify-center shadow-inner hover:bg-accent-200 transition" title="Keluar">
-          <i class="fa-solid fa-right-from-bracket text-accent-500"></i>
+        <button onclick="prosesLogout()" class="h-10 w-10 bg-accent-50 rounded-full flex items-center justify-center shadow-inner hover:bg-accent-100 border border-accent-100 transition" title="Keluar">
+          <i class="fa-solid fa-arrow-right-from-bracket text-accent-500"></i>
         </button>
       </header>
 
@@ -62,20 +67,21 @@
         <!-- TAB: DASHBOARD -->
         <div id="tab-dashboard" class="px-6 space-y-4">
           
+          <!-- Saldo Dompet Utama -->
           <div class="bg-gradient-to-br from-main-500 to-accent-400 rounded-3xl p-6 text-white shadow-xl shadow-main-500/20 relative overflow-hidden">
             <i class="fa-solid fa-paw absolute -bottom-4 -right-4 text-8xl opacity-10"></i>
             <p class="text-main-50 font-semibold mb-1">Saldo Dompet Utama</p>
             <h3 class="text-4xl font-bold mb-4 truncate" id="saldoUtama">Rp 0</h3>
             <div class="flex justify-between text-sm bg-white/20 p-3 rounded-2xl backdrop-blur-md">
-              <div><span class="opacity-80">Masuk:</span> <br><span class="font-bold truncate" id="totalMasuk">Rp 0</span></div>
-              <div class="text-right"><span class="opacity-80">Keluar:</span> <br><span class="font-bold truncate" id="totalKeluar">Rp 0</span></div>
+              <div><span class="opacity-80"><i class="fa-solid fa-arrow-down mr-1"></i>Masuk:</span> <br><span class="font-bold truncate" id="totalMasuk">Rp 0</span></div>
+              <div class="text-right"><span class="opacity-80"><i class="fa-solid fa-arrow-up mr-1"></i>Keluar:</span> <br><span class="font-bold truncate" id="totalKeluar">Rp 0</span></div>
             </div>
           </div>
 
-          <!-- Target Tabungan (Baru dengan Progress Bar) -->
+          <!-- Target Tabungan (Progress Bar) -->
           <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100">
             <div class="flex justify-between items-center mb-1">
-              <h4 class="font-bold text-gray-800 text-xs">🎯 Target: <span id="targetPosText" class="text-main-500">Semua</span></h4>
+              <h4 class="font-bold text-gray-800 text-xs"><i class="fa-solid fa-bullseye text-accent-400 mr-1"></i> Target: <span id="targetPosText" class="text-main-500">Semua</span></h4>
               <button onclick="editTargetBaru()" class="text-[10px] bg-main-50 text-main-500 px-2 py-1 rounded-full font-bold hover:bg-main-100 transition shadow-sm border border-main-100">
                 <i class="fa-solid fa-pen"></i> Set Target
               </button>
@@ -86,28 +92,39 @@
             <p class="text-[10px] text-gray-500 text-right"><span id="targetTerkumpul" class="font-bold text-gray-700">Rp 0</span> / <span id="targetNominal">Rp 0</span> (<span id="targetPersen">0</span>%)</p>
           </div>
 
-          <h4 class="font-bold text-gray-800 mb-1 mt-2">Kantong Tabungan 🗃️</h4>
+          <h4 class="font-bold text-gray-800 mb-1 mt-2">Kantong Tabungan <i class="fa-solid fa-box-archive text-gray-400 ml-1"></i></h4>
           <div class="grid grid-cols-2 gap-3 mb-2">
             <div class="glass rounded-2xl p-3 shadow-sm border border-main-100">
-              <p class="text-[11px] text-main-500 font-semibold">🏦 Simpanan</p>
+              <p class="text-[11px] text-main-500 font-semibold"><i class="fa-solid fa-piggy-bank mr-1"></i> Simpanan</p>
               <p class="font-bold text-gray-800 text-sm truncate" id="tabSimpanan">Rp 0</p>
             </div>
             <div class="glass rounded-2xl p-3 shadow-sm border border-accent-100">
-              <p class="text-[11px] text-accent-500 font-semibold">✈️ Liburan</p>
+              <p class="text-[11px] text-accent-500 font-semibold"><i class="fa-solid fa-plane-departure mr-1"></i> Liburan</p>
               <p class="font-bold text-gray-800 text-sm truncate" id="tabLiburan">Rp 0</p>
             </div>
           </div>
 
           <!-- Grafik Ganda (Aku & Pasangan) -->
-          <div class="grid grid-cols-2 gap-3 mb-6">
+          <!-- Diubah strukturnhanya agar canvas benar-benar dipaksa mengambil ukuran -->
+          <div class="grid grid-cols-2 gap-3 mb-4">
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
-              <h4 class="font-bold text-gray-800 text-[10px] text-center mb-2">Arus Kasku</h4>
-              <div class="relative h-20 w-20"><canvas id="pieChartAku"></canvas></div>
+              <h4 class="font-bold text-gray-800 text-[10px] text-center mb-2"><i class="fa-solid fa-chart-pie text-main-400 mr-1"></i> Arus Kasku</h4>
+              <div style="position: relative; height: 80px; width: 80px;"><canvas id="pieChartAku"></canvas></div>
             </div>
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
-              <h4 class="font-bold text-gray-800 text-[10px] text-center mb-2">Arus Kas <span id="namaPasanganText">Pasangan</span></h4>
-              <div class="relative h-20 w-20"><canvas id="pieChartPasangan"></canvas></div>
+              <h4 class="font-bold text-gray-800 text-[10px] text-center mb-2"><i class="fa-solid fa-chart-pie text-accent-400 mr-1"></i> Kas <span id="namaPasanganText">Pasangan</span></h4>
+              <div style="position: relative; height: 80px; width: 80px;"><canvas id="pieChartPasangan"></canvas></div>
             </div>
+          </div>
+
+          <!-- List Transaksi Terbaru -->
+          <h4 class="font-bold text-gray-800 mb-2 mt-4 flex items-center justify-between">
+            <span>Transaksi Terbaru <i class="fa-solid fa-clock-rotate-left text-gray-400 ml-1"></i></span>
+            <button onclick="switchTab('rekap')" class="text-[10px] text-main-500 font-bold hover:underline">Lihat Semua</button>
+          </h4>
+          <div id="listTrxTerbaru" class="space-y-2 mb-6">
+            <!-- Di-render via JS -->
+            <p class="text-center text-gray-400 text-xs py-2 italic">Belum ada transaksi.</p>
           </div>
 
         </div>
@@ -115,7 +132,7 @@
         <!-- TAB: CATAT TRANSAKSI -->
         <div id="tab-catat" class="hide px-6">
           <div class="glass rounded-3xl p-6 shadow-xl relative overflow-hidden">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">Catat Transaksi ✍️</h3>
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Catat Transaksi <i class="fa-solid fa-pen-nib text-main-400 ml-1"></i></h3>
             
             <div class="mb-5 relative">
               <input type="file" id="fotoStruk" accept="image/*" capture="environment" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="prosesScanAI()">
@@ -162,7 +179,7 @@
         <!-- TAB: HUTANG -->
         <div id="tab-hutang" class="hide px-6 space-y-6">
           <div class="glass rounded-3xl p-6 shadow-xl relative overflow-hidden flex-1 flex flex-col max-h-[75vh]">
-            <h3 class="text-xl font-bold text-gray-800 mb-4 shrink-0">Daftar Hutang Aktif 💳</h3>
+            <h3 class="text-xl font-bold text-gray-800 mb-4 shrink-0">Daftar Hutang Aktif <i class="fa-solid fa-credit-card text-main-400 ml-1"></i></h3>
             
             <div id="listHutang" class="space-y-3 mb-4 overflow-y-auto pr-1 flex-1">
               <!-- Dirender via Javascript -->
@@ -186,7 +203,7 @@
         <div id="tab-rekap" class="hide px-6 h-full flex flex-col">
           <div class="glass rounded-3xl p-6 shadow-xl relative overflow-hidden flex-1 flex flex-col">
             <i class="fa-solid fa-calendar-days absolute -bottom-2 -right-4 text-8xl text-main-400 opacity-5"></i>
-            <h3 class="text-xl font-bold text-gray-800 mb-4">Rekap Bulanan 📊</h3>
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Rekap Bulanan <i class="fa-solid fa-chart-column text-main-400 ml-1"></i></h3>
             
             <input type="month" id="inputBulan" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 mb-4 focus:ring-2 focus:ring-main-400 outline-none font-bold text-gray-700 shrink-0" onchange="loadRekap()">
             
@@ -200,10 +217,14 @@
                 <p class="font-bold text-accent-500 truncate" id="rekapKeluar">Rp 0</p>
               </div>
             </div>
+
+            <button onclick="exportXLS()" id="btnExport" class="w-full bg-[#107c41] text-white font-bold py-3 rounded-xl shadow-lg shadow-green-700/20 hover:bg-green-700 transition active:scale-95 mb-4 flex items-center justify-center gap-2 shrink-0">
+              <i class="fa-solid fa-file-excel"></i> Download XLS
+            </button>
             
             <h4 class="font-bold text-gray-800 mb-3 text-sm shrink-0">Rincian Transaksi</h4>
             <div id="listRekap" class="space-y-3 flex-1 overflow-y-auto pr-1">
-              <p class="text-center text-gray-400 text-sm py-4">Pilih bulan terlebih dahulu 🗓️</p>
+              <p class="text-center text-gray-400 text-sm py-4">Pilih bulan terlebih dahulu <i class="fa-regular fa-calendar ml-1"></i></p>
             </div>
           </div>
         </div>
@@ -214,16 +235,16 @@
     <!-- Bottom Navigation -->
     <nav id="bottomNav" class="hide absolute bottom-0 left-0 w-full glass border-t border-gray-100 rounded-t-3xl flex justify-around p-3 text-gray-400 z-50">
       <button onclick="switchTab('dashboard')" class="flex flex-col items-center w-14 text-main-500" id="nav-dashboard">
-        <i class="fa-solid fa-house text-2xl mb-1"></i><span class="text-[10px] font-bold">Beranda</span>
+        <i class="fa-solid fa-house-chimney text-2xl mb-1"></i><span class="text-[10px] font-bold">Beranda</span>
       </button>
       <button onclick="switchTab('catat')" class="flex flex-col items-center w-14 hover:text-main-400 transition" id="nav-catat">
-        <i class="fa-solid fa-pen-to-square text-2xl mb-1"></i><span class="text-[10px] font-bold">Catat</span>
+        <i class="fa-solid fa-cat text-2xl mb-1"></i><span class="text-[10px] font-bold">Catat</span>
       </button>
       <button onclick="switchTab('hutang')" class="flex flex-col items-center w-14 hover:text-main-400 transition" id="nav-hutang">
-        <i class="fa-solid fa-credit-card text-2xl mb-1"></i><span class="text-[10px] font-bold">Hutang</span>
+        <i class="fa-solid fa-wallet text-2xl mb-1"></i><span class="text-[10px] font-bold">Hutang</span>
       </button>
       <button onclick="switchTab('rekap')" class="flex flex-col items-center w-14 hover:text-main-400 transition" id="nav-rekap">
-        <i class="fa-solid fa-list text-2xl mb-1"></i><span class="text-[10px] font-bold">Rekap</span>
+        <i class="fa-solid fa-list-ul text-2xl mb-1"></i><span class="text-[10px] font-bold">Rekap</span>
       </button>
     </nav>
 
@@ -257,6 +278,7 @@
     // Variabel Chart
     let pieChartAkuInstance = null;
     let pieChartPasanganInstance = null;
+    let pieChartTimeout = null; // Timeout untuk delay render chart
 
     const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
 
@@ -274,11 +296,18 @@
       if(res.sukses) {
         activeUser = res.nama;
         document.getElementById('namaUser').innerText = activeUser;
-        document.getElementById('loginScreen').classList.add('hide');
-        document.getElementById('appScreen').classList.remove('hide');
-        document.getElementById('bottomNav').classList.remove('hide');
-        loadDataDashboard();
-        loadKategori();
+        
+        // Transisi Halus
+        const loginScr = document.getElementById('loginScreen');
+        loginScr.classList.add('opacity-0');
+        setTimeout(() => {
+          loginScr.classList.add('hide');
+          document.getElementById('appScreen').classList.remove('hide');
+          document.getElementById('bottomNav').classList.remove('hide');
+          
+          loadDataDashboard();
+          loadKategori();
+        }, 300); // Tunggu animasi pudar selesai sebelum merender Dashboard
       } else {
         alert(res.pesan);
         btn.innerHTML = 'Masuk';
@@ -290,9 +319,14 @@
       document.getElementById('username').value = '';
       document.getElementById('password').value = '';
       document.getElementById('btnLogin').innerHTML = 'Masuk';
+      
       document.getElementById('appScreen').classList.add('hide');
       document.getElementById('bottomNav').classList.add('hide');
-      document.getElementById('loginScreen').classList.remove('hide');
+      
+      const loginScr = document.getElementById('loginScreen');
+      loginScr.classList.remove('hide');
+      setTimeout(() => loginScr.classList.remove('opacity-0'), 50);
+      
       switchTab('dashboard');
     }
 
@@ -321,6 +355,34 @@
 
       if(res.daftarHutang) renderHutang(res.daftarHutang);
 
+      // --- RENDER TRANSAKSI TERBARU ---
+      const listTrx = document.getElementById('listTrxTerbaru');
+      listTrx.innerHTML = '';
+      if(res.riwayatTrx && res.riwayatTrx.length > 0) {
+        // Ambil 4 transaksi terbaru
+        const recentTrx = res.riwayatTrx.slice(0, 4);
+        recentTrx.forEach(d => {
+          const isMasuk = d.tipe === 'Pemasukan';
+          const icon = isMasuk ? '<i class="fa-solid fa-arrow-down text-main-500 bg-main-100 p-2 rounded-lg"></i>' : '<i class="fa-solid fa-arrow-up text-accent-500 bg-accent-100 p-2 rounded-lg"></i>';
+          const color = isMasuk ? 'text-main-500' : 'text-accent-500';
+          
+          listTrx.innerHTML += `
+            <div class="flex justify-between items-center bg-white p-2.5 rounded-xl shadow-sm border border-gray-50">
+              <div class="flex items-center gap-3">
+                ${icon}
+                <div>
+                  <p class="font-bold text-xs text-gray-800">${d.kategori}</p>
+                  <p class="text-[9px] text-gray-400">${d.tanggal} • ${d.oleh}</p>
+                </div>
+              </div>
+              <div class="font-bold text-xs ${color}">${formatRp(d.nominal)}</div>
+            </div>
+          `;
+        });
+      } else {
+        listTrx.innerHTML = '<p class="text-center text-gray-400 text-xs py-2 italic">Belum ada transaksi.</p>';
+      }
+
       // --- LOGIKA PROGRESS BAR TARGET ---
       const targetPos = res.targetTabungan.pos || "Semua";
       const targetNominal = res.targetTabungan.nominal || 0;
@@ -342,48 +404,56 @@
       // --- LOGIKA DUAL PIE CHARTS (AKU VS PASANGAN) ---
       const usernames = Object.keys(res.userStats);
       const myStats = res.userStats[activeUser] || { masuk: 0, keluar: 0 };
-      
-      // Mencari nama pasangan yang bukan nama user aktif saat ini
       const partnerName = usernames.find(u => u !== activeUser) || 'Pasangan';
       const partnerStats = res.userStats[partnerName] || { masuk: 0, keluar: 0 };
       
       document.getElementById('namaPasanganText').innerText = partnerName.split(' ')[0]; // Ambil nama depan saja
 
-      const chartOptions = { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false } } };
+      // Tunda rendering chart untuk memastikan elemen canvas sudah dirender browser (Mengatasi Blank Chart)
+      clearTimeout(pieChartTimeout);
+      pieChartTimeout = setTimeout(() => {
+        const chartOptions = { 
+          responsive: true, 
+          maintainAspectRatio: false, 
+          cutout: '65%', 
+          plugins: { 
+            legend: { display: false },
+            tooltip: { callbacks: { label: (c) => formatRp(c.raw) } }
+          } 
+        };
 
-      // Render Chart Aku
-      const ctxAku = document.getElementById('pieChartAku').getContext('2d');
-      if (pieChartAkuInstance) pieChartAkuInstance.destroy();
-      const isEmptyAku = myStats.masuk === 0 && myStats.keluar === 0;
-      pieChartAkuInstance = new Chart(ctxAku, {
-        type: 'doughnut',
-        data: {
-          labels: ['Pemasukan', 'Pengeluaran'],
-          datasets: [{
-            data: isEmptyAku ? [1] : [myStats.masuk, myStats.keluar],
-            backgroundColor: isEmptyAku ? ['#e5e7eb'] : ['#3b82f6', '#f472b6'],
-            borderWidth: 0
-          }]
-        },
-        options: chartOptions
-      });
+        const ctxAku = document.getElementById('pieChartAku').getContext('2d');
+        if (pieChartAkuInstance) pieChartAkuInstance.destroy();
+        const isEmptyAku = myStats.masuk === 0 && myStats.keluar === 0;
+        pieChartAkuInstance = new Chart(ctxAku, {
+          type: 'doughnut',
+          data: {
+            labels: ['Pemasukan', 'Pengeluaran'],
+            datasets: [{
+              data: isEmptyAku ? [1] : [myStats.masuk, myStats.keluar],
+              backgroundColor: isEmptyAku ? ['#e5e7eb'] : ['#3b82f6', '#f472b6'],
+              borderWidth: 0
+            }]
+          },
+          options: chartOptions
+        });
 
-      // Render Chart Pasangan
-      const ctxPasangan = document.getElementById('pieChartPasangan').getContext('2d');
-      if (pieChartPasanganInstance) pieChartPasanganInstance.destroy();
-      const isEmptyPasangan = partnerStats.masuk === 0 && partnerStats.keluar === 0;
-      pieChartPasanganInstance = new Chart(ctxPasangan, {
-        type: 'doughnut',
-        data: {
-          labels: ['Pemasukan', 'Pengeluaran'],
-          datasets: [{
-            data: isEmptyPasangan ? [1] : [partnerStats.masuk, partnerStats.keluar],
-            backgroundColor: isEmptyPasangan ? ['#e5e7eb'] : ['#60a5fa', '#ec4899'],
-            borderWidth: 0
-          }]
-        },
-        options: chartOptions
-      });
+        const ctxPasangan = document.getElementById('pieChartPasangan').getContext('2d');
+        if (pieChartPasanganInstance) pieChartPasanganInstance.destroy();
+        const isEmptyPasangan = partnerStats.masuk === 0 && partnerStats.keluar === 0;
+        pieChartPasanganInstance = new Chart(ctxPasangan, {
+          type: 'doughnut',
+          data: {
+            labels: ['Pemasukan', 'Pengeluaran'],
+            datasets: [{
+              data: isEmptyPasangan ? [1] : [partnerStats.masuk, partnerStats.keluar],
+              backgroundColor: isEmptyPasangan ? ['#e5e7eb'] : ['#60a5fa', '#ec4899'],
+              borderWidth: 0
+            }]
+          },
+          options: chartOptions
+        });
+      }, 400); // Delay 400ms agar DOM 100% siap
     }
 
     async function editTargetBaru() {
@@ -610,6 +680,11 @@
       });
       document.getElementById(`tab-${tabId}`).classList.remove('hide');
       document.getElementById(`nav-${tabId}`).classList.replace('text-gray-400', 'text-main-500');
+      
+      // Jika pindah ke Dashboard, trigger render ulang untuk grafik
+      if (tabId === 'dashboard') {
+        setTimeout(loadDataDashboard, 100); 
+      }
     }
 
     async function loadRekap() {
@@ -639,14 +714,13 @@
                   ${icon}
                   <div class="w-full">
                     <p class="font-bold text-sm text-gray-800">${d.Kategori}</p>
-                    <p class="text-[10px] text-gray-400">${d.Tanggal} • ${d.Oleh} <br> <span class="italic truncate block">${d.Catatan}</span></p>
+                    <p class="text-[10px] text-gray-400">${d.Tanggal} • ${d.Oleh} <br> <span class="italic truncate block max-w-[180px]">${d.Catatan}</span></p>
                   </div>
                 </div>
                 <div class="font-bold text-sm ${color} absolute right-3 top-3">${formatRp(d.Nominal)}</div>
                 
-                <!-- Tombol Hapus (Tersembunyi & muncul saat hover/klik) -->
-                <button onclick="hapusCatatan('${d.id}')" class="absolute right-3 bottom-3 text-red-300 hover:text-red-500 transition text-[10px] font-bold">
-                  <i class="fa-solid fa-trash"></i> Hapus
+                <button onclick="hapusCatatan('${d.id}')" class="absolute right-3 bottom-2 text-red-300 hover:text-red-500 transition text-[10px] font-bold">
+                  <i class="fa-solid fa-trash"></i>
                 </button>
               </div>
             `;
@@ -655,6 +729,18 @@
         listUi.innerHTML = html;
       }
     }
+
+    function exportXLS() {
+      if(dataRekapBulanIni.length === 0) return alert("Tidak ada data untuk diexport! Pilih bulan yang ada transaksinya.");
+      const bln = document.getElementById('inputBulan').value;
+      const ws = XLSX.utils.json_to_sheet(dataRekapBulanIni);
+      const wscols = [{wch: 15}, {wch: 10}, {wch: 12}, {wch: 20}, {wch: 15}, {wch: 30}];
+      ws['!cols'] = wscols;
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Rekap_" + bln);
+      XLSX.writeFile(wb, `PAWket_Rekap_${bln}.xlsx`);
+    }
+
   </script>
 </body>
 </html>
