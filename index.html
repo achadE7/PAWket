@@ -184,6 +184,25 @@
   </div>
 
   <script>
+    // Taruh URL Apps Script yang baru di-deploy di sini
+    const API_URL = "https://script.google.com/macros/s/AKfycbzufhYyOQwVmj0qEPWd_vZwYHh-nnGo5iKNQrZFMXBHJcoFOvECMkr1qg0Y-VB7kpGf/exec";
+
+    // Fungsi jembatan pengganti google.script.run
+    async function callAPI(action, payload = {}) {
+      payload.action = action;
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        return await response.json();
+      } catch (error) {
+        console.error("Gagal terhubung ke server:", error);
+        return { sukses: false, pesan: "Gagal terhubung ke database." };
+      }
+    }
+    
     let activeUser = "";
     let tipeAktif = "Pengeluaran";
     let listKategori = { masuk: [], keluar: [] };
