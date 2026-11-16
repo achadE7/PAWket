@@ -390,7 +390,7 @@
       textContainer.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-main-400 text-3xl mb-3"></i><p class="font-semibold text-main-400 animate-pulse text-center">Neko sedang mengintip dompet kalian...</p>';
       inlineWadah.innerHTML = '<p class="text-center w-full animate-pulse text-main-400 font-semibold">Neko sedang berpikir... 🐾</p>';
       
-      const res = await callAPI('analisisKeuanganAI');
+      const res = await callAPI('analisisAI');
       
       if(res && res.sukses) {
         let formattedText = res.hasil.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
