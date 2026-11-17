@@ -30,6 +30,27 @@
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #dbeafe; border-radius: 10px; }
+
+    /* PERBAIKAN SIMETRIS KOLOM TANGGAL & BULAN DI MOBILE / iOS SAFARI */
+    input[type="date"], input[type="month"] {
+      -webkit-appearance: none !important;
+      -moz-appearance: none !important;
+      appearance: none !important;
+      display: block !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      box-sizing: border-box !important;
+      text-align: left !important;
+      min-height: 48px;
+    }
+    input[type="date"]::-webkit-date-and-time-value,
+    input[type="month"]::-webkit-date-and-time-value {
+      text-align: left !important;
+      margin: 0 !important;
+      width: 100% !important;
+      display: inline-block !important;
+    }
   </style>
 </head>
 <body class="text-gray-700 antialiased bg-gray-100 flex justify-center min-h-screen">
@@ -154,19 +175,38 @@
           </div>
         </div>
 
-        <!-- ================= TAB: SALDO (MENU BARU) ================= -->
+        <!-- ================= TAB: SALDO (DIPISAH PER USER & PASANGAN HANYA LIHAT) ================= -->
         <div id="tab-saldo" class="hide px-6 space-y-4 pb-6">
-          <div class="bg-gradient-to-r from-main-600 to-main-400 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden">
+          
+          <!-- SWITCHER SALDOKU VS SALDO PASANGAN -->
+          <div class="flex gap-1 bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100">
+            <button id="btnViewSaldoku" onclick="switchOwnerSaldo('me')" class="flex-1 py-2 rounded-xl text-xs font-bold bg-main-500 text-white shadow transition">
+              <i class="fa-solid fa-wallet mr-1"></i> Saldoku (Kelola)
+            </button>
+            <button id="btnViewSaldoPasangan" onclick="switchOwnerSaldo('partner')" class="flex-1 py-2 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-50 transition">
+              <i class="fa-solid fa-eye mr-1"></i> Saldo <span id="tabNamaPasanganSaldo">Pasangan</span>
+            </button>
+          </div>
+
+          <div id="kartuHeaderSaldo" class="bg-gradient-to-r from-main-600 to-main-400 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden transition-all">
             <i class="fa-solid fa-building-columns absolute -bottom-3 -right-3 text-7xl opacity-10"></i>
-            <p class="text-xs text-main-100 font-semibold">Total Seluruh Saldo Aktif</p>
+            <p class="text-xs text-white/80 font-semibold" id="labelHeaderSaldo">Total Saldoku Aktif</p>
             <h3 class="text-3xl font-bold mt-1 mb-3 truncate" id="totalSemuaSaldo">Rp 0</h3>
-            <div class="flex gap-2">
+            
+            <!-- TOMBOL AKSI HANYA MUNCUL DI SALDOKU -->
+            <div id="aksiSaldokuBox" class="flex gap-2">
               <button onclick="openTransferModal()" class="flex-1 bg-white text-main-600 font-bold py-2 px-3 rounded-xl text-xs shadow hover:bg-main-50 transition active:scale-95 flex items-center justify-center gap-1.5">
                 <i class="fa-solid fa-right-left"></i> Pindah / Top Up
               </button>
               <button onclick="tambahDompetBaru()" class="bg-white/20 text-white font-bold py-2 px-3 rounded-xl text-xs hover:bg-white/30 transition active:scale-95 flex items-center justify-center gap-1">
                 <i class="fa-solid fa-plus"></i> Dompet
               </button>
+            </div>
+
+            <!-- INFO HANYA LIHAT SAAT MEMBUKA SALDO PASANGAN -->
+            <div id="infoReadOnlySaldoBox" class="hide bg-black/20 rounded-xl p-2.5 text-[11px] font-semibold flex items-center gap-2 backdrop-blur-sm">
+              <i class="fa-solid fa-lock text-white"></i>
+              <span>Mode Hanya Lihat — Kamu hanya bisa melihat rincian saldo milik pasanganmu.</span>
             </div>
           </div>
 
@@ -194,8 +234,8 @@
             <div id="listSaldoLainnya" class="grid grid-cols-2 gap-2.5"></div>
           </div>
           
-          <p class="text-[10px] text-gray-400 text-center italic pt-2">
-            💡 Klik ikon pensil (<i class="fa-solid fa-pen"></i>) pada kartu saldo jika ingin menyesuaikan nominal saldo awal secara langsung.
+          <p id="hintEditSaldo" class="text-[10px] text-gray-400 text-center italic pt-2">
+            💡 Klik ikon pensil (<i class="fa-solid fa-pen"></i>) pada kartu untuk menyesuaikan nominal saldomu sendiri.
           </p>
         </div>
 
@@ -223,28 +263,32 @@
             </div>
 
             <div class="space-y-4">
-              <div>
-                <label class="text-sm font-semibold text-gray-600 ml-1">Tanggal</label>
-                <input type="date" id="inputTanggal" onchange="cekInfoPaylater()" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-main-400 outline-none font-bold text-gray-800">
+              <!-- KOLOM TANGGAL SIMETRIS -->
+              <div class="w-full">
+                <label class="text-sm font-semibold text-gray-600 ml-1 block mb-1">Tanggal</label>
+                <div class="relative w-full overflow-hidden rounded-xl border border-gray-200 bg-white focus-within:ring-2 focus-within:ring-main-400">
+                  <input type="date" id="inputTanggal" onchange="cekInfoPaylater()" class="w-full bg-transparent px-4 py-3 outline-none font-bold text-gray-800 text-left pr-10">
+                  <i class="fa-regular fa-calendar absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                </div>
               </div>
-              <div>
-                <label class="text-sm font-semibold text-gray-600 ml-1">Kategori / Pos</label>
+              <div class="w-full">
+                <label class="text-sm font-semibold text-gray-600 ml-1 block mb-1">Kategori / Pos</label>
                 <select id="inputKategori" onchange="cekKategoriBaru()" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-main-400 outline-none font-semibold text-gray-700"></select>
               </div>
-              <div id="wadahMetodeBayar">
-                <label id="labelMetodeBayar" class="text-sm font-semibold text-gray-600 ml-1">Pembayaran Menggunakan</label>
+              <div id="wadahMetodeBayar" class="w-full">
+                <label id="labelMetodeBayar" class="text-sm font-semibold text-gray-600 ml-1 block mb-1">Pembayaran Menggunakan</label>
                 <select id="inputMetode" onchange="cekMetodeBaru()" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-main-400 outline-none font-semibold text-gray-700"></select>
                 <div id="infoPaylaterBox" class="hide mt-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl p-2.5 text-[11px] font-semibold flex items-start gap-2">
                   <i class="fa-solid fa-bolt text-amber-500 mt-0.5"></i>
                   <span id="infoPaylaterText">Otomatis masuk ke daftar Hutang.</span>
                 </div>
               </div>
-              <div>
-                <label class="text-sm font-semibold text-gray-600 ml-1">Nominal (Rp)</label>
+              <div class="w-full">
+                <label class="text-sm font-semibold text-gray-600 ml-1 block mb-1">Nominal (Rp)</label>
                 <input type="number" id="inputNominal" placeholder="Contoh: 50000" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-main-400 outline-none font-bold text-lg text-gray-800">
               </div>
-              <div>
-                <label class="text-sm font-semibold text-gray-600 ml-1">Catatan</label>
+              <div class="w-full">
+                <label class="text-sm font-semibold text-gray-600 ml-1 block mb-1">Catatan</label>
                 <input type="text" id="inputCatatan" placeholder="Detail catatan..." class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-main-400 outline-none font-semibold">
               </div>
               <button onclick="simpanTransaksi()" id="btnSimpan" class="w-full mt-2 bg-main-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-main-500/30 hover:bg-main-600 transition active:scale-95">Simpan Data</button>
@@ -252,17 +296,32 @@
           </div>
         </div>
 
-        <!-- ================= TAB: HUTANG ================= -->
-        <div id="tab-hutang" class="hide px-6 space-y-6">
-          <div class="glass rounded-3xl p-6 shadow-xl relative overflow-hidden flex-1 flex flex-col max-h-[75vh]">
-            <h3 class="text-xl font-bold text-gray-800 mb-4 shrink-0">Daftar Hutang Aktif <i class="fa-solid fa-credit-card text-main-400 ml-1"></i></h3>
+        <!-- ================= TAB: HUTANG (DIPISAH HUTANGKU VS HUTANG PASANGAN) ================= -->
+        <div id="tab-hutang" class="hide px-6 space-y-4">
+          <div class="glass rounded-3xl p-5 shadow-xl relative overflow-hidden flex-1 flex flex-col max-h-[78vh]">
+            <h3 class="text-xl font-bold text-gray-800 mb-3 shrink-0">Daftar Hutang Aktif <i class="fa-solid fa-credit-card text-main-400 ml-1"></i></h3>
+            
+            <!-- SWITCHER HUTANGKU VS HUTANG PASANGAN -->
+            <div class="flex gap-1 bg-gray-100 p-1 rounded-xl mb-3 shrink-0">
+              <button id="btnViewHutangku" onclick="switchOwnerHutang('me')" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-white text-main-600 shadow transition">
+                📌 Hutangku (<span id="countHutangku">0</span>)
+              </button>
+              <button id="btnViewHutangPasangan" onclick="switchOwnerHutang('partner')" class="flex-1 py-1.5 rounded-lg text-xs font-bold text-gray-500 transition">
+                👀 Hutang <span id="tabNamaPasanganHutang">Pasangan</span> (<span id="countHutangPasangan">0</span>)
+              </button>
+            </div>
+
             <div id="listHutang" class="space-y-3 mb-4 overflow-y-auto pr-1 flex-1"></div>
-            <hr class="border-gray-200 mb-4 shrink-0">
-            <h4 class="font-bold text-gray-800 mb-3 text-sm shrink-0">Catat Hutang Manual</h4>
-            <div class="space-y-3 shrink-0">
-              <div><input type="text" id="inputNamaHutang" placeholder="Nama Hutang (Cth: Pinjaman / KPR)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-main-400 outline-none font-semibold text-sm text-gray-700"></div>
-              <div><input type="number" id="inputNominalHutang" placeholder="Total Hutang (Rp)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-main-400 outline-none font-bold text-sm text-gray-800"></div>
-              <button onclick="simpanHutangBaru()" id="btnSimpanHutang" class="w-full bg-accent-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-accent-500/30 hover:bg-accent-600 transition active:scale-95 text-sm">Catat Hutang Baru</button>
+            
+            <!-- FORM INPUT HUTANG HANYA MUNCUL DI TAB HUTANGKU -->
+            <div id="formInputHutangBox" class="shrink-0">
+              <hr class="border-gray-200 mb-3">
+              <h4 class="font-bold text-gray-800 mb-2.5 text-sm">Catat Hutangku Baru</h4>
+              <div class="space-y-2.5">
+                <div><input type="text" id="inputNamaHutang" placeholder="Nama Hutang (Cth: Pinjaman / KPR)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-main-400 outline-none font-semibold text-sm text-gray-700"></div>
+                <div><input type="number" id="inputNominalHutang" placeholder="Total Hutang (Rp)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-main-400 outline-none font-bold text-sm text-gray-800"></div>
+                <button onclick="simpanHutangBaru()" id="btnSimpanHutang" class="w-full bg-accent-500 text-white font-bold py-2.5 rounded-xl shadow-lg shadow-accent-500/30 hover:bg-accent-600 transition active:scale-95 text-sm">Catat Hutang Baru</button>
+              </div>
             </div>
           </div>
         </div>
@@ -272,7 +331,11 @@
           <div class="glass rounded-3xl p-6 shadow-xl relative overflow-hidden flex-1 flex flex-col">
             <i class="fa-solid fa-calendar-days absolute -bottom-2 -right-4 text-8xl text-main-400 opacity-5"></i>
             <h3 class="text-xl font-bold text-gray-800 mb-4">Rekap Bulanan <i class="fa-solid fa-chart-column text-main-400 ml-1"></i></h3>
-            <input type="month" id="inputBulan" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 mb-4 focus:ring-2 focus:ring-main-400 outline-none font-bold text-gray-700 shrink-0" onchange="loadRekap()">
+            
+            <div class="relative w-full overflow-hidden rounded-xl border border-gray-200 bg-white mb-4 shrink-0 focus-within:ring-2 focus-within:ring-main-400">
+              <input type="month" id="inputBulan" class="w-full bg-transparent px-4 py-3 outline-none font-bold text-gray-700 text-left" onchange="loadRekap()">
+            </div>
+
             <div class="grid grid-cols-2 gap-4 mb-5 shrink-0">
               <div class="bg-main-50 rounded-2xl p-4 shadow-sm border border-main-100">
                 <p class="text-xs text-gray-500 font-semibold mb-1">Pemasukan</p>
@@ -309,7 +372,7 @@
       </div>
     </div>
 
-    <!-- Bottom Navigation (5 Menu: Beranda, Saldo, Catat, Hutang, Rekap) -->
+    <!-- Bottom Navigation -->
     <nav id="bottomNav" class="hide absolute bottom-0 left-0 w-full glass border-t border-gray-100 rounded-t-3xl flex justify-around py-2.5 px-2 text-gray-400 z-50">
       <button onclick="switchTab('dashboard')" class="flex flex-col items-center w-14 text-main-500" id="nav-dashboard">
         <i class="fa-solid fa-house-chimney text-xl mb-1"></i><span class="text-[10px] font-bold">Beranda</span>
@@ -330,20 +393,57 @@
 
   </div>
 
+  <!-- ================= POPUP MODAL EDIT TRANSAKSI (KHUSUS MILIK SENDIRI) ================= -->
+  <div id="editTrxModal" class="hide fixed inset-0 z-[95] bg-gray-900/60 flex items-center justify-center p-6 backdrop-blur-sm">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-pen-to-square text-main-500 mr-1.5"></i> Edit Catatanku</h3>
+        <button onclick="closeEditTrxModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs font-bold text-gray-500 block mb-1">Tanggal</label>
+          <div class="relative w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+            <input type="date" id="editTrxTanggal" class="w-full bg-transparent px-3 py-2.5 font-bold text-sm text-gray-800 outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-500 block mb-1">Kategori / Pos</label>
+          <input type="text" id="editTrxKategori" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-700 outline-none">
+        </div>
+        <div id="editTrxMetodeBox">
+          <label class="text-xs font-bold text-gray-500 block mb-1">Metode / Saldo</label>
+          <select id="editTrxMetode" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-700 outline-none"></select>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-500 block mb-1">Nominal (Rp)</label>
+          <input type="number" id="editTrxNominal" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-bold text-sm text-gray-800 outline-none">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-500 block mb-1">Catatan</label>
+          <input type="text" id="editTrxCatatan" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-700 outline-none">
+        </div>
+        <button onclick="simpanEditTransaksi()" id="btnSimpanEditTrx" class="w-full bg-main-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-main-500/30 hover:bg-main-600 transition active:scale-95 mt-2">
+          Simpan Perubahan
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= POPUP MODAL PINDAH / TOP UP SALDO ================= -->
   <div id="transferModal" class="hide fixed inset-0 z-[90] bg-gray-900/60 flex items-center justify-center p-6 backdrop-blur-sm">
     <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-right-left text-main-500 mr-1.5"></i> Pindah / Top Up Saldo</h3>
+        <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-right-left text-main-500 mr-1.5"></i> Pindah / Top Up Saldoku</h3>
         <button onclick="closeTransferModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
       </div>
       <div class="space-y-3">
         <div>
-          <label class="text-xs font-bold text-gray-500">Dari Saldo / Rekening</label>
+          <label class="text-xs font-bold text-gray-500">Dari Saldoku</label>
           <select id="trfDari" onchange="cekInfoAdminTransfer()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-700 outline-none"></select>
         </div>
         <div>
-          <label class="text-xs font-bold text-gray-500">Ke Saldo / Tujuan Top Up</label>
+          <label class="text-xs font-bold text-gray-500">Ke Saldoku / Tujuan Top Up</label>
           <select id="trfKe" onchange="cekInfoAdminTransfer()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-700 outline-none"></select>
         </div>
         <div id="infoAdminTrf" class="hide bg-amber-50 border border-amber-200 text-amber-700 rounded-xl p-2.5 text-[11px] font-semibold">
@@ -368,13 +468,13 @@
   <div id="bayarHutangModal" class="hide fixed inset-0 z-[90] bg-gray-900/60 flex items-center justify-center p-6 backdrop-blur-sm">
     <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
       <div class="flex justify-between items-center mb-3">
-        <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-hand-holding-dollar text-main-500 mr-1.5"></i> Bayar Cicilan / Tagihan</h3>
+        <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-hand-holding-dollar text-main-500 mr-1.5"></i> Bayar Cicilan / Tagihanku</h3>
         <button onclick="closeBayarHutangModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
       </div>
       <p id="labelNamaHutangBayar" class="text-xs font-bold text-accent-500 mb-4"></p>
       <div class="space-y-3">
         <div>
-          <label class="text-xs font-bold text-gray-500">Bayar Menggunakan Saldo</label>
+          <label class="text-xs font-bold text-gray-500">Bayar Menggunakan Saldoku</label>
           <select id="bayarHutangMetode" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-700 outline-none"></select>
         </div>
         <div>
@@ -429,6 +529,7 @@
     }
     
     let activeUser = "";
+    let partnerFullName = "Pasangan";
     let tipeAktif = "Pengeluaran";
     let jenisTabunganAktif = "Setor";
     let listKategori = { 
@@ -438,13 +539,17 @@
       dompet: ["Uang Cash", "BNI", "BRI", "BCA", "Mandiri", "GoPay", "Spay", "Dana", "Tapcash"],
       paylater: ["GopayLater", "SpayLater", "TiktokPaylater", "Kredivo", "Indodana"]
     };
-    let latestSaldoDompet = {};
+    let latestDompetPerUser = {};
+    let latestDaftarHutang = [];
+    let activeSaldoOwner = "me"; // 'me' atau 'partner'
+    let activeHutangOwner = "me"; // 'me' atau 'partner'
+
     let dataRekapBulanIni = [];
     let currentPageRekap = 1;
-    // MAKSIMAL 5 ITEM PER HALAMAN DI REKAP
     const ITEMS_PER_PAGE_REKAP = 5;
     
     let selectedHutangToPay = { id: "", sisa: 0, nama: "" };
+    let selectedTrxToEdit = null;
     let pieChartAkuInstance = null;
     let pieChartPasanganInstance = null;
     let isNekoCalled = false;
@@ -503,7 +608,9 @@
       
       const res = await callAPI('login', { username: u, password: p });
       if(res.sukses) {
-        activeUser = res.nama;
+        activeUser = String(res.nama || '').trim();
+        activeSaldoOwner = "me";
+        activeHutangOwner = "me";
         localStorage.setItem('pawketActiveUser', activeUser);
         localStorage.setItem('pawketUsername', u);
         localStorage.setItem('pawketPassword', p);
@@ -590,18 +697,20 @@
       if (!res || res.sukses === false) return;
 
       document.getElementById('saldoUtama').innerText = formatRp(res.saldoUtama);
-      document.getElementById('totalSemuaSaldo').innerText = formatRp(res.saldoUtama);
       document.getElementById('totalMasuk').innerText = formatRp(res.totalMasuk);
       document.getElementById('totalKeluar').innerText = formatRp(res.totalKeluar);
       
       const uStats = res.userStats || {};
       const usernames = Object.keys(uStats);
       const myStats = uStats[activeUser] || { masuk: 0, keluar: 0 };
-      const partnerName = usernames.find(u => u !== activeUser) || 'Pasangan';
-      const partnerStats = uStats[partnerName] || { masuk: 0, keluar: 0 };
+      partnerFullName = usernames.find(u => u !== activeUser) || 'Pasangan';
+      const partnerShortName = partnerFullName.split(' ')[0];
+      const partnerStats = uStats[partnerFullName] || { masuk: 0, keluar: 0 };
       
-      document.getElementById('namaPasanganText').innerText = partnerName.split(' ')[0]; 
-      document.getElementById('namaPasanganDompet').innerText = partnerName.split(' ')[0]; 
+      document.getElementById('namaPasanganText').innerText = partnerShortName; 
+      document.getElementById('namaPasanganDompet').innerText = partnerShortName; 
+      document.getElementById('tabNamaPasanganSaldo').innerText = partnerShortName;
+      document.getElementById('tabNamaPasanganHutang').innerText = partnerShortName;
 
       const uangku = myStats.masuk - myStats.keluar;
       const uangPasangan = partnerStats.masuk - partnerStats.keluar;
@@ -609,9 +718,9 @@
       document.getElementById('saldoAku').innerText = formatRp(uangku);
       document.getElementById('saldoPasangan').innerText = formatRp(uangPasangan);
 
-      // Render Menu Saldo Rinci
-      latestSaldoDompet = res.saldoDompet || {};
-      renderMenuSaldo(latestSaldoDompet);
+      // Simpan & Render Menu Saldo Rinci Per User
+      latestDompetPerUser = res.dompetPerUser || {};
+      renderMenuSaldo();
 
       const tabObj = res.tabungan || {};
       const labelTabObj = res.labelTabungan || {};
@@ -651,11 +760,8 @@
       document.getElementById('targetPersen').innerText = persen;
       document.getElementById('targetBar').style.width = persen + "%";
 
-      if(res.daftarHutang && Array.isArray(res.daftarHutang)) {
-        renderHutang(res.daftarHutang);
-      } else {
-        document.getElementById('listHutang').innerHTML = '<p class="text-center text-gray-400 text-xs py-2 italic">Belum ada hutang dicatat.</p>';
-      }
+      latestDaftarHutang = (res.daftarHutang && Array.isArray(res.daftarHutang)) ? res.daftarHutang : [];
+      renderHutang();
 
       const listTrx = document.getElementById('listTrxTerbaru');
       listTrx.innerHTML = '';
@@ -710,8 +816,44 @@
       }, 300); 
     }
 
-    // RENDER MENU SALDO RINCI
-    function renderMenuSaldo(saldoObj) {
+    // SWITCHER SALDOKU VS SALDO PASANGAN (HANYA LIHAT)
+    function switchOwnerSaldo(ownerType) {
+      activeSaldoOwner = ownerType;
+      const btnMe = document.getElementById('btnViewSaldoku');
+      const btnPartner = document.getElementById('btnViewSaldoPasangan');
+      const headerCard = document.getElementById('kartuHeaderSaldo');
+      const aksiBox = document.getElementById('aksiSaldokuBox');
+      const readOnlyBox = document.getElementById('infoReadOnlySaldoBox');
+      const hintEdit = document.getElementById('hintEditSaldo');
+
+      if (ownerType === 'me') {
+        btnMe.className = "flex-1 py-2 rounded-xl text-xs font-bold bg-main-500 text-white shadow transition";
+        btnPartner.className = "flex-1 py-2 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-50 transition";
+        headerCard.className = "bg-gradient-to-r from-main-600 to-main-400 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden transition-all";
+        aksiBox.classList.remove('hide');
+        readOnlyBox.classList.add('hide');
+        hintEdit.classList.remove('hide');
+      } else {
+        btnPartner.className = "flex-1 py-2 rounded-xl text-xs font-bold bg-accent-500 text-white shadow transition";
+        btnMe.className = "flex-1 py-2 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-50 transition";
+        headerCard.className = "bg-gradient-to-r from-accent-600 to-accent-400 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden transition-all";
+        aksiBox.classList.add('hide');
+        readOnlyBox.classList.remove('hide');
+        hintEdit.classList.add('hide');
+      }
+      renderMenuSaldo();
+    }
+
+    function renderMenuSaldo() {
+      const isMe = (activeSaldoOwner === 'me');
+      const targetUser = isMe ? activeUser : partnerFullName;
+      const saldoObj = (latestDompetPerUser && latestDompetPerUser[targetUser]) ? latestDompetPerUser[targetUser] : {};
+      
+      let totalUserSaldo = 0;
+      Object.values(saldoObj).forEach(v => { totalUserSaldo += (Number(v) || 0); });
+      document.getElementById('labelHeaderSaldo').innerText = isMe ? `Total Saldoku (${activeUser.split(' ')[0]})` : `Total Saldo ${partnerFullName.split(' ')[0]} (Hanya Lihat)`;
+      document.getElementById('totalSemuaSaldo').innerText = formatRp(totalUserSaldo);
+
       const bankList = ["BNI", "BRI", "BCA", "Mandiri"];
       const ewalletList = ["GoPay", "Spay", "Dana", "Tapcash"];
       
@@ -723,17 +865,20 @@
       uiEwallet.innerHTML = '';
       uiLainnya.innerHTML = '';
 
-      const buatKartu = (nama, nominal, warnaBorder, warnaTeks, ikon) => `
-        <div class="bg-white rounded-2xl p-3.5 shadow-sm border ${warnaBorder} flex flex-col justify-between">
-          <div class="flex justify-between items-center mb-1">
-            <span class="text-xs font-bold ${warnaTeks} truncate"><i class="${ikon} mr-1"></i>${nama}</span>
-            <button onclick="sesuaikanSaldo('${nama}', ${nominal})" class="text-[10px] text-gray-300 hover:text-main-500 transition" title="Sesuaikan Saldo">
-              <i class="fa-solid fa-pen"></i>
-            </button>
+      const buatKartu = (nama, nominal, warnaBorder, warnaTeks, ikon) => {
+        const tombolAksi = isMe 
+          ? `<button onclick="sesuaikanSaldo('${nama}', ${nominal})" class="text-[10px] text-gray-300 hover:text-main-500 transition" title="Sesuaikan Saldoku"><i class="fa-solid fa-pen"></i></button>`
+          : `<i class="fa-solid fa-lock text-[10px] text-gray-200" title="Hanya Lihat"></i>`;
+        return `
+          <div class="bg-white rounded-2xl p-3.5 shadow-sm border ${warnaBorder} flex flex-col justify-between">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-xs font-bold ${warnaTeks} truncate"><i class="${ikon} mr-1"></i>${nama}</span>
+              ${tombolAksi}
+            </div>
+            <p class="font-bold text-gray-800 text-sm truncate">${formatRp(nominal)}</p>
           </div>
-          <p class="font-bold text-gray-800 text-sm truncate">${formatRp(nominal)}</p>
-        </div>
-      `;
+        `;
+      };
 
       bankList.forEach(b => {
         uiBank.innerHTML += buatKartu(b, saldoObj[b] || 0, 'border-main-100', 'text-main-600', 'fa-solid fa-building-columns');
@@ -743,9 +888,8 @@
         uiEwallet.innerHTML += buatKartu(e, saldoObj[e] || 0, 'border-accent-100', 'text-accent-600', 'fa-solid fa-wallet');
       });
 
-      // Sisanya masuk ke Tunai & Lainnya (termasuk Uang Cash)
-      const allKeys = Object.keys(saldoObj);
-      if (!allKeys.includes("Uang Cash")) allKeys.unshift("Uang Cash");
+      const dompetMaster = (listKategori.dompet && listKategori.dompet.length > 0) ? listKategori.dompet.map(d => cleanPosName(d)) : ["Uang Cash"];
+      const allKeys = Array.from(new Set(["Uang Cash", ...dompetMaster, ...Object.keys(saldoObj)]));
       
       allKeys.forEach(k => {
         if (!bankList.includes(k) && !ewalletList.includes(k)) {
@@ -755,7 +899,8 @@
     }
 
     async function sesuaikanSaldo(namaDompet, nominalSekarang) {
-      const input = prompt(`Sesuaikan saldo aktual untuk "${namaDompet}"\n(Saldo tercatat saat ini: ${formatRp(nominalSekarang)})\n\nMasukkan nominal saldo sebenarnya (angka saja):`, nominalSekarang);
+      if (activeSaldoOwner !== 'me') return alert("Kamu hanya bisa mengubah saldomu sendiri!");
+      const input = prompt(`Sesuaikan saldo aktual milikmu untuk "${namaDompet}"\n(Saldo tercatat saat ini: ${formatRp(nominalSekarang)})\n\nMasukkan nominal saldo sebenarnya (angka saja):`, nominalSekarang);
       if (input !== null && input.trim() !== "" && !isNaN(input)) {
         const res = await callAPI('sesuaikanSaldo', {
           form: { dompet: namaDompet, saldoBaru: Number(input), oleh: activeUser }
@@ -788,13 +933,14 @@
       selDari.innerHTML = '';
       selKe.innerHTML = '';
 
+      const myWallets = (latestDompetPerUser && latestDompetPerUser[activeUser]) ? latestDompetPerUser[activeUser] : {};
       const dompetList = (listKategori.dompet && listKategori.dompet.length > 0) 
         ? listKategori.dompet 
         : ["Uang Cash", "BNI", "BRI", "BCA", "Mandiri", "GoPay", "Spay", "Dana", "Tapcash"];
 
       dompetList.forEach(d => {
         const cleanD = cleanPosName(d);
-        const saldo = latestSaldoDompet[cleanD] || 0;
+        const saldo = myWallets[cleanD] || 0;
         let opt1 = document.createElement('option');
         opt1.value = cleanD;
         opt1.innerText = `${cleanD} (${formatRp(saldo)})`;
@@ -885,52 +1031,102 @@
       }
     }
 
-    function renderHutang(daftarHutang) {
+    // SWITCHER HUTANGKU VS HUTANG PASANGAN (HANYA LIHAT)
+    function switchOwnerHutang(ownerType) {
+      activeHutangOwner = ownerType;
+      const btnMe = document.getElementById('btnViewHutangku');
+      const btnPartner = document.getElementById('btnViewHutangPasangan');
+      const formBox = document.getElementById('formInputHutangBox');
+
+      if (ownerType === 'me') {
+        btnMe.className = "flex-1 py-1.5 rounded-lg text-xs font-bold bg-white text-main-600 shadow transition";
+        btnPartner.className = "flex-1 py-1.5 rounded-lg text-xs font-bold text-gray-500 transition";
+        formBox.classList.remove('hide');
+      } else {
+        btnPartner.className = "flex-1 py-1.5 rounded-lg text-xs font-bold bg-white text-accent-600 shadow transition";
+        btnMe.className = "flex-1 py-1.5 rounded-lg text-xs font-bold text-gray-500 transition";
+        formBox.classList.add('hide');
+      }
+      renderHutang();
+    }
+
+    function renderHutang() {
       const listUi = document.getElementById('listHutang');
       listUi.innerHTML = '';
       
-      const hutangAktif = daftarHutang.filter(h => h.status === 'Aktif');
-      if(hutangAktif.length === 0) {
-        listUi.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">Yeay! Tidak ada hutang yang belum lunas. 🎉</p>';
+      const semuaAktif = (latestDaftarHutang || []).filter(h => h.status === 'Aktif');
+      const hutangkuList = semuaAktif.filter(h => String(h.oleh).trim() === activeUser);
+      const hutangPasanganList = semuaAktif.filter(h => String(h.oleh).trim() !== activeUser);
+
+      document.getElementById('countHutangku').innerText = hutangkuList.length;
+      document.getElementById('countHutangPasangan').innerText = hutangPasanganList.length;
+
+      const isMe = (activeHutangOwner === 'me');
+      const dataTampil = isMe ? hutangkuList : hutangPasanganList;
+
+      if(dataTampil.length === 0) {
+        listUi.innerHTML = `<p class="text-center text-gray-400 text-xs py-6 italic">${isMe ? 'Yeay! Kamu tidak memiliki hutang aktif. 🎉' : `Tidak ada catatan hutang aktif milik ${partnerFullName.split(' ')[0]}. 🎉`}</p>`;
         return;
       }
 
-      hutangAktif.forEach(h => {
+      dataTampil.forEach(h => {
         const teksCicilan = (h.cicilanRutin && h.cicilanRutin > 0) ? formatRp(h.cicilanRutin) : "Sesuai Tagihan";
         const rawTgl = String(h.tglJatuhTempo || '-');
         const labelJatuhTempo = (rawTgl.includes(' ') || rawTgl === '-') ? rawTgl : `Tgl ${rawTgl}`;
+        const safeNama = String(h.namaHutang || '').replace(/'/g, "\\'");
+
+        const kontrolOwner = isMe 
+          ? `
+            <div class="flex items-center gap-2">
+              <button onclick="setPengingatHutang('${h.id}', '${safeNama}', ${h.sisaHutang}, '${rawTgl.replace(/'/g, "\\'")}', ${h.cicilanRutin || 0})" class="text-main-500 text-[10px] font-bold hover:underline"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+              <button onclick="hapusCatatan('${h.id}')" class="text-red-400 hover:text-red-600 text-[10px] font-bold"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          `
+          : `<span class="text-[9px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-bold"><i class="fa-solid fa-lock mr-1"></i>Hanya Lihat</span>`;
+
+        const tombolBayar = isMe
+          ? `<button onclick="bukaModalBayarHutang('${h.id}', ${h.sisaHutang}, '${safeNama}')" class="w-full bg-main-100 text-main-600 py-2 rounded-lg text-xs font-bold hover:bg-main-200 transition active:scale-95">Bayar Tagihan / Cicilan</button>`
+          : `<div class="w-full bg-gray-50 text-gray-400 py-1.5 rounded-lg text-[10px] font-semibold text-center border border-gray-100"><i class="fa-solid fa-eye mr-1"></i>Tagihan milik ${h.oleh}</div>`;
+
         listUi.innerHTML += `
           <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
             <div class="flex justify-between items-start mb-2">
               <div>
                 <p class="font-bold text-gray-800 text-sm">${h.namaHutang}</p>
-                <p class="text-[10px] text-gray-400">Total awal: ${formatRp(h.totalAwal)}</p>
+                <p class="text-[10px] text-gray-400">Total awal: ${formatRp(h.totalAwal)} • Oleh: ${h.oleh}</p>
               </div>
               <p class="font-bold text-accent-500 text-sm">${formatRp(h.sisaHutang)}</p>
             </div>
             <div class="bg-main-50 p-2 rounded-lg flex justify-between items-center mb-3">
               <p class="text-[10px] text-gray-500">Jatuh Tempo: <b class="text-main-600">${labelJatuhTempo}</b><br>Cicilan: <b class="text-main-600">${teksCicilan}</b></p>
-              <button onclick="setPengingatHutang('${h.id}')" class="text-main-500 text-[10px] font-bold hover:underline"><i class="fa-solid fa-gear"></i> Setting</button>
+              ${kontrolOwner}
             </div>
-            <button onclick="bukaModalBayarHutang('${h.id}', ${h.sisaHutang}, '${h.namaHutang.replace(/'/g, "\\'")}')" class="w-full bg-main-100 text-main-600 py-2 rounded-lg text-xs font-bold hover:bg-main-200 transition active:scale-95">
-              Bayar Tagihan / Cicilan
-            </button>
+            ${tombolBayar}
           </div>
         `;
       });
     }
 
-    async function setPengingatHutang(id) {
-      const tgl = prompt("Pengingat Jatuh Tempo setiap tanggal berapa? (Cth: 1 Des 2026, 15, Akhir Bulan)");
-      if (tgl !== null) {
-        const cicilan = prompt("Berapa nominal cicilan rutinnya?\n(Kosongkan atau ketik 0 jika tagihan sesuai pemakaian)");
-        if (cicilan !== null) { 
-          const nominalCicilan = Number(cicilan) || 0;
-          const res = await callAPI('updatePengingatHutang', { id: id, tgl: tgl, cicilan: nominalCicilan });
-          if(res.sukses) { alert("Pengingat hutang berhasil disetel! ✨"); loadDataDashboard(); } 
-          else alert("Gagal menyetel pengingat.");
-        }
-      }
+    async function setPengingatHutang(id, namaLama, sisaLama, tglLama, cicilanLama) {
+      const namaBaru = prompt("Edit Nama Hutang:", namaLama);
+      if (namaBaru === null) return;
+      const sisaBaru = prompt("Edit Sisa Hutang Saat Ini (Rp):", sisaLama);
+      if (sisaBaru === null || isNaN(sisaBaru)) return;
+      const tgl = prompt("Pengingat Jatuh Tempo (Cth: 1 Jan 2027, 15, Akhir Bulan):", tglLama === '-' ? '' : tglLama);
+      if (tgl === null) return;
+      const cicilan = prompt("Nominal cicilan rutin per bulan (Ketik 0 jika sesuai tagihan):", cicilanLama || 0);
+      if (cicilan === null) return;
+
+      const res = await callAPI('updatePengingatHutang', { 
+        id: id, 
+        namaHutang: namaBaru.trim(),
+        sisaHutang: Number(sisaBaru),
+        tgl: tgl, 
+        cicilan: Number(cicilan) || 0,
+        oleh: activeUser 
+      });
+      if(res.sukses) { alert("Data hutang berhasil diperbarui! ✨"); loadDataDashboard(); } 
+      else alert(res.pesan || "Gagal memperbarui hutang.");
     }
 
     async function simpanHutangBaru() {
@@ -960,13 +1156,14 @@
 
       const select = document.getElementById('bayarHutangMetode');
       select.innerHTML = '';
+      const myWallets = (latestDompetPerUser && latestDompetPerUser[activeUser]) ? latestDompetPerUser[activeUser] : {};
       const dompetList = (listKategori.dompet && listKategori.dompet.length > 0) 
         ? listKategori.dompet 
         : ["Uang Cash", "BNI", "BRI", "BCA", "Mandiri", "GoPay", "Spay", "Dana", "Tapcash"];
 
       dompetList.forEach(d => {
         const cleanD = cleanPosName(d);
-        const saldo = latestSaldoDompet[cleanD] || 0;
+        const saldo = myWallets[cleanD] || 0;
         let opt = document.createElement('option');
         opt.value = cleanD;
         opt.innerText = `${cleanD} (${formatRp(saldo)})`;
@@ -1002,11 +1199,11 @@
       btn.disabled = false;
 
       if (res && res.sukses) {
-        alert(`Pembayaran berhasil dicatat & memotong saldo ${metode}! ✨`);
+        alert(`Pembayaran berhasil dicatat & memotong saldo ${metode} milikmu! ✨`);
         closeBayarHutangModal();
         loadDataDashboard();
       } else {
-        alert("Gagal mencatat pembayaran hutang.");
+        alert(res.pesan || "Gagal mencatat pembayaran hutang.");
       }
     }
 
@@ -1062,7 +1259,7 @@
       const paylaterList = listKategori.paylater || ["GopayLater", "SpayLater", "TiktokPaylater", "Kredivo", "Indodana"];
 
       if (tipeAktif === 'Pemasukan') {
-        label.innerText = "Masuk ke Saldo / Rekening";
+        label.innerText = "Masuk ke Saldoku / Rekening";
         dompetList.forEach(d => {
           let opt = document.createElement('option');
           opt.value = cleanPosName(d);
@@ -1073,7 +1270,7 @@
         label.innerText = "Pembayaran Menggunakan";
         
         let grpSaldo = document.createElement('optgroup');
-        grpSaldo.label = "Saldo Rekening / E-Wallet / Cash";
+        grpSaldo.label = "Saldoku (Rekening / E-Wallet / Cash)";
         dompetList.forEach(d => {
           let opt = document.createElement('option');
           opt.value = cleanPosName(d);
@@ -1083,7 +1280,7 @@
         select.appendChild(grpSaldo);
 
         let grpPaylater = document.createElement('optgroup');
-        grpPaylater.label = "PayLater (Otomatis Masuk Hutang)";
+        grpPaylater.label = "PayLater (Otomatis Masuk Hutangku)";
         paylaterList.forEach(p => {
           let opt = document.createElement('option');
           opt.value = p;
@@ -1110,7 +1307,7 @@
 
       if (tipeAktif === 'Pengeluaran' && isPaylater(metode)) {
         const jatuhTempo = hitungPreviewJatuhTempo(tgl, metode);
-        infoText.innerHTML = `Pembayaran via <b>${metode}</b> otomatis masuk ke <b>Hutang</b> & ditagihkan pada <b>${jatuhTempo}</b>.`;
+        infoText.innerHTML = `Pembayaran via <b>${metode}</b> otomatis masuk ke <b>Hutangku</b> & ditagihkan pada <b>${jatuhTempo}</b>.`;
         infoBox.classList.remove('hide');
       } else {
         infoBox.classList.add('hide');
@@ -1254,7 +1451,7 @@
       document.getElementById(`tab-${tabId}`).classList.remove('hide');
       document.getElementById(`nav-${tabId}`).classList.replace('text-gray-400', 'text-main-500');
       
-      if (tabId === 'dashboard' || tabId === 'saldo') { setTimeout(loadDataDashboard, 100); }
+      if (tabId === 'dashboard' || tabId === 'saldo' || tabId === 'hutang') { setTimeout(loadDataDashboard, 100); }
       if (tabId === 'rekap') {
         const inputBulan = document.getElementById('inputBulan');
         if (!inputBulan.value) {
@@ -1307,7 +1504,9 @@
       infoTotal.innerText = `${dataRekapBulanIni.length} Transaksi`;
 
       let html = '';
-      itemsHalamanIni.forEach(d => {
+      itemsHalamanIni.forEach((d, idxOnPage) => {
+        const globalIdx = startIdx + idxOnPage;
+        const isOwner = (String(d.Oleh).trim() === activeUser);
         const isTrf = d.Tipe === 'Transfer';
         const isMasuk = d.Tipe === 'Pemasukan' || (d.Tipe === 'Tabungan' && d.Catatan.includes('Setor')); 
         const icon = isTrf
@@ -1316,19 +1515,35 @@
         const color = isTrf ? 'text-purple-500' : (isMasuk ? 'text-main-500' : 'text-accent-500');
         const badgeMetode = d.Metode ? `<span class="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-[9px] font-bold ml-1">${d.Metode}</span>` : '';
 
+        // Proteksi UI: Hanya pemilik transaksi yang bisa melihat tombol Edit & Hapus
+        const aksiHtml = isOwner
+          ? `
+            <div class="absolute right-3 bottom-2 flex items-center gap-2.5">
+              <button onclick="bukaEditTransaksi(${globalIdx})" class="text-main-400 hover:text-main-600 transition text-[11px]" title="Edit Catatanku">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button onclick="hapusCatatan('${d.id}')" class="text-red-300 hover:text-red-500 transition text-[11px]" title="Hapus Catatanku">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          `
+          : `
+            <div class="absolute right-3 bottom-2 text-gray-300 text-[10px]" title="Milik ${d.Oleh} (Hanya Lihat)">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+          `;
+
         html += `
           <div class="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm border border-gray-50 relative group">
-            <div class="flex items-center gap-3 w-full pr-8">
+            <div class="flex items-center gap-3 w-full pr-12">
               ${icon}
               <div class="w-full">
                 <p class="font-bold text-sm text-gray-800">${d.Kategori} ${badgeMetode}</p>
-                <p class="text-[10px] text-gray-400">${d.Tanggal} • ${d.Oleh} <br> <span class="italic truncate block max-w-[180px]">${d.Catatan}</span></p>
+                <p class="text-[10px] text-gray-400">${d.Tanggal} • <b class="${isOwner ? 'text-main-500' : 'text-accent-500'}">${d.Oleh}</b> <br> <span class="italic truncate block max-w-[170px]">${d.Catatan}</span></p>
               </div>
             </div>
             <div class="font-bold text-sm ${color} absolute right-3 top-3">${formatRp(d.Nominal)}</div>
-            <button onclick="hapusCatatan('${d.id}')" class="absolute right-3 bottom-2 text-red-300 hover:text-red-500 transition text-[10px] font-bold">
-              <i class="fa-solid fa-trash"></i>
-            </button>
+            ${aksiHtml}
           </div>
         `;
       });
@@ -1350,11 +1565,91 @@
       renderListRekap();
     }
 
+    function bukaEditTransaksi(idx) {
+      const item = dataRekapBulanIni[idx];
+      if (!item || String(item.Oleh).trim() !== activeUser) {
+        return alert("Kamu hanya bisa mengedit catatan milikmu sendiri!");
+      }
+      selectedTrxToEdit = item;
+      document.getElementById('editTrxTanggal').value = item.isoDate || new Date().toISOString().split('T')[0];
+      document.getElementById('editTrxKategori').value = item.Kategori || '';
+      document.getElementById('editTrxNominal').value = item.Nominal || 0;
+      document.getElementById('editTrxCatatan').value = item.Catatan || '';
+
+      const metodeBox = document.getElementById('editTrxMetodeBox');
+      const metodeSel = document.getElementById('editTrxMetode');
+      metodeSel.innerHTML = '';
+
+      if (item.Tipe === 'Tabungan' || item.Tipe === 'Transfer') {
+        metodeBox.classList.add('hide');
+      } else {
+        metodeBox.classList.remove('hide');
+        const dompetList = (listKategori.dompet && listKategori.dompet.length > 0) 
+          ? listKategori.dompet 
+          : ["Uang Cash", "BNI", "BRI", "BCA", "Mandiri", "GoPay", "Spay", "Dana", "Tapcash"];
+        const paylaterList = listKategori.paylater || ["GopayLater", "SpayLater", "TiktokPaylater", "Kredivo", "Indodana"];
+        
+        dompetList.forEach(d => {
+          let opt = document.createElement('option');
+          opt.value = cleanPosName(d);
+          opt.innerText = cleanPosName(d);
+          metodeSel.appendChild(opt);
+        });
+        if (item.Tipe === 'Pengeluaran') {
+          paylaterList.forEach(p => {
+            let opt = document.createElement('option');
+            opt.value = p;
+            opt.innerText = p;
+            metodeSel.appendChild(opt);
+          });
+        }
+        if (item.Metode) metodeSel.value = item.Metode;
+      }
+
+      document.getElementById('editTrxModal').classList.remove('hide');
+    }
+
+    function closeEditTrxModal() {
+      document.getElementById('editTrxModal').classList.add('hide');
+      selectedTrxToEdit = null;
+    }
+
+    async function simpanEditTransaksi() {
+      if (!selectedTrxToEdit) return;
+      const btn = document.getElementById('btnSimpanEditTrx');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+      btn.disabled = true;
+
+      const res = await callAPI('editTransaksi', {
+        form: {
+          id: selectedTrxToEdit.id,
+          oleh: activeUser,
+          tanggal: document.getElementById('editTrxTanggal').value,
+          kategori: document.getElementById('editTrxKategori').value,
+          metode: document.getElementById('editTrxMetode').value,
+          nominal: Number(document.getElementById('editTrxNominal').value),
+          catatan: document.getElementById('editTrxCatatan').value
+        }
+      });
+
+      btn.innerHTML = 'Simpan Perubahan';
+      btn.disabled = false;
+
+      if (res && res.sukses) {
+        alert(res.pesan);
+        closeEditTrxModal();
+        loadRekap();
+        loadDataDashboard();
+      } else {
+        alert(res.pesan || "Gagal memperbarui transaksi.");
+      }
+    }
+
     async function hapusCatatan(id) {
-      if(confirm("Apakah kamu yakin ingin menghapus catatan ini?")) {
-        const res = await callAPI('hapusCatatan', { id: id });
+      if(confirm("Apakah kamu yakin ingin menghapus catatan milikmu ini?")) {
+        const res = await callAPI('hapusCatatan', { id: id, oleh: activeUser });
         if(res.sukses) { alert("Catatan terhapus! ✨"); loadRekap(); loadDataDashboard(); } 
-        else { alert("Gagal menghapus catatan."); }
+        else { alert(res.pesan || "Gagal menghapus catatan."); }
       }
     }
 
@@ -1362,7 +1657,7 @@
       if(dataRekapBulanIni.length === 0) return alert("Tidak ada data untuk diexport! Pilih bulan yang ada transaksinya.");
       const bln = document.getElementById('inputBulan').value;
       const ws = XLSX.utils.json_to_sheet(dataRekapBulanIni);
-      ws['!cols'] = [{wch: 15}, {wch: 12}, {wch: 15}, {wch: 12}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 30}];
+      ws['!cols'] = [{wch: 15}, {wch: 12}, {wch: 12}, {wch: 15}, {wch: 12}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 30}];
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Rekap_" + bln);
       XLSX.writeFile(wb, `PAWket_Rekap_${bln}.xlsx`);
