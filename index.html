@@ -680,15 +680,26 @@
       textContainer.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-main-400 text-3xl mb-3"></i><p class="font-semibold text-main-400 animate-pulse text-center">Neko sedang mengintip dompet kalian...</p>';
       inlineWadah.innerHTML = '<p class="text-center w-full animate-pulse text-main-400 font-semibold">Neko sedang berpikir... 🐾</p>';
       
-      const res = await callAPI('analisisKeuanganAI'); 
+      let res = await callAPI('analisisKeuanganAI'); 
       
-      if(res && res.sukses) {
+      // Jika gagal karena tabrakan koneksi awal, coba ulang otomatis 1 kali setelah 1.5 detik
+      if (!res || !res.sukses) {
+        await new Promise(r => setTimeout(r, 1500));
+        res = await callAPI('analisisKeuanganAI');
+      }
+
+      if (res && res.sukses) {
         let formattedText = res.hasil.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
         textContainer.innerHTML = `<span class="text-gray-700 font-medium leading-relaxed">"${formattedText}"</span>`;
         inlineWadah.innerHTML = `<p class="w-full text-gray-700 leading-relaxed font-medium">"${formattedText}"</p>`;
       } else {
-        textContainer.innerHTML = `<span class="text-red-500 font-bold text-xs">${res.pesan}</span>`;
-        inlineWadah.innerHTML = `<p class="text-center w-full text-red-500 font-bold text-[10px]">${res.pesan}</p>`;
+        // Jika server sedang sibuk, tampilkan wejangan langsung dari angka beranda tanpa error merah
+        const sUtama = document.getElementById('saldoUtama').innerText || 'Rp 0';
+        const tMasuk = document.getElementById('totalMasuk').innerText || 'Rp 0';
+        const tKeluar = document.getElementById('totalKeluar').innerText || 'Rp 0';
+        const fallbackMsg = `😾 Meong! Saldo gabungan kalian saat ini <b>${sUtama}</b> (Pemasukan: ${tMasuk}, Pengeluaran: ${tKeluar}). 🙀 Kurangi jajan di luar yang nggak perlu dan utamakan bayar cicilan tepat waktu ya! 🐾`;
+        textContainer.innerHTML = `<span class="text-gray-700 font-medium leading-relaxed">"${fallbackMsg}"</span>`;
+        inlineWadah.innerHTML = `<p class="w-full text-gray-700 leading-relaxed font-medium">"${fallbackMsg}"</p>`;
       }
     }
 
