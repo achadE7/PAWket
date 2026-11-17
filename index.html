@@ -599,15 +599,15 @@
     });
 
     async function prosesLogin() {
-      const u = document.getElementById('username').value;
-      const p = document.getElementById('password').value;
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value.trim();
       if (!u || !p) return;
 
       const btn = document.getElementById('btnLogin');
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
       
       const res = await callAPI('login', { username: u, password: p });
-      if(res.sukses) {
+      if (res.sukses) {
         activeUser = String(res.nama || '').trim();
         activeSaldoOwner = "me";
         activeHutangOwner = "me";
@@ -618,15 +618,16 @@
         document.getElementById('namaUser').innerText = activeUser;
         const loginScr = document.getElementById('loginScreen');
         loginScr.classList.add('opacity-0');
-        setTimeout(() => {
+
+        setTimeout(async () => {
           loginScr.classList.add('hide');
           document.getElementById('appScreen').classList.remove('hide');
           document.getElementById('bottomNav').classList.remove('hide');
-          loadDataDashboard();
-          loadKategori();
           
-          setTimeout(() => { showNekoModal(false); }, 1000);
-        }, 300);
+          // Muat data utama terlebih dahulu, baru panggil AI agar tidak tabrakan di server
+          await Promise.all([loadDataDashboard(), loadKategori()]);
+          showNekoModal(false);
+        }, 250);
       } else {
         alert(res.pesan);
         btn.innerHTML = 'Masuk';
