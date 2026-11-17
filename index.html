@@ -1385,24 +1385,54 @@
     }
 
     function prosesScanAI() {
-      const file = document.getElementById('fotoStruk').files[0];
+      const inputNode = document.getElementById('fotoStruk');
+      const file = inputNode.files[0];
       if(!file) return;
+      
       const btnUi = document.getElementById('btnScanUi');
       btnUi.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Membaca...';
       
       const reader = new FileReader();
-      reader.onload = async function(e) {
-        const base64 = e.target.result.split(',')[1];
-        const res = await callAPI('scanStruk', { base64: base64, mimeType: file.type });
-        if(res.sukses) {
-          setTipe('Pengeluaran');
-          document.getElementById('inputTanggal').value = res.hasil.tanggal || new Date().toISOString().split('T')[0];
-          document.getElementById('inputNominal').value = res.hasil.nominal;
-          document.getElementById('inputCatatan').value = res.hasil.catatan;
-          cekInfoPaylater();
-          alert("Struk terbaca AI! ✨ Periksa kembali tanggal, metode pembayaran & angkanya.");
-        }
-        btnUi.innerHTML = '<i class="fa-solid fa-camera"></i> Foto Struk (Scan AI)';
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = async function() {
+          // KOMPRESI GAMBAR OTOMATIS SEBELUM DIKIRIM (Agar tidak membuat server Timeout)
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 800; // Maksimal lebar foto 800px
+          let scaleSize = 1;
+          
+          if (img.width > MAX_WIDTH) {
+            scaleSize = MAX_WIDTH / img.width;
+          }
+          
+          canvas.width = img.width * scaleSize;
+          canvas.height = img.height * scaleSize;
+          
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          
+          // Ubah ke format JPEG dengan kualitas 70% agar ukuran file sangat kecil
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          const base64 = dataUrl.split(',')[1];
+          
+          const res = await callAPI('scanStruk', { base64: base64, mimeType: 'image/jpeg' });
+          
+          if(res.sukses) {
+            setTipe('Pengeluaran');
+            document.getElementById('inputTanggal').value = res.hasil.tanggal || new Date().toISOString().split('T')[0];
+            document.getElementById('inputNominal').value = res.hasil.nominal;
+            document.getElementById('inputCatatan').value = res.hasil.catatan;
+            cekInfoPaylater();
+            alert("Struk terbaca AI! ✨ Periksa kembali tanggal, metode pembayaran & angkanya.");
+          } else {
+            // MUNCULKAN ERROR POP-UP JIKA AI GAGAL
+            alert("Gagal membaca struk:\n" + (res.pesan || "Pastikan foto jelas & terkoneksi internet."));
+          }
+          
+          btnUi.innerHTML = '<i class="fa-solid fa-camera"></i> Foto Struk (Scan AI)';
+          inputNode.value = ''; // Reset input agar kamu bisa mengklik dan memfoto ulang jika gagal
+        };
+        img.src = e.target.result;
       };
       reader.readAsDataURL(file);
     }
