@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
   
@@ -263,12 +264,11 @@
             </div>
 
             <div class="space-y-4">
-              <!-- KOLOM TANGGAL SIMETRIS -->
+              <!-- KOLOM TANGGAL SIMETRIS TANPA IKON GANDA -->
               <div class="w-full">
                 <label class="text-sm font-semibold text-gray-600 ml-1 block mb-1">Tanggal</label>
                 <div class="relative w-full overflow-hidden rounded-xl border border-gray-200 bg-white focus-within:ring-2 focus-within:ring-main-400">
-                  <input type="date" id="inputTanggal" onchange="cekInfoPaylater()" class="w-full bg-transparent px-4 py-3 outline-none font-bold text-gray-800 text-left pr-10">
-                  <i class="fa-regular fa-calendar absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                  <input type="date" id="inputTanggal" onchange="cekInfoPaylater()" class="w-full bg-transparent px-4 py-3 outline-none font-bold text-gray-800 text-left">
                 </div>
               </div>
               <div class="w-full">
@@ -541,8 +541,8 @@
     };
     let latestDompetPerUser = {};
     let latestDaftarHutang = [];
-    let activeSaldoOwner = "me"; // 'me' atau 'partner'
-    let activeHutangOwner = "me"; // 'me' atau 'partner'
+    let activeSaldoOwner = "me";
+    let activeHutangOwner = "me";
 
     let dataRekapBulanIni = [];
     let currentPageRekap = 1;
@@ -718,7 +718,6 @@
       document.getElementById('saldoAku').innerText = formatRp(uangku);
       document.getElementById('saldoPasangan').innerText = formatRp(uangPasangan);
 
-      // Simpan & Render Menu Saldo Rinci Per User
       latestDompetPerUser = res.dompetPerUser || {};
       renderMenuSaldo();
 
@@ -816,7 +815,6 @@
       }, 300); 
     }
 
-    // SWITCHER SALDOKU VS SALDO PASANGAN (HANYA LIHAT)
     function switchOwnerSaldo(ownerType) {
       activeSaldoOwner = ownerType;
       const btnMe = document.getElementById('btnViewSaldoku');
@@ -1031,7 +1029,6 @@
       }
     }
 
-    // SWITCHER HUTANGKU VS HUTANG PASANGAN (HANYA LIHAT)
     function switchOwnerHutang(ownerType) {
       activeHutangOwner = ownerType;
       const btnMe = document.getElementById('btnViewHutangku');
@@ -1384,21 +1381,104 @@
       }
     }
 
+    // PEMBACA STRUK CADANGAN LOKAL (OCR) JIKA API GOOGLE SEDANG GANGGUAN
+    async function scanStrukLokalOCR(dataUrl) {
+      try {
+        const result = await Tesseract.recognize(dataUrl, 'ind+eng');
+        const rawText = (result && result.data && result.data.text) ? result.data.text : "";
+        if (!rawText.trim()) return null;
+
+        const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 1);
+        const catatanToko = lines.length > 0 ? `Struk: ${lines[0].substring(0, 35)}` : "Struk Belanja";
+
+        // Cari angka nominal harga terbesar / baris TOTAL
+        let kandidatTotal = [];
+        let semuaAngka = [];
+        const regexHarga = /(?:rp\.?\s*)?(\d{1,3}(?:[.,]\d{3})+|\d{4,8})(?:[.,]\d{2})?\b/gi;
+
+        lines.forEach(line => {
+          const isTotalLine = /total|jumlah|bayar|tagihan|subtotal|amount|tunai|cash|debit|qris/i.test(line);
+          const isChangeLine = /kembali|change/i.test(line);
+          let match;
+          while ((match = regexHarga.exec(line)) !== null) {
+            let cleanNum = parseInt(match[1].replace(/[.,]/g, ''), 10);
+            if (cleanNum >= 1000 && cleanNum <= 50000000 && cleanNum !== 2024 && cleanNum !== 2025 && cleanNum !== 2026 && cleanNum !== 2027) {
+              semuaAngka.push(cleanNum);
+              if (isTotalLine && !isChangeLine) kandidatTotal.push(cleanNum);
+            }
+          }
+        });
+
+        let nominalTerbaca = 0;
+        if (kandidatTotal.length > 0) {
+          nominalTerbaca = Math.max(...kandidatTotal);
+        } else if (semuaAngka.length > 0) {
+          nominalTerbaca = Math.max(...semuaAngka);
+        }
+
+        // Cari tanggal di struk (YYYY-MM-DD atau DD/MM/YYYY)
+        let tanggalTerbaca = new Date().toISOString().split('T')[0];
+        const matchDate = rawText.match(/\b(\d{2})[\/\-](\d{2})[\/\-](20\d{2})\b/);
+        if (matchDate) {
+          tanggalTerbaca = `${matchDate[3]}-${matchDate[2]}-${matchDate[1]}`;
+        }
+
+        // Deteksi kategori sederhana
+        let kategoriTerbaca = "🛒 Belanja Bulanan";
+        if (/kopi|cafe|coffee|resto|ayam|makan|food|tea|bakery|warung|kebab|mie/i.test(rawText)) {
+          kategoriTerbaca = "🍔 Makan & Minum";
+        } else if (/pertamina|spbu|bensin|parkir|gojek|grab|maxim/i.test(rawText)) {
+          kategoriTerbaca = "⛽ Transportasi";
+        }
+
+        return {
+          nominal: nominalTerbaca,
+          tanggal: tanggalTerbaca,
+          kategori: kategoriTerbaca,
+          catatan: catatanToko
+        };
+      } catch (err) {
+        return null;
+      }
+    }
+
+    function terapkanHasilStrukKeForm(hasil) {
+      setTipe('Pengeluaran');
+      document.getElementById('inputTanggal').value = hasil.tanggal || new Date().toISOString().split('T')[0];
+      if (hasil.nominal && Number(hasil.nominal) > 0) {
+        document.getElementById('inputNominal').value = hasil.nominal;
+      }
+      document.getElementById('inputCatatan').value = hasil.catatan || '';
+
+      // Cocokkan kategori pada dropdown jika ada
+      const selKat = document.getElementById('inputKategori');
+      if (hasil.kategori) {
+        const cleanTarget = cleanPosName(hasil.kategori).toLowerCase();
+        for (let i = 0; i < selKat.options.length; i++) {
+          const optText = selKat.options[i].value.toLowerCase();
+          if (optText.includes(cleanTarget) || (cleanTarget.includes('makan') && optText.includes('makan')) || (cleanTarget.includes('belanja') && optText.includes('belanja'))) {
+            selKat.selectedIndex = i;
+            break;
+          }
+        }
+      }
+      cekInfoPaylater();
+    }
+
     function prosesScanAI() {
       const inputNode = document.getElementById('fotoStruk');
       const file = inputNode.files[0];
       if(!file) return;
       
       const btnUi = document.getElementById('btnScanUi');
-      btnUi.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Membaca...';
+      btnUi.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Membaca Struk...';
       
       const reader = new FileReader();
       reader.onload = function(e) {
         const img = new Image();
         img.onload = async function() {
           const canvas = document.createElement('canvas');
-          // PERKETAT KOMPRESI: Kurangi lebar maksimal menjadi 600px
-          const MAX_WIDTH = 600; 
+          const MAX_WIDTH = 700; 
           let scaleSize = 1;
           
           if (img.width > MAX_WIDTH) {
@@ -1411,21 +1491,24 @@
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           
-          // PERKETAT KOMPRESI: Kurangi kualitas JPEG menjadi 50%
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.5); 
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.65); 
           const base64 = dataUrl.split(',')[1];
           
           const res = await callAPI('scanStruk', { base64: base64, mimeType: 'image/jpeg' });
           
-          if(res.sukses) {
-            setTipe('Pengeluaran');
-            document.getElementById('inputTanggal').value = res.hasil.tanggal || new Date().toISOString().split('T')[0];
-            document.getElementById('inputNominal').value = res.hasil.nominal;
-            document.getElementById('inputCatatan').value = res.hasil.catatan;
-            cekInfoPaylater();
-            alert("Struk terbaca AI! ✨ Periksa kembali tanggal, metode pembayaran & angkanya.");
+          if(res && res.sukses && res.hasil) {
+            terapkanHasilStrukKeForm(res.hasil);
+            alert("Struk terbaca oleh Neko AI! ✨ Periksa kembali tanggal, kategori & angkanya.");
           } else {
-            alert("Gagal membaca struk:\n" + (res.pesan || "Pastikan foto jelas & terkoneksi internet."));
+            // JIKA API GOOGLE GAGAL/LIMIT, JALANKAN PEMBACA OCR CADANGAN SECARA OTOMATIS
+            btnUi.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengekstrak Teks Struk...';
+            const ocrHasil = await scanStrukLokalOCR(dataUrl);
+            if (ocrHasil && ocrHasil.nominal > 0) {
+              terapkanHasilStrukKeForm(ocrHasil);
+              alert("Struk berhasil dibaca! ✨ Periksa kembali tanggal, kategori & nominalnya.");
+            } else {
+              alert("Gagal membaca struk:\n" + (res && res.pesan ? res.pesan : "Pastikan foto struk jelas dan terang."));
+            }
           }
           
           btnUi.innerHTML = '<i class="fa-solid fa-camera"></i> Foto Struk (Scan AI)';
@@ -1544,7 +1627,6 @@
         const color = isTrf ? 'text-purple-500' : (isMasuk ? 'text-main-500' : 'text-accent-500');
         const badgeMetode = d.Metode ? `<span class="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-[9px] font-bold ml-1">${d.Metode}</span>` : '';
 
-        // Proteksi UI: Hanya pemilik transaksi yang bisa melihat tombol Edit & Hapus
         const aksiHtml = isOwner
           ? `
             <div class="absolute right-3 bottom-2 flex items-center gap-2.5">
