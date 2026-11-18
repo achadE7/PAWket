@@ -556,7 +556,9 @@
       return `1 ${BULAN_INDO[targetDate.getMonth()]} ${targetDate.getFullYear()}`;
     };
 
-    document.addEventListener("DOMContentLoaded", () => {
+    let currentFinanceSignature = "";
+
+    document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById('inputTanggal').value = todayIso();
       const savedUser = localStorage.getItem('pawketActiveUser');
       const savedUsername = localStorage.getItem('pawketUsername');
@@ -569,8 +571,16 @@
         document.getElementById('appScreen').classList.remove('hide');
         document.getElementById('bottomNav').classList.remove('hide');
 
-        // Jalankan 1 panggilan Dashboard (sudah termasuk Kategori) & Neko AI serentak!
-        loadDataDashboard(false);
+        // Tampilkan wejangan terakhir dari memori HP secara instan (0 detik) sambil mengecek data terbaru
+        const localWejangan = localStorage.getItem(`pawketNekoData_${activeUser}`);
+        if (localWejangan) {
+          try {
+            wejanganState = JSON.parse(localWejangan);
+            renderWejanganNekoUI();
+          } catch (_) {}
+        }
+
+        await loadDataDashboard(false);
         mintaWejanganAuto(false);
       }
     });
@@ -597,11 +607,10 @@
         document.getElementById('appScreen').classList.remove('hide');
         document.getElementById('bottomNav').classList.remove('hide');
 
-        // Langsung gunakan data dashboard & kategori yang sudah dikirim oleh API login tanpa panggil ulang!
         if (res.dashboard?.sukses) {
           terapkanDataDashboardKeUI(res.dashboard);
         } else {
-          loadDataDashboard(false);
+          await loadDataDashboard(false);
         }
 
         mintaWejanganAuto(false);
@@ -630,7 +639,6 @@
       switchTab('dashboard');
     }
 
-    // Membuka modal pop-up secara langsung (dipanggil saat teks sudah siap)
     function bukaPopupNekoSekarang() {
       const modal = document.getElementById('nekoModal');
       modal.classList.remove('hide');
@@ -640,7 +648,6 @@
       }, 50);
     }
 
-    // Dipanggil oleh tombol "Panggil Ulang" atau pemanggilan manual
     function showNekoModal(forceRefresh = false) {
       if (!isNekoCalled || forceRefresh) {
         mintaWejanganAuto(forceRefresh);
@@ -727,10 +734,22 @@
     async function mintaWejanganAuto(forceRefresh = false) {
       isNekoCalled = true;
       wejanganState.mode = "me";
+
+      // CEK CACHE LOKAL HP: Jika angka transaksi belum berubah & bukan klik "Panggil Ulang", munculkan INSTAN (0 detik)!
+      const savedSig = localStorage.getItem(`pawketNekoSig_${activeUser}`);
+      const savedData = localStorage.getItem(`pawketNekoData_${activeUser}`);
+      if (!forceRefresh && currentFinanceSignature && savedSig === currentFinanceSignature && savedData) {
+        try {
+          wejanganState = JSON.parse(savedData);
+          wejanganState.mode = "me";
+          renderWejanganNekoUI();
+          bukaPopupNekoSekarang();
+          return;
+        } catch (_) {}
+      }
+
       const inlineWadah = document.getElementById('tempatWejangan');
-      
-      // Hanya ubah teks di kotak kecil Beranda (TIDAK memunculkan pop-up loading yang menghalangi layar)
-      inlineWadah.innerHTML = '<p class="text-center w-full animate-pulse text-main-400 font-semibold"><i class="fa-solid fa-spinner fa-spin mr-1.5"></i>Neko sedang meracik wejangan di belakang layar... 🐾</p>';
+      inlineWadah.innerHTML = '<p class="text-center w-full animate-pulse text-main-400 font-semibold"><i class="fa-solid fa-spinner fa-spin mr-1.5"></i>Neko sedang meracik wejangan baru di belakang layar... 🐾</p>';
       
       const res = await callAPI('analisisKeuanganAI', { oleh: activeUser, forceRefresh }); 
       
@@ -740,6 +759,11 @@
         wejanganState.komentarKu = res.komentarKu || res.hasil || "";
         wejanganState.komentarPasangan = res.komentarPasangan || res.hasil || "";
         wejanganState.namaPasangan = res.namaPasangan || partnerFullName || "Pasangan";
+
+        if (currentFinanceSignature) {
+          localStorage.setItem(`pawketNekoSig_${activeUser}`, currentFinanceSignature);
+          localStorage.setItem(`pawketNekoData_${activeUser}`, JSON.stringify(wejanganState));
+        }
       } else {
         const sUtama = document.getElementById('saldoUtama').innerText || 'Rp 0';
         wejanganState.isAI = false;
@@ -749,9 +773,9 @@
         wejanganState.namaPasangan = partnerFullName || "Pasangan";
       }
 
-      // Setelah Neko selesai men-generate, langsung render dan munculkan Pop-Up di menu mana pun user berada!
       renderWejanganNekoUI();
       bukaPopupNekoSekarang();
+    }
     }
 
     async function loadDataDashboard(forceRefresh = false) {
@@ -760,6 +784,7 @@
     }
 
     function terapkanDataDashboardKeUI(res) {
+      currentFinanceSignature = `${res.totalMasuk}_${res.totalKeluar}_${res.totalSisaHutang}_${res.totalTrxBulanIniCount || 0}`;
       if (res.kategoriData?.sukses) {
         listKategori = res.kategoriData;
         if (tipeAktif === 'Tabungan') renderKategoriTabungan();
