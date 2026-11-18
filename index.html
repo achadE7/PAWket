@@ -556,16 +556,22 @@
       return `1 ${BULAN_INDO[targetDate.getMonth()]} ${targetDate.getFullYear()}`;
     };
 
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById('inputTanggal').value = todayIso();
       const savedUser = localStorage.getItem('pawketActiveUser');
       const savedUsername = localStorage.getItem('pawketUsername');
       const savedPassword = localStorage.getItem('pawketPassword');
       
+      // Jika sudah pernah login, langsung buka Beranda secara instan tanpa menunggu di layar login
       if (savedUser && savedUsername && savedPassword) {
-        document.getElementById('username').value = savedUsername;
-        document.getElementById('password').value = savedPassword;
-        prosesLogin();
+        activeUser = savedUser.trim();
+        document.getElementById('namaUser').innerText = activeUser;
+        document.getElementById('loginScreen').classList.add('hide');
+        document.getElementById('appScreen').classList.remove('hide');
+        document.getElementById('bottomNav').classList.remove('hide');
+
+        await Promise.all([loadDataDashboard(), loadKategori()]);
+        showNekoModal(false);
       }
     });
 
@@ -587,17 +593,21 @@
         localStorage.setItem('pawketPassword', p);
         
         document.getElementById('namaUser').innerText = activeUser;
-        const loginScr = document.getElementById('loginScreen');
-        loginScr.classList.add('opacity-0');
+        document.getElementById('loginScreen').classList.add('hide');
+        document.getElementById('appScreen').classList.remove('hide');
+        document.getElementById('bottomNav').classList.remove('hide');
 
-        setTimeout(async () => {
-          loginScr.classList.add('hide');
-          document.getElementById('appScreen').classList.remove('hide');
-          document.getElementById('bottomNav').classList.remove('hide');
-          
-          await Promise.all([loadDataDashboard(), loadKategori()]);
-          showNekoModal(false);
-        }, 250);
+        if (res.kategori?.sukses) {
+          listKategori = res.kategori;
+          if (tipeAktif === 'Tabungan') renderKategoriTabungan();
+          else renderKategori();
+          renderMetodePembayaran();
+        } else {
+          loadKategori();
+        }
+
+        await loadDataDashboard();
+        showNekoModal(false);
       } else {
         alert(res.pesan);
         btn.innerHTML = 'Masuk';
