@@ -492,7 +492,7 @@
     const ITEMS_PER_PAGE_REKAP = 5;
     const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(Number(angka) || 0);
     const cleanPosName = (str = '') => String(str).replace(/^[^a-zA-Z0-9]+/, '').trim();
-    const todayIso = () => new Date().toISOString().split('T')[0];
+    const todayIso = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
 
     let activeUser = "";
     let partnerFullName = "Pasangan";
@@ -556,7 +556,7 @@
       return `1 ${BULAN_INDO[targetDate.getMonth()]} ${targetDate.getFullYear()}`;
     };
 
-    document.addEventListener("DOMContentLoaded", async () => {
+    document.addEventListener("DOMContentLoaded", () => {
       document.getElementById('inputTanggal').value = todayIso();
       const savedUser = localStorage.getItem('pawketActiveUser');
       const savedUsername = localStorage.getItem('pawketUsername');
@@ -569,9 +569,8 @@
         document.getElementById('appScreen').classList.remove('hide');
         document.getElementById('bottomNav').classList.remove('hide');
 
-        // Jalankan Dashboard, Kategori, dan Neko AI secara paralel di latar belakang!
-        loadKategori();
-        await loadDataDashboard();
+        // Jalankan 1 panggilan Dashboard (sudah termasuk Kategori) & Neko AI serentak!
+        loadDataDashboard(false);
         mintaWejanganAuto(false);
       }
     });
@@ -598,17 +597,13 @@
         document.getElementById('appScreen').classList.remove('hide');
         document.getElementById('bottomNav').classList.remove('hide');
 
-        if (res.kategori?.sukses) {
-          listKategori = res.kategori;
-          if (tipeAktif === 'Tabungan') renderKategoriTabungan();
-          else renderKategori();
-          renderMetodePembayaran();
+        // Langsung gunakan data dashboard & kategori yang sudah dikirim oleh API login tanpa panggil ulang!
+        if (res.dashboard?.sukses) {
+          terapkanDataDashboardKeUI(res.dashboard);
         } else {
-          loadKategori();
+          loadDataDashboard(false);
         }
 
-        // Jalankan Neko AI di latar belakang (pop-up baru akan muncul setelah AI selesai)
-        await loadDataDashboard();
         mintaWejanganAuto(false);
       } else {
         alert(res.pesan);
@@ -761,7 +756,16 @@
 
     async function loadDataDashboard(forceRefresh = false) {
       const res = await callAPI('getDashboard', { forceRefresh });
-      if (!res?.sukses) return;
+      if (res?.sukses) terapkanDataDashboardKeUI(res);
+    }
+
+    function terapkanDataDashboardKeUI(res) {
+      if (res.kategoriData?.sukses) {
+        listKategori = res.kategoriData;
+        if (tipeAktif === 'Tabungan') renderKategoriTabungan();
+        else renderKategori();
+        renderMetodePembayaran();
+      }
 
       document.getElementById('saldoUtama').innerText = formatRp(res.saldoUtama);
       document.getElementById('totalMasuk').innerText = formatRp(res.totalMasuk);
@@ -1483,7 +1487,7 @@
         document.getElementById(`nav-${id}`).classList.replace(id === tabId ? 'text-gray-400' : 'text-main-500', id === tabId ? 'text-main-500' : 'text-gray-400');
       });
       
-      if (['dashboard', 'saldo', 'hutang'].includes(tabId)) loadDataDashboard();
+      if (activeUser && ['dashboard', 'saldo', 'hutang'].includes(tabId)) loadDataDashboard();
       if (tabId === 'rekap') {
         const inputBulan = document.getElementById('inputBulan');
         if (!inputBulan.value) {
