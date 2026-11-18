@@ -654,7 +654,9 @@
     }
 
     let wejanganState = {
-      mode: "me", // 'me' atau 'partner'
+      mode: "me",
+      isAI: true,
+      debugPesan: "",
       komentarKu: "",
       komentarPasangan: "",
       namaPasangan: "Pasangan"
@@ -689,13 +691,21 @@
         ? `🐾 Lihat Analisa Keuangan ${partnerShortName}`
         : `😼 Kembali ke Analisa Keuanganku`;
 
+      // Tampilkan kotak Log Error jika masih jatuh ke Fallback (isAI === false)
+      const debugBoxHtml = (!wejanganState.isAI && wejanganState.debugPesan)
+        ? `<div class="mt-3 w-full bg-red-50 border border-red-200 rounded-xl p-2.5 text-left not-italic">
+             <p class="text-[10px] font-bold text-red-600 mb-1"><i class="fa-solid fa-bug mr-1"></i>Mode Fallback Aktif — Log Error AI:</p>
+             <p class="text-[9px] font-mono text-red-500 break-words leading-tight select-all">${wejanganState.debugPesan}</p>
+           </div>`
+        : "";
+
       textContainer.innerHTML = `
         <div class="w-full flex flex-col items-center">
           <span class="not-italic text-[10px] font-bold px-2.5 py-0.5 rounded-full border mb-2.5 ${badgeClass}">${badgeLabel}</span>
           <span class="text-gray-700 font-medium leading-relaxed block">"${formattedText}"</span>
+          ${debugBoxHtml}
           <button onclick="toggleWejanganPasangan()" class="mt-4 px-3.5 py-2 rounded-xl text-[11px] font-bold border transition active:scale-95 not-italic flex items-center justify-center gap-1.5 w-full shadow-sm ${btnClass}">
             <span>${btnLabel}</span>
-            <i class="fa-solid fa-Repeat text-[10px]"></i>
           </button>
         </div>
       `;
@@ -704,6 +714,7 @@
         <div class="w-full flex flex-col items-start">
           <span class="not-italic text-[9px] font-bold px-2 py-0.5 rounded-full border mb-1.5 ${badgeClass}">${badgeLabel}</span>
           <p class="w-full text-gray-700 leading-relaxed font-medium mb-2.5">"${formattedText}"</p>
+          ${debugBoxHtml}
           <button onclick="toggleWejanganPasangan()" class="px-3 py-1.5 rounded-xl text-[10px] font-bold border transition active:scale-95 not-italic flex items-center justify-center gap-1.5 w-full ${btnClass}">
             <span>${btnLabel}</span>
           </button>
@@ -723,12 +734,16 @@
       const res = await callAPI('analisisKeuanganAI', { oleh: activeUser, forceRefresh }); 
       
       if (res?.sukses) {
+        wejanganState.isAI = res.isAI !== false;
+        wejanganState.debugPesan = res.debugPesan || "";
         wejanganState.komentarKu = res.komentarKu || res.hasil || "";
         wejanganState.komentarPasangan = res.komentarPasangan || res.hasil || "";
         wejanganState.namaPasangan = res.namaPasangan || partnerFullName || "Pasangan";
         renderWejanganNekoUI();
       } else {
         const sUtama = document.getElementById('saldoUtama').innerText || 'Rp 0';
+        wejanganState.isAI = false;
+        wejanganState.debugPesan = res?.pesan || "Gagal memanggil action analisisKeuanganAI di server.";
         wejanganState.komentarKu = `😾 Meong! Saldo gabungan kalian saat ini <b>${sUtama}</b>. 🙀 Kurangi jajan di luar yang nggak perlu dan utamakan bayar tagihan tepat waktu ya! 🐾`;
         wejanganState.komentarPasangan = `🐾 Pastikan pasanganmu juga rajin mencatat pemasukan dan pengeluarannya di PAWket ya!`;
         wejanganState.namaPasangan = partnerFullName || "Pasangan";
