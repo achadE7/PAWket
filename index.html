@@ -94,6 +94,115 @@
       width: 100% !important;
       display: inline-block !important;
     }
+
+    /* ================= ANIMASI MASKOT NEKO TABBY PUTIH-ABU ================= */
+    .neko-svg { overflow: visible; user-select: none; }
+    .neko-head { transform-origin: 90px 84px; animation: neko-breathe 3.2s ease-in-out infinite; }
+    .neko-tail { transform-origin: 124px 124px; animation: neko-tail-wag 2.8s ease-in-out infinite; }
+    .neko-ear-l { transform-origin: 54px 58px; animation: neko-ear-twitch-l 5.5s ease-in-out infinite; }
+    .neko-ear-r { transform-origin: 126px 58px; animation: neko-ear-twitch-r 6.4s ease-in-out infinite; }
+    .neko-paws { transform-origin: 90px 136px; transition: transform 0.15s ease; }
+
+    .neko-blink-group { transform-origin: 90px 82px; animation: neko-blink 4.3s ease-in-out infinite; }
+    .neko-svg[data-mood="bangga"] .neko-blink-group,
+    .neko-svg[data-mood="panik"] .neko-blink-group { animation: none; }
+
+    /* Visibilitas ekspresi berdasarkan data-mood */
+    .neko-expr { display: none; }
+    .neko-svg[data-mood="santai"] .neko-expr-santai,
+    .neko-svg[data-mood="marah_gemas"] .neko-expr-marah_gemas,
+    .neko-svg[data-mood="panik"] .neko-expr-panik,
+    .neko-svg[data-mood="bangga"] .neko-expr-bangga,
+    .neko-svg[data-mood="sarkas"] .neko-expr-sarkas,
+    .neko-svg[data-mood="berpikir"] .neko-expr-berpikir {
+      display: inline;
+    }
+
+    /* Mulut istirahat vs mulut lip-sync saat berbicara */
+    .neko-mouth-talk { display: none; transform-origin: 90px 101px; }
+    .neko-svg[data-talking="true"] .neko-mouth-idle { display: none !important; }
+    .neko-svg[data-talking="true"] .neko-mouth-talk {
+      display: inline;
+      transform: scaleY(var(--mouth-open, 0.45));
+    }
+    .neko-svg[data-talking="true"] .neko-head {
+      animation: neko-talk-bob 0.42s ease-in-out infinite;
+    }
+    .neko-svg[data-talking="true"] .neko-paws {
+      animation: neko-paw-bounce 0.48s ease-in-out infinite;
+    }
+
+    /* Efek komik per mood */
+    .neko-svg[data-mood="marah_gemas"] .neko-anger-vein { transform-origin: 132px 48px; animation: neko-pulse-fast 0.8s ease-in-out infinite; }
+    .neko-svg[data-mood="panik"] .neko-sweat { animation: neko-sweat-drop 1.3s ease-in infinite; }
+    .neko-svg[data-mood="panik"] .neko-ear-l { transform: rotate(-14deg); animation: none; }
+    .neko-svg[data-mood="panik"] .neko-ear-r { transform: rotate(14deg); animation: none; }
+    .neko-svg[data-mood="bangga"] .neko-sparkle { animation: neko-sparkle-float 1.6s ease-in-out infinite; }
+    .neko-svg[data-mood="berpikir"] .neko-think-dot { animation: neko-think-pulse 1.2s ease-in-out infinite; }
+
+    /* Bar equalizer mini saat suara aktif */
+    .neko-wave span {
+      display: inline-block;
+      width: 3px;
+      height: 10px;
+      border-radius: 999px;
+      background: currentColor;
+      animation: neko-wave-bar 0.75s ease-in-out infinite;
+    }
+    .neko-wave span:nth-child(2) { animation-delay: 0.15s; height: 14px; }
+    .neko-wave span:nth-child(3) { animation-delay: 0.3s; height: 8px; }
+
+    @keyframes neko-breathe {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-2.2px) rotate(0.6deg); }
+    }
+    @keyframes neko-talk-bob {
+      0%, 100% { transform: translateY(0px) rotate(-1deg); }
+      50% { transform: translateY(-2.8px) rotate(1.4deg); }
+    }
+    @keyframes neko-paw-bounce {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-2px); }
+    }
+    @keyframes neko-tail-wag {
+      0%, 100% { transform: rotate(-6deg); }
+      50% { transform: rotate(10deg); }
+    }
+    @keyframes neko-blink {
+      0%, 44%, 49%, 100% { transform: scaleY(1); }
+      46.5% { transform: scaleY(0.08); }
+    }
+    @keyframes neko-ear-twitch-l {
+      0%, 86%, 100% { transform: rotate(0deg); }
+      90% { transform: rotate(-8deg); }
+      94% { transform: rotate(2deg); }
+    }
+    @keyframes neko-ear-twitch-r {
+      0%, 82%, 100% { transform: rotate(0deg); }
+      86% { transform: rotate(8deg); }
+      91% { transform: rotate(-2deg); }
+    }
+    @keyframes neko-pulse-fast {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.18); }
+    }
+    @keyframes neko-sweat-drop {
+      0% { transform: translateY(-4px); opacity: 0; }
+      25% { opacity: 1; }
+      100% { transform: translateY(9px); opacity: 0; }
+    }
+    @keyframes neko-sparkle-float {
+      0%, 100% { transform: translateY(0px) scale(0.95); opacity: 0.85; }
+      50% { transform: translateY(-4px) scale(1.12); opacity: 1; }
+    }
+    @keyframes neko-think-pulse {
+      0%, 100% { opacity: 0.35; }
+      50% { opacity: 1; }
+    }
+    @keyframes neko-wave-bar {
+      0%, 100% { transform: scaleY(0.45); }
+      50% { transform: scaleY(1.25); }
+    }
   </style>
 </head>
 <body class="text-gray-700 antialiased bg-gray-100 flex justify-center min-h-screen">
@@ -748,21 +857,23 @@
   </div>
 
   <!-- ================= POPUP MODAL NEKO AI ================= -->
-  <div id="nekoModal" role="dialog" aria-modal="true" aria-labelledby="nekoModalTitle" onclick="handleBackdropClose(event, closeNekoModal)" class="hide fixed inset-0 z-[100] bg-gray-900/60 flex items-center justify-center p-6 backdrop-blur-sm opacity-0 transition-opacity duration-300">
-    <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative transform scale-95 transition-all duration-300" id="nekoModalContent">
-      <div class="absolute -top-12 left-1/2 -translate-x-1/2">
-        <div class="bg-gradient-to-tr from-accent-600 to-accent-300 rounded-full p-4 border-4 border-white shadow-lg">
-          <i class="fa-solid fa-cat text-4xl text-white" aria-hidden="true"></i>
+  <div id="nekoModal" role="dialog" aria-modal="true" aria-labelledby="nekoModalTitle" onclick="handleBackdropClose(event, closeNekoModal)" class="hide fixed inset-0 z-[100] bg-gray-900/60 flex items-center justify-center p-5 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+    <div id="nekoModalContent" class="relative w-full max-w-sm mt-12 transform scale-95 transition-all duration-300">
+      <div class="absolute -top-16 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center">
+        <button type="button" onclick="toggleBicaraNeko()" aria-label="Klik maskot Neko untuk mulai atau hentikan suara" title="Klik Neko untuk bicara" class="w-32 h-28 rounded-full bg-gradient-to-b from-main-50 to-accent-50 border-4 border-white shadow-lg flex items-center justify-center p-1 hover:scale-105 transition">
+          <div id="nekoModalMascot" class="w-full h-full flex items-center justify-center"></div>
+        </button>
+      </div>
+      <div class="bg-white rounded-3xl px-5 pb-5 pt-14 w-full shadow-2xl max-h-[78vh] overflow-y-auto">
+        <h3 id="nekoModalTitle" class="text-lg font-bold text-center text-gray-800 mt-1 mb-2">Wejangan Neko</h3>
+        <div id="nekoModalText" class="text-sm text-gray-700 text-center mb-4 min-h-[80px] flex flex-col items-center justify-center">
+          <i class="fa-solid fa-spinner fa-spin text-main-600 text-2xl mb-2" aria-hidden="true"></i>
+          <p class="font-semibold text-main-700 text-xs">Neko sedang mengintip dompet kalian...</p>
         </div>
+        <button type="button" onclick="closeNekoModal()" class="w-full bg-main-600 text-white font-bold py-3 rounded-xl shadow hover:bg-main-700 transition active:scale-[0.99]">
+          Oke, Siap Neko!
+        </button>
       </div>
-      <h3 id="nekoModalTitle" class="text-xl font-bold text-center text-gray-800 mt-8 mb-2">Wejangan Neko</h3>
-      <div id="nekoModalText" class="text-sm text-gray-700 text-center mb-5 min-h-[80px] flex flex-col items-center justify-center">
-        <i class="fa-solid fa-spinner fa-spin text-main-600 text-3xl mb-3" aria-hidden="true"></i>
-        <p class="font-semibold text-main-700">Neko sedang mengintip dompet kalian...</p>
-      </div>
-      <button type="button" onclick="closeNekoModal()" class="w-full bg-main-600 text-white font-bold py-3 rounded-xl shadow hover:bg-main-700 transition active:scale-[0.99]">
-        Oke, Siap Neko!
-      </button>
     </div>
   </div>
 
@@ -846,12 +957,41 @@
     let isNekoCalled = false;
     let currentFinanceSignature = "";
 
+    const NEKO_VOICES = [
+      { id: "Leda", label: "Imut", desc: "Suara muda & manis", pitch: 1.48, rate: 1.04 },
+      { id: "Puck", label: "Jahil", desc: "Lincah & pas buat roasting", pitch: 1.28, rate: 1.1 },
+      { id: "Zephyr", label: "Ceria", desc: "Cerah & penuh semangat", pitch: 1.38, rate: 1.05 },
+      { id: "Achernar", label: "Manja", desc: "Lembut & menggemaskan", pitch: 1.24, rate: 0.96 }
+    ];
+
+    const NEKO_MOOD_META = {
+      marah_gemas: { label: "Galak Gemas", badge: "bg-rose-50 text-rose-700 border-rose-200", icon: "fa-fire" },
+      panik: { label: "Kaget Panik", badge: "bg-amber-50 text-amber-800 border-amber-200", icon: "fa-bolt" },
+      bangga: { label: "Bangga Ceria", badge: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: "fa-star" },
+      sarkas: { label: "Sarkas Jahil", badge: "bg-purple-50 text-purple-700 border-purple-200", icon: "fa-face-grin-wink" },
+      santai: { label: "Santai Ramah", badge: "bg-sky-50 text-sky-700 border-sky-200", icon: "fa-paw" },
+      berpikir: { label: "Sedang Mikir", badge: "bg-gray-100 text-gray-700 border-gray-200", icon: "fa-ellipsis" }
+    };
+
+    let selectedNekoVoice = localStorage.getItem('pawketNekoVoice') || 'Leda';
+    if (!NEKO_VOICES.some(v => v.id === selectedNekoVoice)) selectedNekoVoice = 'Leda';
+
+    let nekoSpeechState = "idle"; // idle | loading | speaking
+    let nekoAudioCtx = null;
+    let nekoActiveSource = null;
+    let nekoActiveFallbackAudio = null;
+    let nekoLipSyncRaf = null;
+    let nekoSpeechRequestId = 0;
+    const nekoAudioCache = new Map();
+
     let wejanganState = {
       mode: "me",
       isAI: true,
       debugPesan: "",
       komentarKu: "",
       komentarPasangan: "",
+      moodKu: "santai",
+      moodPasangan: "santai",
       namaPasangan: "Pasangan"
     };
 
@@ -976,6 +1116,7 @@
       localStorage.removeItem('pawketUsername');
 
       document.getElementById('inputTanggal').value = todayIso();
+      ensureNekoModalMascot('santai');
       const savedToken = localStorage.getItem('pawketToken');
       const savedUser = localStorage.getItem('pawketActiveUser');
 
@@ -1055,6 +1196,8 @@
         callAPI('logout', { token: tokenToRevoke });
       }
 
+      stopNekoSpeech();
+      nekoAudioCache.clear();
       activeUser = "";
       activeToken = "";
       isNekoCalled = false;
@@ -1066,7 +1209,7 @@
       currentPageRekap = 1;
       currentFinanceSignature = "";
       lastDashboardFetchAt = 0;
-      wejanganState = { mode: "me", isAI: true, debugPesan: "", komentarKu: "", komentarPasangan: "", namaPasangan: "Pasangan" };
+      wejanganState = { mode: "me", isAI: true, debugPesan: "", komentarKu: "", komentarPasangan: "", moodKu: "santai", moodPasangan: "santai", namaPasangan: "Pasangan" };
 
       if (pieChartAkuInstance) { pieChartAkuInstance.destroy(); pieChartAkuInstance = null; }
       if (pieChartPasanganInstance) { pieChartPasanganInstance.destroy(); pieChartPasanganInstance = null; }
@@ -1104,8 +1247,571 @@
       if (ok) showToast('Data berhasil diperbarui.', 'success');
     }
 
+    // ================= MASKOT KUCING TABBY PUTIH-ABU ("MUJAER") & SUARA NEKO =================
+    function buildNekoMascotSvg(uid = 'modal', mood = 'santai', isTalking = false) {
+      const m = NEKO_MOOD_META[mood] ? mood : 'santai';
+      const talkingAttr = isTalking ? 'true' : 'false';
+      const furGradId = `nekoFur_${uid}`;
+      const bodyGradId = `nekoBody_${uid}`;
+      const earInnerId = `nekoEar_${uid}`;
+
+      return `
+        <svg viewBox="0 0 180 158" class="neko-svg w-full h-full drop-shadow-sm" data-mood="${m}" data-talking="${talkingAttr}" role="img" aria-label="Maskot kucing tabby putih abu Neko (${NEKO_MOOD_META[m].label})">
+          <defs>
+            <radialGradient id="${furGradId}" cx="50%" cy="38%" r="60%">
+              <stop offset="0%" stop-color="#b7b2aa"/>
+              <stop offset="55%" stop-color="#8b867f"/>
+              <stop offset="100%" stop-color="#64605b"/>
+            </radialGradient>
+            <linearGradient id="${bodyGradId}" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#7c7872"/>
+              <stop offset="100%" stop-color="#4e4b47"/>
+            </linearGradient>
+            <linearGradient id="${earInnerId}" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#f8b7c4"/>
+              <stop offset="100%" stop-color="#fde4e9"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Ekor berbulu belang tabby gelap -->
+          <g class="neko-tail">
+            <path d="M122 128 C147 125 162 108 156 91 C152 80 140 82 138 92 C137 100 132 109 119 113 Z" fill="#5e5a55" stroke="#3c3936" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M134 114 Q143 118 148 111" stroke="#2f2d2b" stroke-width="4" stroke-linecap="round" fill="none"/>
+            <path d="M143 102 Q151 104 155 98" stroke="#2f2d2b" stroke-width="4" stroke-linecap="round" fill="none"/>
+            <ellipse cx="148" cy="87" rx="5.5" ry="4" fill="#d9d4cc" transform="rotate(-18 148 87)"/>
+          </g>
+
+          <!-- Tubuh kucing berbulu abu-abu + dada/bib putih salju -->
+          <g class="neko-body">
+            <ellipse cx="90" cy="128" rx="44" ry="26" fill="url(#${bodyGradId})" stroke="#43403c" stroke-width="2"/>
+            <!-- Belang tabby di bahu -->
+            <path d="M51 121 Q59 118 65 123" stroke="#302e2c" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+            <path d="M129 121 Q121 118 115 123" stroke="#302e2c" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+            <!-- Bulu dada putih lebar khas foto -->
+            <path d="M62 110 C58 124 63 144 90 148 C117 144 122 124 118 110 C108 115 72 115 62 110 Z" fill="#ffffff"/>
+            <path d="M77 128 Q90 135 103 128" stroke="#ece8e1" stroke-width="2" stroke-linecap="round" fill="none"/>
+            <!-- Dua kaki depan putih mungil -->
+            <g class="neko-paws">
+              <ellipse cx="67" cy="143" rx="14" ry="9" fill="#ffffff" stroke="#d9d4cc" stroke-width="1.6"/>
+              <path d="M62 145 L62 150 M68 146 L68 151" stroke="#d5cfc7" stroke-width="1.4" stroke-linecap="round"/>
+              <ellipse cx="113" cy="143" rx="14" ry="9" fill="#ffffff" stroke="#d9d4cc" stroke-width="1.6"/>
+              <path d="M112 146 L112 151 M118 145 L118 150" stroke="#d5cfc7" stroke-width="1.4" stroke-linecap="round"/>
+            </g>
+          </g>
+
+          <!-- Grup Kepala (bernapas & mengangguk saat bicara) -->
+          <g class="neko-head">
+            <!-- Telinga Kiri (agak miring/setengah lipat imut sesuai foto) -->
+            <g class="neko-ear-l">
+              <path d="M44 69 C32 51 31 32 42 26 C53 24 66 35 73 49 Z" fill="#7c7770" stroke="#3e3b38" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M36 33 C39 27 45 25 51 28" stroke="#2c2a28" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+              <path d="M45 61 C38 49 38 38 45 34 C53 33 61 41 66 51 Z" fill="url(#${earInnerId})"/>
+              <path d="M47 54 Q52 49 58 51" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" fill="none" opacity="0.9"/>
+            </g>
+
+            <!-- Telinga Kanan -->
+            <g class="neko-ear-r">
+              <path d="M136 69 C148 51 149 32 138 26 C127 24 114 35 107 49 Z" fill="#7c7770" stroke="#3e3b38" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M144 33 C141 27 135 25 129 28" stroke="#2c2a28" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+              <path d="M135 61 C142 49 142 38 135 34 C127 33 119 41 114 51 Z" fill="url(#${earInnerId})"/>
+              <path d="M133 54 Q128 49 122 51" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" fill="none" opacity="0.9"/>
+            </g>
+
+            <!-- Bentuk Kepala Bulat Berbulu Fluffy -->
+            <path d="M90 38 C122 38 144 57 146 83 C148 103 132 119 90 119 C48 119 32 103 34 83 C36 57 58 38 90 38 Z" fill="url(#${furGradId})" stroke="#43403c" stroke-width="2"/>
+            <!-- Rumbai bulu pipi kiri & kanan -->
+            <path d="M35 84 L29 89 L36 93 L31 98 L40 100" fill="#9a958d" stroke="#43403c" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M145 84 L151 89 L144 93 L149 98 L140 100" fill="#9a958d" stroke="#43403c" stroke-width="1.6" stroke-linejoin="round"/>
+
+            <!-- Motif Tabby "Mujaer" Dahi (Garis M Khas) & Pipi -->
+            <g stroke="#2f2d2a" stroke-linecap="round" fill="none">
+              <path d="M90 41 L90 56" stroke-width="3.6"/>
+              <path d="M79 43 Q82 52 84 58" stroke-width="3.2"/>
+              <path d="M101 43 Q98 52 96 58" stroke-width="3.2"/>
+              <path d="M68 48 Q73 55 75 61" stroke-width="2.6"/>
+              <path d="M112 48 Q107 55 105 61" stroke-width="2.6"/>
+              <!-- Garis tabby pipi kiri & kanan -->
+              <path d="M40 77 Q47 79 52 82" stroke-width="2.6"/>
+              <path d="M38 87 Q46 88 52 89" stroke-width="2.4"/>
+              <path d="M140 77 Q133 79 128 82" stroke-width="2.6"/>
+              <path d="M142 87 Q134 88 128 89" stroke-width="2.4"/>
+            </g>
+
+            <!-- Pola Putih V Terbalik di Tengah Wajah + Moncong & Dagu Putih (Khas Foto!) -->
+            <path d="M90 61 C84 74 79 84 65 89 C52 93 52 110 70 116 C80 119 100 119 110 116 C128 110 128 93 115 89 C101 84 96 74 90 61 Z" fill="#ffffff"/>
+            <!-- Bayangan lembut bawah pipi putih -->
+            <ellipse cx="81" cy="100" rx="11" ry="8" fill="#fdfcfa"/>
+            <ellipse cx="99" cy="100" rx="11" ry="8" fill="#fdfcfa"/>
+
+            <!-- Pipi Merona -->
+            <ellipse cx="55" cy="96" rx="8.5" ry="4.8" fill="#fda4af" opacity="0.55"/>
+            <ellipse cx="125" cy="96" rx="8.5" ry="4.8" fill="#fda4af" opacity="0.55"/>
+
+            <!-- Kumis Halus -->
+            <g stroke="#e7e2da" stroke-width="1.6" stroke-linecap="round">
+              <path d="M56 97 Q40 94 28 97"/>
+              <path d="M57 102 Q42 103 30 108"/>
+              <path d="M124 97 Q140 94 152 97"/>
+              <path d="M123 102 Q138 103 150 108"/>
+            </g>
+
+            <!-- ========== 6 EKSPRESI MATA ========== -->
+            <g class="neko-blink-group">
+              <!-- 1. SANTAI: Mata bulat glossy gelap kebiruan -->
+              <g class="neko-expr neko-expr-santai">
+                <ellipse cx="68" cy="81" rx="10.5" ry="11.5" fill="#1d2436"/>
+                <ellipse cx="68" cy="84" rx="7.5" ry="6" fill="#2d3b59" opacity="0.65"/>
+                <circle cx="64.5" cy="76.5" r="3.6" fill="#ffffff"/>
+                <circle cx="71.5" cy="84.5" r="1.6" fill="#ffffff"/>
+
+                <ellipse cx="112" cy="81" rx="10.5" ry="11.5" fill="#1d2436"/>
+                <ellipse cx="112" cy="84" rx="7.5" ry="6" fill="#2d3b59" opacity="0.65"/>
+                <circle cx="108.5" cy="76.5" r="3.6" fill="#ffffff"/>
+                <circle cx="115.5" cy="84.5" r="1.6" fill="#ffffff"/>
+              </g>
+
+              <!-- 2. MARAH GEMAS: Alis menukik tegas + mata tajam imut -->
+              <g class="neko-expr neko-expr-marah_gemas">
+                <ellipse cx="68" cy="82" rx="10" ry="10.5" fill="#1d2436"/>
+                <circle cx="65" cy="78" r="3.1" fill="#ffffff"/>
+                <circle cx="71" cy="85" r="1.4" fill="#ffffff"/>
+                <path d="M55 68 L80 76" stroke="#2c2a28" stroke-width="3.6" stroke-linecap="round"/>
+
+                <ellipse cx="112" cy="82" rx="10" ry="10.5" fill="#1d2436"/>
+                <circle cx="109" cy="78" r="3.1" fill="#ffffff"/>
+                <circle cx="115" cy="85" r="1.4" fill="#ffffff"/>
+                <path d="M125 68 L100 76" stroke="#2c2a28" stroke-width="3.6" stroke-linecap="round"/>
+              </g>
+
+              <!-- 3. PANIK: Mata lebar kaget + pupil kecil -->
+              <g class="neko-expr neko-expr-panik">
+                <ellipse cx="68" cy="81" rx="11.5" ry="12.5" fill="#ffffff" stroke="#2c2a28" stroke-width="2.2"/>
+                <circle cx="68" cy="82" r="4.5" fill="#1d2436"/>
+                <circle cx="66.5" cy="80" r="1.6" fill="#ffffff"/>
+                <path d="M58 66 Q68 62 77 67" stroke="#2c2a28" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+
+                <ellipse cx="112" cy="81" rx="11.5" ry="12.5" fill="#ffffff" stroke="#2c2a28" stroke-width="2.2"/>
+                <circle cx="112" cy="82" r="4.5" fill="#1d2436"/>
+                <circle cx="110.5" cy="80" r="1.6" fill="#ffffff"/>
+                <path d="M103 67 Q112 62 122 66" stroke="#2c2a28" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+              </g>
+
+              <!-- 4. BANGGA: Mata melengkung senang ^ ^ -->
+              <g class="neko-expr neko-expr-bangga">
+                <path d="M57 83 Q68 70 79 83" stroke="#262422" stroke-width="4" stroke-linecap="round" fill="none"/>
+                <path d="M101 83 Q112 70 123 83" stroke="#262422" stroke-width="4" stroke-linecap="round" fill="none"/>
+                <ellipse cx="55" cy="95" rx="9" ry="5" fill="#fb7185" opacity="0.45"/>
+                <ellipse cx="125" cy="95" rx="9" ry="5" fill="#fb7185" opacity="0.45"/>
+              </g>
+
+              <!-- 5. SARKAS: Mata menyipit licik + alis terangkat -->
+              <g class="neko-expr neko-expr-sarkas">
+                <ellipse cx="68" cy="83" rx="10" ry="8.5" fill="#1d2436"/>
+                <circle cx="71" cy="81" r="2.6" fill="#ffffff"/>
+                <path d="M56 77 L80 79" stroke="#8b867f" stroke-width="6" stroke-linecap="round"/>
+                <path d="M56 77 L80 79" stroke="#2c2a28" stroke-width="2.8" stroke-linecap="round"/>
+
+                <ellipse cx="112" cy="83" rx="10" ry="8.5" fill="#1d2436"/>
+                <circle cx="115" cy="81" r="2.6" fill="#ffffff"/>
+                <path d="M100 79 L124 76" stroke="#8b867f" stroke-width="6" stroke-linecap="round"/>
+                <path d="M100 79 L124 76" stroke="#2c2a28" stroke-width="2.8" stroke-linecap="round"/>
+                <path d="M103 69 Q113 64 123 68" stroke="#2c2a28" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+              </g>
+
+              <!-- 6. BERPIKIR: Melirik ke atas-kanan -->
+              <g class="neko-expr neko-expr-berpikir">
+                <ellipse cx="68" cy="81" rx="10" ry="11" fill="#1d2436"/>
+                <circle cx="71.5" cy="76.5" r="3.4" fill="#ffffff"/>
+                <ellipse cx="112" cy="81" rx="10" ry="11" fill="#1d2436"/>
+                <circle cx="115.5" cy="76.5" r="3.4" fill="#ffffff"/>
+                <path d="M59 68 Q68 65 76 68" stroke="#2c2a28" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                <path d="M104 68 Q112 65 121 68" stroke="#2c2a28" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+              </g>
+            </g>
+
+            <!-- Hidung Pink Imut -->
+            <path d="M85.5 92.5 Q90 90.5 94.5 92.5 Q92 97.5 90 98 Q88 97.5 85.5 92.5 Z" fill="#f48fa1"/>
+            <ellipse cx="89" cy="93.2" rx="1.6" ry="0.9" fill="#ffd9e0"/>
+
+            <!-- ========== MULUT ISTIRAHAT PER MOOD ========== -->
+            <g class="neko-mouth-idle">
+              <path class="neko-expr neko-expr-santai neko-expr-bangga" d="M81 101.5 Q85.5 106.5 90 101 Q94.5 106.5 99 101.5" stroke="#473c3a" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+              <path class="neko-expr neko-expr-marah_gemas" d="M83 106 Q90 100 97 106" stroke="#473c3a" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+              <g class="neko-expr neko-expr-panik">
+                <ellipse cx="90" cy="104.5" rx="4.5" ry="5.5" fill="#9f2b48" stroke="#473c3a" stroke-width="1.8"/>
+                <ellipse cx="90" cy="107.5" rx="2.6" ry="1.8" fill="#fb7185"/>
+              </g>
+              <path class="neko-expr neko-expr-sarkas" d="M82 103.5 Q91 106.5 99 99.5" stroke="#473c3a" stroke-width="2.3" stroke-linecap="round" fill="none"/>
+              <path class="neko-expr neko-expr-berpikir" d="M84 103 Q87 101 90 103 Q93 105 96 103" stroke="#473c3a" stroke-width="2.1" stroke-linecap="round" fill="none"/>
+            </g>
+
+            <!-- ========== MULUT LIP-SYNC SAAT BICARA ========== -->
+            <g class="neko-mouth-talk">
+              <path d="M82 101 Q90 99 98 101 C98 112 82 112 82 101 Z" fill="#9f2b48" stroke="#473c3a" stroke-width="1.9" stroke-linejoin="round"/>
+              <ellipse cx="90" cy="108" rx="4.6" ry="2.6" fill="#fb7185"/>
+              <path d="M81 101 Q85.5 104 90 100.2 Q94.5 104 99 101" stroke="#473c3a" stroke-width="1.9" stroke-linecap="round" fill="none"/>
+            </g>
+
+            <!-- ========== EFEK KOMIK PER MOOD ========== -->
+            <!-- Urat kesal lucu (marah_gemas) -->
+            <g class="neko-expr neko-expr-marah_gemas neko-anger-vein" stroke="#e11d48" stroke-width="2.6" stroke-linecap="round" fill="none">
+              <path d="M126 42 Q130 46 126 50"/>
+              <path d="M138 42 Q134 46 138 50"/>
+              <path d="M128 40 Q132 44 136 40"/>
+              <path d="M128 52 Q132 48 136 52"/>
+            </g>
+
+            <!-- Keringat kaget (panik) -->
+            <g class="neko-expr neko-expr-panik neko-sweat">
+              <path d="M136 62 C136 62 141 69 141 72.5 A5 5 0 0 1 131 72.5 C131 69 136 62 136 62 Z" fill="#38bdf8" stroke="#0284c7" stroke-width="1.2"/>
+              <circle cx="134.5" cy="71.5" r="1.2" fill="#ffffff"/>
+            </g>
+
+            <!-- Bintang & hati ceria (bangga) -->
+            <g class="neko-expr neko-expr-bangga neko-sparkle">
+              <path d="M36 44 L38.2 49.8 L44 52 L38.2 54.2 L36 60 L33.8 54.2 L28 52 L33.8 49.8 Z" fill="#f59e0b"/>
+              <path d="M145 48 C145 44.5 140 43.5 139 47 C138 43.5 133 44.5 133 48 C133 52 139 56 139 56 C139 56 145 52 145 48 Z" fill="#ec4899"/>
+            </g>
+
+            <!-- Titik berpikir (berpikir) -->
+            <g class="neko-expr neko-expr-berpikir neko-think-dot" fill="#3b82f6">
+              <circle cx="144" cy="52" r="3"/>
+              <circle cx="152" cy="43" r="4"/>
+              <circle cx="161" cy="33" r="5"/>
+            </g>
+          </g>
+        </svg>
+      `;
+    }
+
+    function getActiveNekoMood() {
+      if (wejanganState.isLoading) return 'berpikir';
+      const m = wejanganState.mode === "me" ? wejanganState.moodKu : wejanganState.moodPasangan;
+      return NEKO_MOOD_META[m] ? m : 'santai';
+    }
+
+    function ensureNekoModalMascot(moodOverride = null) {
+      const holder = document.getElementById('nekoModalMascot');
+      if (!holder) return;
+      const mood = moodOverride || getActiveNekoMood();
+      const isTalking = nekoSpeechState === 'speaking';
+      const existingSvg = holder.querySelector('.neko-svg');
+      if (!existingSvg) {
+        holder.innerHTML = buildNekoMascotSvg('modal', mood, isTalking);
+      } else {
+        existingSvg.setAttribute('data-mood', mood);
+        existingSvg.setAttribute('data-talking', isTalking ? 'true' : 'false');
+      }
+    }
+
+    function syncAllNekoMascots(moodOverride = null, mouthOpen = null) {
+      const mood = moodOverride || getActiveNekoMood();
+      const isTalking = nekoSpeechState === 'speaking';
+      ensureNekoModalMascot(mood);
+      document.querySelectorAll('.neko-svg').forEach(svg => {
+        svg.setAttribute('data-mood', mood);
+        svg.setAttribute('data-talking', isTalking ? 'true' : 'false');
+        if (mouthOpen !== null) {
+          svg.style.setProperty('--mouth-open', mouthOpen.toFixed(2));
+        } else if (!isTalking) {
+          svg.style.removeProperty('--mouth-open');
+        }
+      });
+    }
+
+    function updateNekoVoiceButtonsUI() {
+      document.querySelectorAll('.btn-neko-speak').forEach(btn => {
+        if (nekoSpeechState === 'loading') {
+          btn.disabled = true;
+          btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><span>Menyiapkan suara...</span>';
+        } else if (nekoSpeechState === 'speaking') {
+          btn.disabled = false;
+          btn.innerHTML = '<span class="neko-wave flex items-center gap-0.5 mr-1" aria-hidden="true"><span></span><span></span><span></span></span><span>Hentikan Suara</span>';
+        } else {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-volume-high" aria-hidden="true"></i><span>Dengarkan Neko</span>';
+        }
+      });
+
+      document.querySelectorAll('.btn-neko-voice-opt').forEach(btn => {
+        const isSelected = btn.dataset.voice === selectedNekoVoice;
+        btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+        btn.className = isSelected
+          ? 'btn-neko-voice-opt flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold bg-main-600 text-white shadow-sm transition'
+          : 'btn-neko-voice-opt flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold bg-white text-gray-700 border border-gray-200 hover:bg-main-50 hover:text-main-700 transition';
+      });
+    }
+
+    function pilihSuaraNeko(voiceId) {
+      if (!NEKO_VOICES.some(v => v.id === voiceId)) return;
+      if (selectedNekoVoice !== voiceId) {
+        selectedNekoVoice = voiceId;
+        localStorage.setItem('pawketNekoVoice', voiceId);
+        stopNekoSpeech();
+        updateNekoVoiceButtonsUI();
+        const vInfo = NEKO_VOICES.find(v => v.id === voiceId);
+        showToast(`Karakter suara Neko diubah ke "${vInfo.label}" (${vInfo.desc}).`, 'info');
+      }
+    }
+
+    function stopNekoSpeech() {
+      nekoSpeechRequestId++;
+      if (nekoLipSyncRaf) {
+        cancelAnimationFrame(nekoLipSyncRaf);
+        nekoLipSyncRaf = null;
+      }
+      if (nekoActiveSource) {
+        try { nekoActiveSource.onended = null; nekoActiveSource.stop(); nekoActiveSource.disconnect(); } catch (_) {}
+        nekoActiveSource = null;
+      }
+      if (nekoActiveFallbackAudio) {
+        try {
+          nekoActiveFallbackAudio.pause();
+          nekoActiveFallbackAudio.src = '';
+        } catch (_) {}
+        nekoActiveFallbackAudio = null;
+      }
+      if (typeof window.speechSynthesis !== 'undefined') {
+        try { window.speechSynthesis.cancel(); } catch (_) {}
+      }
+      nekoSpeechState = 'idle';
+      syncAllNekoMascots();
+      updateNekoVoiceButtonsUI();
+    }
+
+    function base64ToArrayBuffer(b64) {
+      const binary = atob(b64);
+      const len = binary.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+      return bytes.buffer;
+    }
+
+    function startAudioAnalyserLipSync(analyser) {
+      const dataArr = new Uint8Array(analyser.fftSize);
+      let smoothed = 0.25;
+      const tick = () => {
+        if (nekoSpeechState !== 'speaking') return;
+        analyser.getByteTimeDomainData(dataArr);
+        let sumSq = 0;
+        for (let i = 0; i < dataArr.length; i++) {
+          const norm = (dataArr[i] - 128) / 128;
+          sumSq += norm * norm;
+        }
+        const rms = Math.sqrt(sumSq / dataArr.length);
+        const target = Math.min(1.25, Math.max(0.18, rms * 5.2));
+        smoothed = smoothed * 0.55 + target * 0.45;
+        syncAllNekoMascots(null, smoothed);
+        nekoLipSyncRaf = requestAnimationFrame(tick);
+      };
+      nekoLipSyncRaf = requestAnimationFrame(tick);
+    }
+
+    function startRhythmicLipSync() {
+      const startTime = performance.now();
+      const tick = (now) => {
+        if (nekoSpeechState !== 'speaking') return;
+        const t = (now - startTime) / 1000;
+        const wave = 0.35 + Math.abs(Math.sin(t * 13.5)) * 0.55 + Math.abs(Math.sin(t * 5.3)) * 0.2;
+        syncAllNekoMascots(null, Math.min(1.15, wave));
+        nekoLipSyncRaf = requestAnimationFrame(tick);
+      };
+      nekoLipSyncRaf = requestAnimationFrame(tick);
+    }
+
+    function playNekoBrowserSpeechFallback(rawText, voiceId, reqId) {
+      if (typeof window.speechSynthesis === 'undefined') {
+        nekoSpeechState = 'idle';
+        syncAllNekoMascots();
+        updateNekoVoiceButtonsUI();
+        showToast('Browser tidak mendukung pemutaran suara cadangan.', 'error');
+        return;
+      }
+
+      const cleanText = String(rawText || '')
+        .replace(/\*\*(.*?)\*\*/g, '$1')
+        .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      if (!cleanText || reqId !== nekoSpeechRequestId) return;
+
+      const voiceMeta = NEKO_VOICES.find(v => v.id === voiceId) || NEKO_VOICES[0];
+      const utter = new SpeechSynthesisUtterance(cleanText);
+      utter.lang = 'id-ID';
+      utter.pitch = voiceMeta.pitch;
+      utter.rate = voiceMeta.rate;
+
+      const availableVoices = window.speechSynthesis.getVoices() || [];
+      const idVoice = availableVoices.find(v => /id[-_]?ID/i.test(v.lang));
+      if (idVoice) utter.voice = idVoice;
+
+      utter.onstart = () => {
+        if (reqId !== nekoSpeechRequestId) return;
+        nekoSpeechState = 'speaking';
+        syncAllNekoMascots();
+        updateNekoVoiceButtonsUI();
+        startRhythmicLipSync();
+      };
+      utter.onend = () => {
+        if (reqId !== nekoSpeechRequestId) return;
+        stopNekoSpeech();
+      };
+      utter.onerror = () => {
+        if (reqId !== nekoSpeechRequestId) return;
+        stopNekoSpeech();
+      };
+
+      try {
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utter);
+      } catch (_) {
+        stopNekoSpeech();
+      }
+    }
+
+    async function playNekoWavBase64(audioBase64, mimeType, reqId) {
+      if (reqId !== nekoSpeechRequestId) return;
+
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        try {
+          if (!nekoAudioCtx) nekoAudioCtx = new AudioCtx();
+          if (nekoAudioCtx.state === 'suspended') await nekoAudioCtx.resume();
+
+          const arrayBuf = base64ToArrayBuffer(audioBase64);
+          const audioBuffer = await nekoAudioCtx.decodeAudioData(arrayBuf.slice(0));
+          if (reqId !== nekoSpeechRequestId) return;
+
+          const source = nekoAudioCtx.createBufferSource();
+          const analyser = nekoAudioCtx.createAnalyser();
+          analyser.fftSize = 256;
+
+          source.buffer = audioBuffer;
+          source.connect(analyser);
+          analyser.connect(nekoAudioCtx.destination);
+
+          nekoActiveSource = source;
+          nekoSpeechState = 'speaking';
+          syncAllNekoMascots();
+          updateNekoVoiceButtonsUI();
+          startAudioAnalyserLipSync(analyser);
+
+          source.onended = () => {
+            if (reqId === nekoSpeechRequestId) stopNekoSpeech();
+          };
+          source.start(0);
+          return;
+        } catch (_) {
+          // Lanjut ke fallback HTMLAudioElement
+        }
+      }
+
+      try {
+        const blob = new Blob([base64ToArrayBuffer(audioBase64)], { type: mimeType || 'audio/wav' });
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        nekoActiveFallbackAudio = audio;
+        audio.onplay = () => {
+          if (reqId !== nekoSpeechRequestId) return;
+          nekoSpeechState = 'speaking';
+          syncAllNekoMascots();
+          updateNekoVoiceButtonsUI();
+          startRhythmicLipSync();
+        };
+        audio.onended = () => {
+          URL.revokeObjectURL(url);
+          if (reqId === nekoSpeechRequestId) stopNekoSpeech();
+        };
+        audio.onerror = () => {
+          URL.revokeObjectURL(url);
+          if (reqId === nekoSpeechRequestId) stopNekoSpeech();
+        };
+        await audio.play();
+      } catch (_) {
+        if (reqId === nekoSpeechRequestId) stopNekoSpeech();
+      }
+    }
+
+    async function toggleBicaraNeko() {
+      if (nekoSpeechState === 'speaking' || nekoSpeechState === 'loading') {
+        stopNekoSpeech();
+        return;
+      }
+
+      const isMe = wejanganState.mode === "me";
+      const teks = isMe ? wejanganState.komentarKu : wejanganState.komentarPasangan;
+      const mood = getActiveNekoMood();
+      if (!teks || !teks.trim()) {
+        return showToast('Wejangan Neko belum tersedia untuk dibacakan.', 'info');
+      }
+
+      // Unlock AudioContext langsung di dalam event klik user (wajib untuk iOS Safari / Mobile)
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        try {
+          if (!nekoAudioCtx) nekoAudioCtx = new AudioCtx();
+          if (nekoAudioCtx.state === 'suspended') nekoAudioCtx.resume().catch(() => {});
+        } catch (_) {}
+      }
+
+      const reqId = ++nekoSpeechRequestId;
+      const cacheKey = `${selectedNekoVoice}|${mood}|${teks}`;
+
+      if (nekoAudioCache.has(cacheKey)) {
+        const cached = nekoAudioCache.get(cacheKey);
+        await playNekoWavBase64(cached.audioBase64, cached.mimeType, reqId);
+        return;
+      }
+
+      nekoSpeechState = 'loading';
+      updateNekoVoiceButtonsUI();
+
+      const res = await callAPI('ttsNeko', {
+        teks,
+        voice: selectedNekoVoice,
+        mood
+      });
+
+      if (reqId !== nekoSpeechRequestId) return;
+
+      if (res?.sukses && res.audioBase64) {
+        if (nekoAudioCache.size >= 8) {
+          const oldestKey = nekoAudioCache.keys().next().value;
+          nekoAudioCache.delete(oldestKey);
+        }
+        nekoAudioCache.set(cacheKey, { audioBase64: res.audioBase64, mimeType: res.mimeType || 'audio/wav' });
+        await playNekoWavBase64(res.audioBase64, res.mimeType || 'audio/wav', reqId);
+      } else if (!res?.authError) {
+        showToast('Suara AI sedang padat, memakai suara cadangan browser.', 'info');
+        playNekoBrowserSpeechFallback(teks, selectedNekoVoice, reqId);
+      } else {
+        stopNekoSpeech();
+      }
+    }
+
+    function buildVoiceSelectorHtml() {
+      return `
+        <div class="w-full mt-2.5 bg-gray-50 border border-gray-200 rounded-xl p-2 space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <button type="button" onclick="toggleBicaraNeko()" class="btn-neko-speak flex-1 bg-main-600 hover:bg-main-700 text-white font-bold text-xs py-2 px-3 rounded-lg shadow-sm transition active:scale-[0.99] flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-volume-high" aria-hidden="true"></i><span>Dengarkan Neko</span>
+            </button>
+          </div>
+          <div class="flex items-center gap-1" role="group" aria-label="Pilih karakter suara Neko">
+            ${NEKO_VOICES.map(v => `
+              <button type="button" data-voice="${v.id}" onclick="pilihSuaraNeko('${v.id}')" title="${escapeHtml(v.desc)}" aria-pressed="${v.id === selectedNekoVoice ? 'true' : 'false'}" class="btn-neko-voice-opt flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold transition">
+                ${escapeHtml(v.label)}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
     // ================= WEJANGAN NEKO AI =================
     function bukaPopupNekoSekarang() {
+      ensureNekoModalMascot();
       const modal = document.getElementById('nekoModal');
       modal.classList.remove('hide');
       setTimeout(() => {
@@ -1123,6 +1829,7 @@
     }
 
     function closeNekoModal() {
+      stopNekoSpeech();
       const modal = document.getElementById('nekoModal');
       modal.classList.add('opacity-0');
       document.getElementById('nekoModalContent').classList.add('scale-95');
@@ -1130,6 +1837,7 @@
     }
 
     function toggleWejanganPasangan() {
+      stopNekoSpeech();
       wejanganState.mode = wejanganState.mode === "me" ? "partner" : "me";
       renderWejanganNekoUI();
     }
@@ -1140,9 +1848,10 @@
       const isMe = wejanganState.mode === "me";
       const myShortName = (activeUser || "Aku").split(" ")[0];
       const partnerShortName = (wejanganState.namaPasangan || partnerFullName || "Pasangan").split(" ")[0];
+      const activeMood = getActiveNekoMood();
+      const moodMeta = NEKO_MOOD_META[activeMood] || NEKO_MOOD_META.santai;
 
       const rawText = isMe ? wejanganState.komentarKu : wejanganState.komentarPasangan;
-      // Escape HTML terlebih dahulu agar output AI 100% aman dari XSS, baru izinkan bold **...**
       const formattedText = escapeHtml(rawText || "").replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
       const badgeClass = isMe
@@ -1151,6 +1860,8 @@
       const badgeLabel = isMe
         ? `<i class="fa-solid fa-user-check mr-1" aria-hidden="true"></i>Analisa Keuanganku (${escapeHtml(myShortName)})`
         : `<i class="fa-solid fa-heart mr-1" aria-hidden="true"></i>Analisa Keuangan ${escapeHtml(partnerShortName)}`;
+
+      const moodBadgeHtml = `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${moodMeta.badge}"><i class="fa-solid ${moodMeta.icon} mr-1" aria-hidden="true"></i>${escapeHtml(moodMeta.label)}</span>`;
 
       const btnClass = isMe
         ? "bg-accent-50 text-accent-700 hover:bg-accent-100 border-accent-200"
@@ -1166,12 +1877,20 @@
            </details>`
         : "";
 
+      const voiceControlsHtml = buildVoiceSelectorHtml();
+
+      ensureNekoModalMascot(activeMood);
+
       textContainer.innerHTML = `
         <div class="w-full flex flex-col items-center">
-          <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full border mb-2.5 ${badgeClass}">${badgeLabel}</span>
-          <p class="text-gray-700 font-medium leading-relaxed">"${formattedText}"</p>
+          <div class="flex flex-wrap items-center justify-center gap-1.5 mb-2.5">
+            <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${badgeClass}">${badgeLabel}</span>
+            ${moodBadgeHtml}
+          </div>
+          <p class="text-gray-700 font-medium leading-relaxed text-sm">"${formattedText}"</p>
+          ${voiceControlsHtml}
           ${debugBoxHtml}
-          <button type="button" onclick="toggleWejanganPasangan()" class="mt-4 px-3.5 py-2.5 rounded-xl text-xs font-bold border transition active:scale-[0.99] flex items-center justify-center gap-1.5 w-full shadow-sm ${btnClass}">
+          <button type="button" onclick="toggleWejanganPasangan()" class="mt-3 px-3.5 py-2.5 rounded-xl text-xs font-bold border transition active:scale-[0.99] flex items-center justify-center gap-1.5 w-full shadow-sm ${btnClass}">
             <span>${btnLabel}</span>
           </button>
         </div>
@@ -1179,18 +1898,32 @@
 
       inlineWadah.innerHTML = `
         <div class="w-full flex flex-col items-start">
-          <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full border mb-1.5 ${badgeClass}">${badgeLabel}</span>
-          <p class="w-full text-gray-700 leading-relaxed font-medium mb-2.5">"${formattedText}"</p>
+          <div class="flex items-center gap-3 w-full mb-2">
+            <button type="button" onclick="showNekoModal(false)" aria-label="Buka popup Neko AI" title="Buka popup Neko" class="w-20 h-20 shrink-0 rounded-2xl bg-gradient-to-b from-main-50 to-accent-50 border border-main-100 p-1 flex items-center justify-center hover:scale-105 transition">
+              ${buildNekoMascotSvg('inline', activeMood, nekoSpeechState === 'speaking')}
+            </button>
+            <div class="flex flex-col items-start gap-1.5 min-w-0 flex-1">
+              <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${badgeClass} max-w-full truncate">${badgeLabel}</span>
+              ${moodBadgeHtml}
+              <span class="text-[11px] text-gray-600 font-semibold">Klik Neko atau tombol suara di bawah</span>
+            </div>
+          </div>
+          <p class="w-full text-gray-700 leading-relaxed font-medium mb-1">"${formattedText}"</p>
+          ${voiceControlsHtml}
           ${debugBoxHtml}
-          <button type="button" onclick="toggleWejanganPasangan()" class="px-3 py-2 rounded-xl text-xs font-bold border transition active:scale-[0.99] flex items-center justify-center gap-1.5 w-full ${btnClass}">
+          <button type="button" onclick="toggleWejanganPasangan()" class="mt-2.5 px-3 py-2 rounded-xl text-xs font-bold border transition active:scale-[0.99] flex items-center justify-center gap-1.5 w-full ${btnClass}">
             <span>${btnLabel}</span>
           </button>
         </div>
       `;
+
+      updateNekoVoiceButtonsUI();
+      syncAllNekoMascots(activeMood);
     }
 
     async function mintaWejanganAuto(forceRefresh = false) {
       if (!activeToken) return;
+      stopNekoSpeech();
       isNekoCalled = true;
       wejanganState.mode = "me";
 
@@ -1198,25 +1931,43 @@
       const savedData = localStorage.getItem(`pawketNekoData_${activeUser}`);
       if (!forceRefresh && currentFinanceSignature && savedSig === currentFinanceSignature && savedData) {
         try {
-          wejanganState = JSON.parse(savedData);
-          wejanganState.mode = "me";
-          renderWejanganNekoUI();
-          bukaPopupNekoSekarang();
-          return;
+          const parsed = JSON.parse(savedData);
+          if (parsed && parsed.moodKu && parsed.moodPasangan) {
+            wejanganState = parsed;
+            wejanganState.mode = "me";
+            wejanganState.isLoading = false;
+            renderWejanganNekoUI();
+            bukaPopupNekoSekarang();
+            return;
+          }
         } catch (_) {}
       }
 
+      wejanganState.isLoading = true;
+      ensureNekoModalMascot('berpikir');
+      document.getElementById('nekoModalText').innerHTML = `
+        <i class="fa-solid fa-spinner fa-spin text-main-600 text-2xl mb-2" aria-hidden="true"></i>
+        <p class="font-semibold text-main-700 text-xs">Neko sedang mengintip dompet kalian...</p>
+      `;
       const inlineWadah = document.getElementById('tempatWejangan');
-      inlineWadah.innerHTML = '<p class="text-center w-full text-main-700 font-semibold"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Neko sedang meracik wejangan baru...</p>';
+      inlineWadah.innerHTML = `
+        <div class="w-full flex items-center gap-3 py-1">
+          <div class="w-16 h-16 shrink-0">${buildNekoMascotSvg('inline', 'berpikir', false)}</div>
+          <p class="text-left text-main-700 font-semibold text-xs"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Neko sedang mengintip catatan &amp; meracik wejangan baru...</p>
+        </div>
+      `;
 
       const res = await callAPI('analisisKeuanganAI', { forceRefresh });
       if (!activeToken) return;
+      wejanganState.isLoading = false;
 
       if (res?.sukses) {
         wejanganState.isAI = res.isAI !== false;
         wejanganState.debugPesan = res.debugPesan || "";
         wejanganState.komentarKu = res.komentarKu || res.hasil || "";
         wejanganState.komentarPasangan = res.komentarPasangan || res.hasil || "";
+        wejanganState.moodKu = res.moodKu || "santai";
+        wejanganState.moodPasangan = res.moodPasangan || "santai";
         wejanganState.namaPasangan = res.namaPasangan || partnerFullName || "Pasangan";
 
         if (currentFinanceSignature && wejanganState.isAI) {
@@ -1229,6 +1980,8 @@
         wejanganState.debugPesan = res?.pesan || "Gagal memanggil analisisKeuanganAI.";
         wejanganState.komentarKu = `Meong! Saldo gabungan kalian saat ini ${sUtama}. Kurangi jajan yang kurang perlu dan utamakan bayar tagihan tepat waktu ya!`;
         wejanganState.komentarPasangan = `Pastikan pasanganmu juga rajin mencatat pemasukan dan pengeluarannya di PAWket ya!`;
+        wejanganState.moodKu = "marah_gemas";
+        wejanganState.moodPasangan = "sarkas";
         wejanganState.namaPasangan = partnerFullName || "Pasangan";
       }
 
