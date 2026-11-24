@@ -958,7 +958,13 @@
     let currentFinanceSignature = "";
 
     const NEKO_VOICES = [
-      { id: "bocah_imut", label: "Imut", desc: "Karakter maskot kucing imut & ceria", pitch: 1.48, rate: 1.04 }
+      { id: "bocah_imut", label: "Imut", desc: "Karakter maskot kucing imut & ceria", pitch: 1.55, rate: 1.04 }
+    ];
+
+    const NEKO_PITCH_PRESETS = [
+      { id: "imut", label: "Imut", rate: 1.15, desc: "Nada manis natural" },
+      { id: "chibi", label: "Chibi Bocah", rate: 1.25, desc: "Nada bocah imut (rekomendasi)" },
+      { id: "mungil", label: "Mungil", rate: 1.33, desc: "Nada ekstra mungil menggemaskan" }
     ];
 
     const NEKO_MOOD_META = {
@@ -972,6 +978,10 @@
 
     const selectedNekoVoice = 'bocah_imut';
     localStorage.setItem('pawketNekoVoice', selectedNekoVoice);
+
+    let savedPitch = localStorage.getItem('pawketNekoPitch') || 'chibi';
+    let selectedNekoPitch = NEKO_PITCH_PRESETS.some(p => p.id === savedPitch) ? savedPitch : 'chibi';
+    const getActiveNekoPitchRate = () => (NEKO_PITCH_PRESETS.find(p => p.id === selectedNekoPitch) || NEKO_PITCH_PRESETS[1]).rate;
 
     let nekoSpeechState = "idle"; // idle | loading | speaking
     let nekoAudioCtx = null;
@@ -1532,11 +1542,38 @@
         }
       });
 
+      document.querySelectorAll('.btn-neko-pitch-opt').forEach(btn => {
+        const isSelected = btn.dataset.pitch === selectedNekoPitch;
+        btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+        btn.className = isSelected
+          ? 'btn-neko-pitch-opt flex-1 py-1.5 px-2 rounded-lg text-[10px] font-bold bg-accent-600 text-white shadow-sm transition'
+          : 'btn-neko-pitch-opt flex-1 py-1.5 px-2 rounded-lg text-[10px] font-bold bg-white text-gray-700 border border-gray-200 hover:bg-accent-50 hover:text-accent-700 transition';
+      });
+
       const statusHtml = buildVoiceDiagHtml();
       document.querySelectorAll('.neko-voice-status').forEach(box => {
         box.innerHTML = statusHtml;
         box.classList.toggle('hide', !statusHtml);
       });
+    }
+
+    function setNekoPitchMode(pitchId) {
+      if (!NEKO_PITCH_PRESETS.some(p => p.id === pitchId)) return;
+      selectedNekoPitch = pitchId;
+      localStorage.setItem('pawketNekoPitch', pitchId);
+      const rate = getActiveNekoPitchRate();
+      // Ubah nada secara live jika Neko sedang berbicara (0 delay, tanpa panggil API ulang)
+      if (nekoActiveSource) {
+        try { nekoActiveSource.playbackRate.value = rate; } catch (_) {}
+      }
+      if (nekoActiveFallbackAudio) {
+        try {
+          nekoActiveFallbackAudio.preservesPitch = false;
+          nekoActiveFallbackAudio.webkitPreservesPitch = false;
+          nekoActiveFallbackAudio.playbackRate = rate;
+        } catch (_) {}
+      }
+      updateNekoVoiceButtonsUI();
     }
 
     function buildVoiceDiagHtml() {
@@ -1702,6 +1739,8 @@
           analyser.fftSize = 256;
 
           source.buffer = audioBuffer;
+          // Lift formant & pitch akustik secara murni agar terdengar seperti bocah/kucing chibi imut tanpa artefak robot
+          source.playbackRate.value = getActiveNekoPitchRate();
           source.connect(analyser);
           analyser.connect(nekoAudioCtx.destination);
 
@@ -1725,6 +1764,10 @@
         const blob = new Blob([base64ToArrayBuffer(audioBase64)], { type: mimeType || 'audio/wav' });
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
+        audio.preservesPitch = false;
+        audio.mozPreservesPitch = false;
+        audio.webkitPreservesPitch = false;
+        audio.playbackRate = getActiveNekoPitchRate();
         nekoActiveFallbackAudio = audio;
         audio.onplay = () => {
           if (reqId !== nekoSpeechRequestId) return;
@@ -1826,10 +1869,17 @@
 
     function buildVoiceSelectorHtml() {
       return `
-        <div class="w-full mt-2.5 space-y-1.5">
+        <div class="w-full mt-2.5 bg-gray-50 border border-gray-200 rounded-xl p-2 space-y-2">
           <button type="button" onclick="toggleBicaraNeko()" class="btn-neko-speak w-full bg-main-600 hover:bg-main-700 text-white font-bold text-xs py-2.5 px-3 rounded-xl shadow-sm transition active:scale-[0.99] flex items-center justify-center gap-1.5">
             <i class="fa-solid fa-volume-high" aria-hidden="true"></i><span>Dengarkan Neko</span>
           </button>
+          <div class="grid grid-cols-3 gap-1" role="group" aria-label="Atur tingkat keimutan nada Neko">
+            ${NEKO_PITCH_PRESETS.map(p => `
+              <button type="button" data-pitch="${p.id}" onclick="setNekoPitchMode('${p.id}')" title="${escapeHtml(p.desc)}" aria-pressed="${p.id === selectedNekoPitch ? 'true' : 'false'}" class="btn-neko-pitch-opt flex-1 py-1.5 px-2 rounded-lg text-[10px] font-bold transition">
+                ${escapeHtml(p.label)}
+              </button>
+            `).join('')}
+          </div>
           <div class="neko-voice-status hide"></div>
         </div>
       `;
