@@ -958,10 +958,7 @@
     let currentFinanceSignature = "";
 
     const NEKO_VOICES = [
-      { id: "bocah_imut", label: "Imut", desc: "Karakter maskot kucing ceria & nada tinggi imut", pitch: 1.5, rate: 1.04 },
-      { id: "bocah_cerewet", label: "Cerewet", desc: "Karakter maskot kucing lincah & galak gemas buat roasting", pitch: 1.35, rate: 1.1 },
-      { id: "bocah_ceria", label: "Ceria", desc: "Karakter maskot kucing riang & penuh semangat", pitch: 1.45, rate: 1.06 },
-      { id: "bocah_manja", label: "Manja", desc: "Karakter maskot kucing lembut & menggemaskan", pitch: 1.3, rate: 0.96 }
+      { id: "bocah_imut", label: "Imut", desc: "Karakter maskot kucing imut & ceria", pitch: 1.48, rate: 1.04 }
     ];
 
     const NEKO_MOOD_META = {
@@ -973,18 +970,8 @@
       berpikir: { label: "Sedang Mikir", badge: "bg-gray-100 text-gray-700 border-gray-200", icon: "fa-ellipsis" }
     };
 
-    const LEGACY_VOICE_MIGRATION = {
-      Leda: "bocah_imut",
-      Puck: "bocah_cerewet",
-      Zephyr: "bocah_ceria",
-      Achernar: "bocah_manja"
-    };
-    let savedVoiceRaw = localStorage.getItem('pawketNekoVoice') || 'bocah_imut';
-    if (LEGACY_VOICE_MIGRATION[savedVoiceRaw]) {
-      savedVoiceRaw = LEGACY_VOICE_MIGRATION[savedVoiceRaw];
-      localStorage.setItem('pawketNekoVoice', savedVoiceRaw);
-    }
-    let selectedNekoVoice = NEKO_VOICES.some(v => v.id === savedVoiceRaw) ? savedVoiceRaw : 'bocah_imut';
+    const selectedNekoVoice = 'bocah_imut';
+    localStorage.setItem('pawketNekoVoice', selectedNekoVoice);
 
     let nekoSpeechState = "idle"; // idle | loading | speaking
     let nekoAudioCtx = null;
@@ -1535,7 +1522,7 @@
       document.querySelectorAll('.btn-neko-speak').forEach(btn => {
         if (nekoSpeechState === 'loading') {
           btn.disabled = true;
-          btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><span>Meracik suara bocah...</span>';
+          btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><span>Menyiapkan suara Neko...</span>';
         } else if (nekoSpeechState === 'speaking') {
           btn.disabled = false;
           btn.innerHTML = '<span class="neko-wave flex items-center gap-0.5 mr-1" aria-hidden="true"><span></span><span></span><span></span></span><span>Hentikan Suara</span>';
@@ -1543,14 +1530,6 @@
           btn.disabled = false;
           btn.innerHTML = '<i class="fa-solid fa-volume-high" aria-hidden="true"></i><span>Dengarkan Neko</span>';
         }
-      });
-
-      document.querySelectorAll('.btn-neko-voice-opt').forEach(btn => {
-        const isSelected = btn.dataset.voice === selectedNekoVoice;
-        btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
-        btn.className = isSelected
-          ? 'btn-neko-voice-opt flex-1 py-1.5 px-1.5 rounded-lg text-[10px] font-bold bg-main-600 text-white shadow-sm transition'
-          : 'btn-neko-voice-opt flex-1 py-1.5 px-1.5 rounded-lg text-[10px] font-bold bg-white text-gray-700 border border-gray-200 hover:bg-main-50 hover:text-main-700 transition';
       });
 
       const statusHtml = buildVoiceDiagHtml();
@@ -1587,18 +1566,6 @@
         </div>
         ${nekoVoiceDiag.detail ? `<details class="mt-1"><summary class="cursor-pointer font-bold underline">Lihat penyebab error Gemini TTS</summary><p class="mt-1 font-mono text-[9px] break-words select-all text-amber-800">${escapeHtml(nekoVoiceDiag.detail)}</p></details>` : ''}
       </div>`;
-    }
-
-    function pilihSuaraNeko(voiceId) {
-      if (!NEKO_VOICES.some(v => v.id === voiceId)) return;
-      if (selectedNekoVoice !== voiceId) {
-        selectedNekoVoice = voiceId;
-        localStorage.setItem('pawketNekoVoice', voiceId);
-        stopNekoSpeech();
-        updateNekoVoiceButtonsUI();
-        const vInfo = NEKO_VOICES.find(v => v.id === voiceId);
-        showToast(`Karakter suara Neko diubah ke "${vInfo.label}" (${vInfo.desc}).`, 'info');
-      }
     }
 
     function stopNekoSpeech() {
@@ -1859,19 +1826,10 @@
 
     function buildVoiceSelectorHtml() {
       return `
-        <div class="w-full mt-2.5 bg-gray-50 border border-gray-200 rounded-xl p-2 space-y-2">
-          <div class="flex items-center justify-between gap-2">
-            <button type="button" onclick="toggleBicaraNeko()" class="btn-neko-speak flex-1 bg-main-600 hover:bg-main-700 text-white font-bold text-xs py-2 px-3 rounded-lg shadow-sm transition active:scale-[0.99] flex items-center justify-center gap-1.5">
-              <i class="fa-solid fa-volume-high" aria-hidden="true"></i><span>Dengarkan Neko</span>
-            </button>
-          </div>
-          <div class="grid grid-cols-4 gap-1" role="group" aria-label="Pilih karakter suara bocah Neko">
-            ${NEKO_VOICES.map(v => `
-              <button type="button" data-voice="${v.id}" onclick="pilihSuaraNeko('${v.id}')" title="${escapeHtml(v.desc)}" aria-pressed="${v.id === selectedNekoVoice ? 'true' : 'false'}" class="btn-neko-voice-opt flex-1 py-1.5 px-1.5 rounded-lg text-[10px] font-bold transition">
-                ${escapeHtml(v.label)}
-              </button>
-            `).join('')}
-          </div>
+        <div class="w-full mt-2.5 space-y-1.5">
+          <button type="button" onclick="toggleBicaraNeko()" class="btn-neko-speak w-full bg-main-600 hover:bg-main-700 text-white font-bold text-xs py-2.5 px-3 rounded-xl shadow-sm transition active:scale-[0.99] flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-volume-high" aria-hidden="true"></i><span>Dengarkan Neko</span>
+          </button>
           <div class="neko-voice-status hide"></div>
         </div>
       `;
