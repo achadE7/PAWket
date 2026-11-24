@@ -958,10 +958,10 @@
     let currentFinanceSignature = "";
 
     const NEKO_VOICES = [
-      { id: "Leda", label: "Imut", desc: "Suara muda & manis", pitch: 1.48, rate: 1.04 },
-      { id: "Puck", label: "Jahil", desc: "Lincah & pas buat roasting", pitch: 1.28, rate: 1.1 },
-      { id: "Zephyr", label: "Ceria", desc: "Cerah & penuh semangat", pitch: 1.38, rate: 1.05 },
-      { id: "Achernar", label: "Manja", desc: "Lembut & menggemaskan", pitch: 1.24, rate: 0.96 }
+      { id: "bocah_imut", label: "Bocah Imut", desc: "Anak kecil 6 thn, manis & polos", pitch: 1.5, rate: 1.04 },
+      { id: "bocah_cerewet", label: "Cerewet", desc: "Anak kecil 7 thn, galak gemas buat roasting", pitch: 1.35, rate: 1.1 },
+      { id: "bocah_ceria", label: "Ceria", desc: "Anak kecil 5 thn, riang & bersemangat", pitch: 1.45, rate: 1.06 },
+      { id: "bocah_manja", label: "Manja", desc: "Anak kecil 6 thn, lembut & menggemaskan", pitch: 1.3, rate: 0.96 }
     ];
 
     const NEKO_MOOD_META = {
@@ -973,8 +973,18 @@
       berpikir: { label: "Sedang Mikir", badge: "bg-gray-100 text-gray-700 border-gray-200", icon: "fa-ellipsis" }
     };
 
-    let selectedNekoVoice = localStorage.getItem('pawketNekoVoice') || 'Leda';
-    if (!NEKO_VOICES.some(v => v.id === selectedNekoVoice)) selectedNekoVoice = 'Leda';
+    const LEGACY_VOICE_MIGRATION = {
+      Leda: "bocah_imut",
+      Puck: "bocah_cerewet",
+      Zephyr: "bocah_ceria",
+      Achernar: "bocah_manja"
+    };
+    let savedVoiceRaw = localStorage.getItem('pawketNekoVoice') || 'bocah_imut';
+    if (LEGACY_VOICE_MIGRATION[savedVoiceRaw]) {
+      savedVoiceRaw = LEGACY_VOICE_MIGRATION[savedVoiceRaw];
+      localStorage.setItem('pawketNekoVoice', savedVoiceRaw);
+    }
+    let selectedNekoVoice = NEKO_VOICES.some(v => v.id === savedVoiceRaw) ? savedVoiceRaw : 'bocah_imut';
 
     let nekoSpeechState = "idle"; // idle | loading | speaking
     let nekoAudioCtx = null;
@@ -982,6 +992,7 @@
     let nekoActiveFallbackAudio = null;
     let nekoLipSyncRaf = null;
     let nekoSpeechRequestId = 0;
+    let nekoVoiceDiag = { source: "", voiceType: "", model: "", detail: "" };
     const nekoAudioCache = new Map();
 
     let wejanganState = {
@@ -1198,6 +1209,7 @@
 
       stopNekoSpeech();
       nekoAudioCache.clear();
+      nekoVoiceDiag = { source: "", voiceType: "", model: "", detail: "" };
       activeUser = "";
       activeToken = "";
       isNekoCalled = false;
@@ -1523,7 +1535,7 @@
       document.querySelectorAll('.btn-neko-speak').forEach(btn => {
         if (nekoSpeechState === 'loading') {
           btn.disabled = true;
-          btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><span>Menyiapkan suara...</span>';
+          btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i><span>Meracik suara bocah...</span>';
         } else if (nekoSpeechState === 'speaking') {
           btn.disabled = false;
           btn.innerHTML = '<span class="neko-wave flex items-center gap-0.5 mr-1" aria-hidden="true"><span></span><span></span><span></span></span><span>Hentikan Suara</span>';
@@ -1537,9 +1549,44 @@
         const isSelected = btn.dataset.voice === selectedNekoVoice;
         btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
         btn.className = isSelected
-          ? 'btn-neko-voice-opt flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold bg-main-600 text-white shadow-sm transition'
-          : 'btn-neko-voice-opt flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold bg-white text-gray-700 border border-gray-200 hover:bg-main-50 hover:text-main-700 transition';
+          ? 'btn-neko-voice-opt flex-1 py-1.5 px-1.5 rounded-lg text-[10px] font-bold bg-main-600 text-white shadow-sm transition'
+          : 'btn-neko-voice-opt flex-1 py-1.5 px-1.5 rounded-lg text-[10px] font-bold bg-white text-gray-700 border border-gray-200 hover:bg-main-50 hover:text-main-700 transition';
       });
+
+      const statusHtml = buildVoiceDiagHtml();
+      document.querySelectorAll('.neko-voice-status').forEach(box => {
+        box.innerHTML = statusHtml;
+        box.classList.toggle('hide', !statusHtml);
+      });
+    }
+
+    function buildVoiceDiagHtml() {
+      if (!nekoVoiceDiag.source) return '';
+      if (nekoVoiceDiag.source === 'gemini' && nekoVoiceDiag.voiceType === 'designed') {
+        return `<div class="flex items-center justify-center gap-1.5 text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg px-2 py-1">
+          <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+          <span>Suara: Gemini AI (Bocah Kustom &bull; 24kHz)</span>
+        </div>`;
+      }
+      if (nekoVoiceDiag.source === 'gemini') {
+        const noteHtml = nekoVoiceDiag.detail
+          ? `<details class="mt-1 text-left"><summary class="cursor-pointer font-bold text-sky-900">Info Voice Design</summary><p class="mt-1 font-mono text-[9px] break-words select-all">${escapeHtml(nekoVoiceDiag.detail)}</p></details>`
+          : '';
+        return `<div class="text-[10px] font-semibold text-sky-800 bg-sky-50 border border-sky-200 rounded-lg px-2 py-1">
+          <div class="flex items-center justify-center gap-1.5 font-bold">
+            <i class="fa-solid fa-microphone" aria-hidden="true"></i>
+            <span>Suara: Gemini AI (${escapeHtml(nekoVoiceDiag.model || 'TTS')})</span>
+          </div>
+          ${noteHtml}
+        </div>`;
+      }
+      return `<div class="text-[10px] text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 text-left">
+        <div class="flex items-center gap-1.5 font-bold">
+          <i class="fa-solid fa-robot" aria-hidden="true"></i>
+          <span>Memakai Suara Cadangan Browser (Gemini TTS gagal)</span>
+        </div>
+        ${nekoVoiceDiag.detail ? `<details class="mt-1"><summary class="cursor-pointer font-bold underline">Lihat penyebab error Gemini TTS</summary><p class="mt-1 font-mono text-[9px] break-words select-all text-amber-800">${escapeHtml(nekoVoiceDiag.detail)}</p></details>` : ''}
+      </div>`;
     }
 
     function pilihSuaraNeko(voiceId) {
@@ -1760,6 +1807,8 @@
 
       if (nekoAudioCache.has(cacheKey)) {
         const cached = nekoAudioCache.get(cacheKey);
+        nekoVoiceDiag = cached.diag || { source: 'gemini', voiceType: 'designed', model: 'cache', detail: '' };
+        updateNekoVoiceButtonsUI();
         await playNekoWavBase64(cached.audioBase64, cached.mimeType, reqId);
         return;
       }
@@ -1776,14 +1825,32 @@
       if (reqId !== nekoSpeechRequestId) return;
 
       if (res?.sukses && res.audioBase64) {
+        nekoVoiceDiag = {
+          source: res.source || 'gemini',
+          voiceType: res.voiceType || 'prebuilt',
+          model: res.model || 'gemini-3.8-flash-tts',
+          detail: res.voiceDesignNote || ''
+        };
         if (nekoAudioCache.size >= 8) {
           const oldestKey = nekoAudioCache.keys().next().value;
           nekoAudioCache.delete(oldestKey);
         }
-        nekoAudioCache.set(cacheKey, { audioBase64: res.audioBase64, mimeType: res.mimeType || 'audio/wav' });
+        nekoAudioCache.set(cacheKey, {
+          audioBase64: res.audioBase64,
+          mimeType: res.mimeType || 'audio/wav',
+          diag: { ...nekoVoiceDiag }
+        });
+        updateNekoVoiceButtonsUI();
         await playNekoWavBase64(res.audioBase64, res.mimeType || 'audio/wav', reqId);
       } else if (!res?.authError) {
-        showToast('Suara AI sedang padat, memakai suara cadangan browser.', 'info');
+        nekoVoiceDiag = {
+          source: 'browser',
+          voiceType: 'fallback',
+          model: 'WebSpeech',
+          detail: res?.pesan || 'Endpoint ttsNeko gagal merespons (pastikan PAWket.js terbaru sudah di-deploy).'
+        };
+        updateNekoVoiceButtonsUI();
+        showToast('Gemini TTS gagal, beralih ke suara browser. Cek detail error di bawah tombol suara.', 'error');
         playNekoBrowserSpeechFallback(teks, selectedNekoVoice, reqId);
       } else {
         stopNekoSpeech();
@@ -1798,13 +1865,14 @@
               <i class="fa-solid fa-volume-high" aria-hidden="true"></i><span>Dengarkan Neko</span>
             </button>
           </div>
-          <div class="flex items-center gap-1" role="group" aria-label="Pilih karakter suara Neko">
+          <div class="grid grid-cols-4 gap-1" role="group" aria-label="Pilih karakter suara bocah Neko">
             ${NEKO_VOICES.map(v => `
-              <button type="button" data-voice="${v.id}" onclick="pilihSuaraNeko('${v.id}')" title="${escapeHtml(v.desc)}" aria-pressed="${v.id === selectedNekoVoice ? 'true' : 'false'}" class="btn-neko-voice-opt flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold transition">
+              <button type="button" data-voice="${v.id}" onclick="pilihSuaraNeko('${v.id}')" title="${escapeHtml(v.desc)}" aria-pressed="${v.id === selectedNekoVoice ? 'true' : 'false'}" class="btn-neko-voice-opt flex-1 py-1.5 px-1.5 rounded-lg text-[10px] font-bold transition">
                 ${escapeHtml(v.label)}
               </button>
             `).join('')}
           </div>
+          <div class="neko-voice-status hide"></div>
         </div>
       `;
     }
