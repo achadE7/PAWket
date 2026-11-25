@@ -2,12 +2,17 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PAWket">
+  <meta name="description" content="PAWket: Catatan keuangan bersama pasangan dengan maskot 3D Neko AI.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%230f172a'/%3E%3Ccircle cx='20' cy='25' r='6' fill='%2360a5fa'/%3E%3Ccircle cx='32' cy='18' r='6' fill='%2360a5fa'/%3E%3Ccircle cx='44' cy='25' r='6' fill='%2360a5fa'/%3E%3Cpath d='M32 29c-9 0-16 7-16 14 0 5 4 8 9 8 3 0 5-1 7-1s4 1 7 1c5 0 9-3 9-8 0-7-7-14-16-14z' fill='%23f472b6'/%3E%3C/svg%3E">
   <title>PAWket - Couple Finance Tracker</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Quicksand:wght@700&display=swap" rel="stylesheet">
 
   <script>
     tailwind.config = {
@@ -22,7 +27,9 @@
               400: '#60a5fa',
               500: '#3b82f6',
               600: '#2563eb',
-              700: '#1d4ed8'
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a'
             },
             accent: {
               50: '#fdf2f8',
@@ -35,18 +42,32 @@
               700: '#be185d'
             }
           },
-          fontFamily: { sans: ['Quicksand', 'sans-serif'] }
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
+            display: ['Quicksand', 'Plus Jakarta Sans', 'sans-serif']
+          }
         }
       }
     };
   </script>
   <style>
-    body { background-color: #eff6ff; -webkit-tap-highlight-color: transparent; }
-    .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); }
+    body { background-color: #e2e8f0; -webkit-tap-highlight-color: transparent; }
+    .glass { background: rgba(248, 250, 252, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(226, 232, 240, 0.85); }
     .hide { display: none !important; }
+    .num { font-variant-numeric: tabular-nums; letter-spacing: -0.015em; }
+    #bottomNav { padding-bottom: max(0.55rem, env(safe-area-inset-bottom)); }
+    .skeleton {
+      background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+      background-size: 200% 100%;
+      animation: pawket-shimmer 1.35s ease-in-out infinite;
+    }
+    @keyframes pawket-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #bfdbfe; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
     /* Interaksi & Aksesibilitas Keyboard */
     button:not(:disabled),
@@ -269,54 +290,53 @@
     }
   </style>
 </head>
-<body class="text-gray-700 antialiased bg-gray-100 flex justify-center min-h-screen">
+<body class="text-slate-700 antialiased bg-slate-200 flex justify-center min-h-screen">
 
-  <div class="w-full max-w-md bg-main-50 shadow-2xl relative flex flex-col min-h-screen overflow-x-hidden">
+  <div id="appShell" class="w-full max-w-lg bg-slate-50 shadow-2xl relative flex flex-col min-h-screen overflow-x-hidden">
 
     <!-- ================= TOAST NOTIFICATION ================= -->
     <div id="toastContainer" role="status" aria-live="polite" class="fixed top-4 left-1/2 -translate-x-1/2 z-[120] w-[calc(100%-2rem)] max-w-sm space-y-2 pointer-events-none"></div>
 
     <!-- ================= SCREEN LOGIN ================= -->
-    <div id="loginScreen" class="absolute inset-0 z-50 bg-main-50 flex flex-col items-center justify-center p-6 transition-opacity duration-300">
-      <i class="fa-solid fa-cat text-main-600 text-6xl mb-4" aria-hidden="true"></i>
-      <h1 class="text-3xl font-bold text-gray-800 mb-2 tracking-tight">
+    <div id="loginScreen" class="absolute inset-0 z-50 bg-slate-50 flex flex-col items-center justify-center p-6 transition-opacity duration-300">
+      <div class="w-16 h-16 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-lg mb-4">
+        <i class="fa-solid fa-cat text-3xl text-main-400" aria-hidden="true"></i>
+      </div>
+      <h1 class="font-display text-3xl font-bold text-slate-900 mb-1 tracking-tight">
         PAWket <i class="fa-solid fa-paw text-accent-600 text-xl" aria-hidden="true"></i>
       </h1>
-      <p class="text-sm text-gray-600 font-semibold mb-6">Catatan Keuangan Bersama</p>
+      <p class="text-sm text-slate-600 font-semibold mb-6">Catatan Keuangan Bersama</p>
 
-      <form id="loginForm" onsubmit="prosesLogin(event)" class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-xl border border-main-100 space-y-4">
+      <form id="loginForm" onsubmit="prosesLogin(event)" class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-xl border border-slate-200/80 space-y-4">
         <div>
-          <label for="username" class="block text-xs font-bold text-gray-600 mb-1">Username</label>
-          <input type="text" id="username" autocomplete="username" required placeholder="Masukkan username" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-semibold text-gray-800 focus:bg-white focus:border-main-500">
+          <label for="username" class="block text-xs font-bold text-slate-600 mb-1.5">Username</label>
+          <input type="text" id="username" autocomplete="username" required placeholder="Masukkan username" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-semibold text-slate-900 focus:bg-white focus:border-main-500">
         </div>
         <div>
-          <label for="password" class="block text-xs font-bold text-gray-600 mb-1">Password</label>
-          <input type="password" id="password" autocomplete="current-password" required placeholder="Masukkan password" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-semibold text-gray-800 focus:bg-white focus:border-main-500">
+          <label for="password" class="block text-xs font-bold text-slate-600 mb-1.5">Password</label>
+          <input type="password" id="password" autocomplete="current-password" required placeholder="Masukkan password" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-semibold text-slate-900 focus:bg-white focus:border-main-500">
         </div>
-        <p id="loginErrorText" class="hide text-xs font-bold text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2" role="alert"></p>
-        <button type="submit" id="btnLogin" class="w-full bg-main-600 text-white font-bold py-3 rounded-xl shadow-md hover:bg-main-700 transition active:scale-[0.99]">
+        <p id="loginErrorText" class="hide text-xs font-bold text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5" role="alert"></p>
+        <button type="submit" id="btnLogin" class="w-full min-h-[48px] bg-slate-900 text-white font-bold py-3 rounded-xl shadow-md hover:bg-slate-800 transition active:scale-[0.99]">
           Masuk
         </button>
       </form>
     </div>
 
     <!-- ================= SCREEN MAIN APP ================= -->
-    <div id="appScreen" class="hide flex-1 flex flex-col h-full overflow-y-auto pb-28">
+    <div id="appScreen" class="hide flex-1 flex flex-col h-full overflow-y-auto pb-32">
 
-      <header class="p-5 pb-4 glass sticky top-0 z-20 flex justify-between items-center rounded-b-3xl shadow-sm mb-5">
-        <div>
-          <p class="text-sm font-semibold text-gray-600">Halo, <span id="namaUser" class="text-main-700 font-bold"></span>! <i class="fa-solid fa-cat text-main-600" aria-hidden="true"></i></p>
-          <h2 class="text-2xl font-bold text-gray-800">Keuangan Kita</h2>
+      <header class="px-5 py-4 glass sticky top-0 z-20 flex justify-between items-center mb-4">
+        <div class="min-w-0">
+          <p class="text-xs font-semibold text-slate-500 truncate">Halo, <span id="namaUser" class="text-main-700 font-bold"></span></p>
+          <h2 class="font-display text-xl font-bold text-slate-900 tracking-tight">PAWket</h2>
         </div>
-        <div class="flex items-center gap-2">
-          <button type="button" id="btnManualRefresh" onclick="refreshSemuaData()" class="h-11 w-11 bg-main-50 text-main-700 rounded-full flex items-center justify-center hover:bg-main-100 border border-main-200 transition" aria-label="Muat ulang data" title="Muat ulang data">
+        <div class="flex items-center gap-2 shrink-0">
+          <button type="button" id="btnManualRefresh" onclick="refreshSemuaData()" class="h-11 w-11 bg-white text-slate-700 rounded-full flex items-center justify-center hover:bg-slate-100 border border-slate-200 shadow-xs transition" aria-label="Muat ulang data" title="Muat ulang data">
             <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
           </button>
-          <button type="button" onclick="openResetUserModal()" class="h-11 w-11 bg-amber-50 text-amber-700 rounded-full flex items-center justify-center hover:bg-amber-100 border border-amber-200 transition" aria-label="Reset catatanku dari awal" title="Reset Catatanku">
-            <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
-          </button>
-          <button type="button" onclick="prosesLogout(false)" class="h-11 w-11 bg-accent-50 text-accent-700 rounded-full flex items-center justify-center hover:bg-accent-100 border border-accent-200 transition" aria-label="Keluar dari akun" title="Keluar">
-            <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>
+          <button type="button" onclick="openSettingsModal()" class="h-11 w-11 bg-white text-slate-700 rounded-full flex items-center justify-center hover:bg-slate-100 border border-slate-200 shadow-xs transition" aria-label="Pengaturan dan akun" title="Pengaturan & Akun">
+            <i class="fa-solid fa-gear" aria-hidden="true"></i>
           </button>
         </div>
       </header>
@@ -324,147 +344,188 @@
       <main class="flex-1 relative">
 
         <!-- Banner Error Global Dashboard -->
-        <div id="dashboardErrorBox" class="hide mx-6 mb-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl p-3.5 text-xs flex items-center justify-between gap-3" role="alert">
+        <div id="dashboardErrorBox" class="hide mx-5 mb-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl p-3.5 text-xs flex items-center justify-between gap-3" role="alert">
           <div class="flex items-start gap-2 min-w-0">
             <i class="fa-solid fa-triangle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>
             <span id="dashboardErrorText" class="font-semibold break-words">Gagal memuat data dari server.</span>
           </div>
-          <button type="button" onclick="loadDataDashboard(true)" class="shrink-0 bg-red-600 text-white font-bold px-3 py-1.5 rounded-lg hover:bg-red-700 transition">
+          <button type="button" onclick="loadDataDashboard(true)" class="shrink-0 bg-red-600 text-white font-bold px-3.5 py-2 rounded-lg hover:bg-red-700 transition">
             Coba Lagi
           </button>
         </div>
 
         <!-- ================= TAB: DASHBOARD (BERANDA) ================= -->
-        <section id="tab-dashboard" class="px-6 space-y-4" aria-label="Beranda">
+        <section id="tab-dashboard" class="px-5 space-y-4" aria-label="Beranda">
 
-          <div class="bg-gradient-to-br from-main-600 to-accent-600 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
-            <i class="fa-solid fa-paw absolute -bottom-4 -right-4 text-8xl opacity-10" aria-hidden="true"></i>
+          <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-main-900 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden">
+            <i class="fa-solid fa-paw absolute -bottom-4 -right-4 text-8xl opacity-[0.06]" aria-hidden="true"></i>
             <div class="flex justify-between items-center mb-1 gap-2">
-              <p class="text-white/95 font-semibold text-sm">Total Saldo Gabungan</p>
-              <button type="button" onclick="switchTab('saldo')" class="text-xs bg-black/20 hover:bg-black/30 px-3 py-1.5 rounded-full font-bold transition">
-                Rincian Saldo <i class="fa-solid fa-chevron-right ml-0.5" aria-hidden="true"></i>
+              <p class="text-slate-300 font-semibold text-xs uppercase tracking-wider">Saldo Siap Pakai</p>
+              <button type="button" onclick="switchTab('saldo')" class="text-xs bg-white/10 hover:bg-white/20 px-3.5 py-2 rounded-full font-bold transition border border-white/15">
+                Rincian Saldo <i class="fa-solid fa-chevron-right ml-1" aria-hidden="true"></i>
               </button>
             </div>
-            <h3 class="text-3xl sm:text-4xl font-bold mb-4 truncate" id="saldoUtama">Rp 0</h3>
+            <h3 class="num text-3xl sm:text-4xl font-extrabold mb-4 truncate tracking-tight" id="saldoUtama">Rp 0</h3>
 
-            <div class="flex justify-between gap-3 text-xs bg-black/20 p-3 rounded-xl mb-3 border border-white/15">
+            <div class="grid grid-cols-2 gap-2.5 text-xs bg-white/[0.08] p-3 rounded-2xl mb-2.5 border border-white/10">
               <div class="min-w-0">
-                <span class="text-white/90 block"><i class="fa-solid fa-wallet mr-1" aria-hidden="true"></i>Uangku:</span>
-                <span class="font-bold text-sm truncate block" id="saldoAku">Rp 0</span>
+                <span class="text-slate-300 block font-medium"><i class="fa-solid fa-wallet mr-1 text-main-400" aria-hidden="true"></i>Uangku</span>
+                <span class="num font-bold text-sm truncate block mt-0.5" id="saldoAku">Rp 0</span>
               </div>
               <div class="text-right min-w-0">
-                <span class="text-white/90 block"><i class="fa-solid fa-wallet mr-1" aria-hidden="true"></i>Uang <span id="namaPasanganDompet">Pasangan</span>:</span>
-                <span class="font-bold text-sm truncate block" id="saldoPasangan">Rp 0</span>
+                <span class="text-slate-300 block font-medium"><i class="fa-solid fa-wallet mr-1 text-accent-400" aria-hidden="true"></i>Uang <span id="namaPasanganDompet">Pasangan</span></span>
+                <span class="num font-bold text-sm truncate block mt-0.5" id="saldoPasangan">Rp 0</span>
               </div>
             </div>
 
-            <div class="flex justify-between gap-3 text-xs bg-black/25 p-3 rounded-xl">
+            <div class="grid grid-cols-3 gap-2 text-xs bg-black/20 p-2.5 rounded-2xl mb-2.5 border border-white/10">
               <div class="min-w-0">
-                <span class="text-white/90 block"><i class="fa-solid fa-arrow-down mr-1" aria-hidden="true"></i>Total Masuk:</span>
-                <span class="font-bold truncate block" id="totalMasuk">Rp 0</span>
+                <span class="text-slate-300 block text-[11px]">Tabungan</span>
+                <span class="num font-bold text-emerald-300 truncate block mt-0.5" id="dashTotalTabungan">Rp 0</span>
+              </div>
+              <button type="button" onclick="switchTab('hutang')" class="min-w-0 text-left hover:opacity-85 transition">
+                <span class="text-slate-300 block text-[11px]">Hutang Aktif</span>
+                <span class="num font-bold text-rose-300 truncate block mt-0.5" id="dashTotalHutang">Rp 0</span>
+              </button>
+              <div class="min-w-0 text-right">
+                <span class="text-slate-300 block text-[11px]">Bersih</span>
+                <span class="num font-bold text-white truncate block mt-0.5" id="dashNetWorth">Rp 0</span>
+              </div>
+            </div>
+
+            <div class="flex justify-between items-center gap-3 text-xs pt-2 border-t border-white/10">
+              <div class="min-w-0">
+                <span class="text-slate-300 block">Masuk (<span id="dashBulanLabel">Bulan Ini</span>)</span>
+                <span class="num font-bold text-emerald-300 text-sm truncate block mt-0.5" id="totalMasuk">Rp 0</span>
               </div>
               <div class="text-right min-w-0">
-                <span class="text-white/90 block"><i class="fa-solid fa-arrow-up mr-1" aria-hidden="true"></i>Total Keluar:</span>
-                <span class="font-bold truncate block" id="totalKeluar">Rp 0</span>
+                <span class="text-slate-300 block">Keluar Kas</span>
+                <span class="num font-bold text-rose-300 text-sm truncate block mt-0.5" id="totalKeluar">Rp 0</span>
               </div>
             </div>
           </div>
 
-          <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100">
-            <div class="flex justify-between items-center mb-1 gap-2">
-              <h3 class="font-bold text-gray-800 text-xs">
-                <i class="fa-solid fa-bullseye text-accent-600 mr-1" aria-hidden="true"></i> Target: <span id="targetPosText" class="text-main-700">Semua</span>
+          <!-- PERINGATAN JATUH TEMPO HUTANG -->
+          <div id="dueSoonBanner" class="hide bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-3.5 text-xs flex items-center justify-between gap-3" role="status">
+            <div class="flex items-start gap-2.5 min-w-0">
+              <i class="fa-solid fa-bell text-amber-600 mt-0.5 shrink-0" aria-hidden="true"></i>
+              <div class="min-w-0">
+                <p class="font-bold text-amber-900" id="dueSoonTitle">Tagihan mendekati jatuh tempo</p>
+                <p class="text-xs text-amber-800 mt-0.5 break-words" id="dueSoonText"></p>
+              </div>
+            </div>
+            <button type="button" onclick="switchTab('hutang')" class="shrink-0 min-h-[38px] bg-amber-600 text-white font-bold px-3.5 py-2 rounded-xl hover:bg-amber-700 transition">
+              Lihat
+            </button>
+          </div>
+
+          <!-- TARGET TABUNGAN -->
+          <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/70">
+            <div class="flex justify-between items-center mb-1.5 gap-2">
+              <h3 class="font-bold text-slate-800 text-xs">
+                <i class="fa-solid fa-bullseye text-accent-600 mr-1" aria-hidden="true"></i>Target: <span id="targetPosText" class="text-main-700">Semua</span>
               </h3>
-              <button type="button" onclick="openTargetModal()" class="text-xs bg-main-50 text-main-700 px-3 py-1.5 rounded-full font-bold hover:bg-main-100 transition border border-main-200">
+              <button type="button" onclick="openTargetModal()" class="text-xs bg-slate-100 text-slate-700 px-3 py-2 rounded-full font-bold hover:bg-slate-200 transition">
                 <i class="fa-solid fa-pen mr-1" aria-hidden="true"></i>Set Target
               </button>
             </div>
-            <div class="w-full bg-gray-100 rounded-full h-2.5 my-2 overflow-hidden">
-              <div id="targetBar" class="bg-accent-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+            <div class="w-full bg-slate-100 rounded-full h-2.5 my-2 overflow-hidden">
+              <div id="targetBar" class="bg-main-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
             </div>
-            <p class="text-xs text-gray-600 text-right">
-              <span id="targetTerkumpul" class="font-bold text-gray-800">Rp 0</span> / <span id="targetNominal">Rp 0</span> (<span id="targetPersen">0</span>%)
+            <p class="num text-xs text-slate-600 text-right">
+              <span id="targetTerkumpul" class="font-bold text-slate-900">Rp 0</span> / <span id="targetNominal">Rp 0</span> (<span id="targetPersen">0</span>%)
             </p>
           </div>
 
+          <!-- PENGELUARAN BULAN INI & BUDGET KATEGORI -->
+          <div id="kategoriBudgetCard" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/70">
+            <div class="flex justify-between items-center gap-2 mb-3">
+              <div class="min-w-0">
+                <h3 class="font-bold text-slate-800 text-sm">
+                  <i class="fa-solid fa-chart-simple text-main-600 mr-1.5" aria-hidden="true"></i>Pengeluaran <span id="katBulanLabel">Bulan Ini</span>
+                </h3>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <div class="flex bg-slate-100 p-0.5 rounded-lg text-xs">
+                  <button type="button" id="btnKatAku" onclick="switchKategoriScope('me')" class="px-2.5 py-1.5 rounded-md font-bold bg-white text-main-700 shadow-xs transition">Aku</button>
+                  <button type="button" id="btnKatSemua" onclick="switchKategoriScope('all')" class="px-2.5 py-1.5 rounded-md font-bold text-slate-600 transition">Berdua</button>
+                </div>
+                <button type="button" onclick="openBudgetModal()" class="text-xs bg-main-50 text-main-700 px-3 py-2 rounded-lg font-bold hover:bg-main-100 border border-main-200 transition">
+                  Budget
+                </button>
+              </div>
+            </div>
+            <div id="listKategoriPengeluaran" class="space-y-3">
+              <div class="space-y-2.5">
+                <div class="skeleton h-4 w-2/3 rounded-md"></div>
+                <div class="skeleton h-2.5 w-full rounded-full"></div>
+                <div class="skeleton h-4 w-1/2 rounded-md"></div>
+                <div class="skeleton h-2.5 w-full rounded-full"></div>
+              </div>
+            </div>
+          </div>
+
           <!-- KARTU WEJANGAN INLINE -->
-          <div class="bg-white p-4 rounded-3xl shadow-sm border border-main-100 flex flex-col gap-2">
+          <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/70 flex flex-col gap-2">
             <div class="flex justify-between items-center gap-2">
-              <h3 class="font-bold text-gray-800 text-xs">
-                <i class="fa-solid fa-cat text-accent-600 mr-1" aria-hidden="true"></i> Wejangan Neko AI
+              <h3 class="font-bold text-slate-800 text-sm">
+                <i class="fa-solid fa-cat text-accent-600 mr-1.5" aria-hidden="true"></i>Wejangan Neko AI
               </h3>
-              <button type="button" onclick="showNekoModal(true)" class="text-xs bg-accent-50 text-accent-700 px-3 py-1.5 rounded-full font-bold hover:bg-accent-100 transition border border-accent-200 active:scale-95">
+              <button type="button" onclick="showNekoModal(true)" class="text-xs bg-accent-50 text-accent-700 px-3 py-2 rounded-full font-bold hover:bg-accent-100 transition border border-accent-200 active:scale-95">
                 <i class="fa-solid fa-rotate-right mr-1" aria-hidden="true"></i>Panggil Ulang
               </button>
             </div>
-            <div class="bg-gray-50 p-3 rounded-2xl text-xs text-gray-700 border border-gray-200 min-h-[60px] flex items-center justify-center" id="tempatWejangan">
+            <div class="bg-slate-50 p-3.5 rounded-2xl text-xs text-slate-700 border border-slate-200/80 min-h-[60px] flex items-center justify-center" id="tempatWejangan">
               Neko akan segera memberikan wejangannya di sini...
             </div>
           </div>
 
           <!-- KANTONG TABUNGAN DINAMIS -->
           <div>
-            <div class="flex items-center justify-between mb-1.5 mt-2">
-              <h3 class="font-bold text-gray-800 text-sm">Kantong Tabungan <i class="fa-solid fa-box-archive text-gray-500 ml-1" aria-hidden="true"></i></h3>
-              <span class="text-[11px] font-semibold text-gray-500">Pos alokasi terpisah</span>
+            <div class="flex items-center justify-between mb-2 mt-2">
+              <h3 class="font-bold text-slate-800 text-sm">Kantong Tabungan <i class="fa-solid fa-box-archive text-slate-400 ml-1" aria-hidden="true"></i></h3>
+              <span class="text-xs font-medium text-slate-500">Pos alokasi terpisah</span>
             </div>
             <div id="kantongTabunganContainer" class="grid grid-cols-2 gap-3 mb-2"></div>
           </div>
 
-          <!-- GRAFIK ARUS KAS -->
-          <div class="grid grid-cols-2 gap-3 mb-4">
-            <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
-              <h3 class="font-bold text-gray-800 text-xs text-center mb-2">
-                <i class="fa-solid fa-chart-pie text-main-600 mr-1" aria-hidden="true"></i>Arus Kasku
-              </h3>
-              <div style="position: relative; height: 84px; width: 84px;"><canvas id="pieChartAku" aria-label="Grafik arus kas pribadi"></canvas></div>
-              <div class="flex items-center justify-center gap-2 mt-2.5 pt-2 border-t border-gray-100 w-full text-[10px] font-bold text-gray-600">
-                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-main-600 inline-block"></span>Masuk</span>
-                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-accent-600 inline-block"></span>Keluar</span>
-              </div>
-            </div>
-            <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
-              <h3 class="font-bold text-gray-800 text-xs text-center mb-2">
-                <i class="fa-solid fa-chart-pie text-accent-600 mr-1" aria-hidden="true"></i>Kas <span id="namaPasanganText">Pasangan</span>
-              </h3>
-              <div style="position: relative; height: 84px; width: 84px;"><canvas id="pieChartPasangan" aria-label="Grafik arus kas pasangan"></canvas></div>
-              <div class="flex items-center justify-center gap-2 mt-2.5 pt-2 border-t border-gray-100 w-full text-[10px] font-bold text-gray-600">
-                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-main-500 inline-block"></span>Masuk</span>
-                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-accent-500 inline-block"></span>Keluar</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="flex items-center justify-between mb-2 mt-4">
-            <h3 class="font-bold text-gray-800 text-sm">Transaksi Terbaru <i class="fa-solid fa-clock-rotate-left text-gray-500 ml-1" aria-hidden="true"></i></h3>
-            <button type="button" onclick="switchTab('rekap')" class="text-xs text-main-700 font-bold hover:underline px-2 py-1">Lihat Semua</button>
+          <div class="flex items-center justify-between mb-2 mt-3">
+            <h3 class="font-bold text-slate-800 text-sm">Transaksi Terbaru <i class="fa-solid fa-clock-rotate-left text-slate-400 ml-1" aria-hidden="true"></i></h3>
+            <button type="button" onclick="switchTab('rekap')" class="text-xs text-main-700 font-bold hover:underline px-2 py-1.5">Lihat Semua</button>
           </div>
           <div id="listTrxTerbaru" class="space-y-2 mb-6">
-            <p class="text-center text-gray-600 text-xs py-3">Memuat transaksi...</p>
+            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/70 space-y-2">
+              <div class="skeleton h-4 w-3/4 rounded"></div>
+              <div class="skeleton h-3 w-1/2 rounded"></div>
+            </div>
+            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/70 space-y-2">
+              <div class="skeleton h-4 w-2/3 rounded"></div>
+              <div class="skeleton h-3 w-2/5 rounded"></div>
+            </div>
           </div>
         </section>
 
         <!-- ================= TAB: SALDO ================= -->
-        <section id="tab-saldo" class="hide px-6 space-y-4 pb-6" aria-label="Rincian Saldo">
-          <div class="flex gap-1 bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100">
-            <button type="button" id="btnViewSaldoku" onclick="switchOwnerSaldo('me')" class="flex-1 py-2.5 rounded-xl text-xs font-bold bg-main-600 text-white shadow transition">
+        <section id="tab-saldo" class="hide px-5 space-y-4 pb-6" aria-label="Rincian Saldo">
+          <div class="flex gap-1 bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200/70">
+            <button type="button" id="btnViewSaldoku" onclick="switchOwnerSaldo('me')" class="flex-1 py-2.5 rounded-xl text-xs font-bold bg-slate-900 text-white shadow transition">
               <i class="fa-solid fa-wallet mr-1" aria-hidden="true"></i>Saldoku (Kelola)
             </button>
-            <button type="button" id="btnViewSaldoPasangan" onclick="switchOwnerSaldo('partner')" class="flex-1 py-2.5 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-50 transition">
+            <button type="button" id="btnViewSaldoPasangan" onclick="switchOwnerSaldo('partner')" class="flex-1 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
               <i class="fa-solid fa-eye mr-1" aria-hidden="true"></i>Saldo <span id="tabNamaPasanganSaldo">Pasangan</span>
             </button>
           </div>
 
-          <div id="kartuHeaderSaldo" class="bg-gradient-to-r from-main-700 to-main-600 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden transition-all">
+          <div id="kartuHeaderSaldo" class="bg-gradient-to-br from-slate-900 to-main-800 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden transition-all">
             <i class="fa-solid fa-building-columns absolute -bottom-3 -right-3 text-7xl opacity-10" aria-hidden="true"></i>
-            <p class="text-xs text-white/90 font-semibold" id="labelHeaderSaldo">Total Saldoku Aktif</p>
-            <h3 class="text-3xl font-bold mt-1 mb-3 truncate" id="totalSemuaSaldo">Rp 0</h3>
+            <p class="text-xs text-slate-300 font-semibold" id="labelHeaderSaldo">Total Saldoku Aktif</p>
+            <h3 class="num text-3xl font-extrabold mt-1 mb-3 truncate" id="totalSemuaSaldo">Rp 0</h3>
 
             <div id="aksiSaldokuBox" class="flex gap-2">
-              <button type="button" onclick="openTransferModal()" class="flex-1 bg-white text-main-700 font-bold py-2.5 px-3 rounded-xl text-xs shadow hover:bg-main-50 transition active:scale-95 flex items-center justify-center gap-1.5">
+              <button type="button" onclick="openTransferModal()" class="flex-1 min-h-[44px] bg-white text-slate-900 font-bold py-2.5 px-3 rounded-xl text-xs shadow hover:bg-slate-100 transition active:scale-95 flex items-center justify-center gap-1.5">
                 <i class="fa-solid fa-right-left" aria-hidden="true"></i>Pindah / Top Up
               </button>
-              <button type="button" onclick="openTambahDompetModal()" class="bg-black/25 text-white font-bold py-2.5 px-3.5 rounded-xl text-xs hover:bg-black/35 transition active:scale-95 flex items-center justify-center gap-1">
+              <button type="button" onclick="openTambahDompetModal()" class="min-h-[44px] bg-white/15 text-white font-bold py-2.5 px-4 rounded-xl text-xs hover:bg-white/25 transition active:scale-95 flex items-center justify-center gap-1.5 border border-white/15">
                 <i class="fa-solid fa-plus" aria-hidden="true"></i>Dompet
               </button>
             </div>
@@ -480,79 +541,79 @@
             <i class="fa-solid fa-triangle-exclamation text-red-600 mt-0.5 shrink-0" aria-hidden="true"></i>
             <div class="min-w-0 flex-1 leading-relaxed">
               <p class="font-bold text-red-800">Peringatan: Ada saldo tercatat minus!</p>
-              <p id="saldoMinusWarningText" class="text-[11px] text-red-700 mt-0.5"></p>
+              <p id="saldoMinusWarningText" class="text-xs text-red-700 mt-0.5"></p>
             </div>
           </div>
 
           <div id="wrapSaldoBank">
-            <h3 class="font-bold text-gray-800 text-xs mb-2 flex items-center gap-1.5">
+            <h3 class="font-bold text-slate-800 text-xs mb-2 flex items-center gap-1.5">
               <i class="fa-solid fa-building-columns text-main-600" aria-hidden="true"></i>Rekening Bank
             </h3>
             <div id="listSaldoBank" class="grid grid-cols-2 gap-2.5"></div>
           </div>
 
           <div id="wrapSaldoEwallet">
-            <h3 class="font-bold text-gray-800 text-xs mb-2 mt-3 flex items-center gap-1.5">
+            <h3 class="font-bold text-slate-800 text-xs mb-2 mt-3 flex items-center gap-1.5">
               <i class="fa-solid fa-mobile-screen-button text-accent-600" aria-hidden="true"></i>E-Wallet &amp; Kartu
             </h3>
             <div id="listSaldoEwallet" class="grid grid-cols-2 gap-2.5"></div>
           </div>
 
           <div id="wrapSaldoLainnya">
-            <h3 class="font-bold text-gray-800 text-xs mb-2 mt-3 flex items-center gap-1.5">
-              <i class="fa-solid fa-money-bill-wave text-green-700" aria-hidden="true"></i>Uang Cash &amp; Lainnya
+            <h3 class="font-bold text-slate-800 text-xs mb-2 mt-3 flex items-center gap-1.5">
+              <i class="fa-solid fa-money-bill-wave text-emerald-700" aria-hidden="true"></i>Uang Cash &amp; Lainnya
             </h3>
             <div id="listSaldoLainnya" class="grid grid-cols-2 gap-2.5"></div>
           </div>
 
-          <div id="saldoEmptyBox" class="hide bg-white rounded-2xl p-5 border border-gray-100 text-center text-xs text-gray-600">
+          <div id="saldoEmptyBox" class="hide bg-white rounded-2xl p-5 border border-slate-200/70 text-center text-xs text-slate-600">
             <i class="fa-solid fa-wallet text-main-400 text-2xl mb-2 block" aria-hidden="true"></i>
             <span id="saldoEmptyText">Belum ada dompet yang dipakai. Catat pemasukan atau klik + Dompet untuk menambahkan.</span>
           </div>
         </section>
 
         <!-- ================= TAB: CATAT TRANSAKSI ================= -->
-        <section id="tab-catat" class="hide px-6 pb-6" aria-label="Catat Transaksi">
-          <div class="bg-white rounded-3xl p-6 shadow-md border border-main-100 relative overflow-hidden">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">
+        <section id="tab-catat" class="hide px-5 pb-6" aria-label="Catat Transaksi">
+          <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/70 relative overflow-hidden">
+            <h3 class="text-lg font-bold text-slate-900 mb-4">
               Catat Transaksi <i class="fa-solid fa-pen-nib text-main-600 ml-1" aria-hidden="true"></i>
             </h3>
 
-            <div class="mb-5">
+            <div class="mb-4">
               <input type="file" id="fotoStruk" accept="image/*" capture="environment" class="sr-only" onchange="prosesScanAI()">
-              <label for="fotoStruk" id="btnScanUi" class="w-full bg-gray-800 hover:bg-gray-900 text-white rounded-xl p-3.5 flex justify-center items-center gap-2 font-bold shadow cursor-pointer transition active:scale-[0.99]">
+              <label for="fotoStruk" id="btnScanUi" class="w-full min-h-[48px] bg-slate-900 hover:bg-slate-800 text-white rounded-xl p-3.5 flex justify-center items-center gap-2 font-bold shadow cursor-pointer transition active:scale-[0.99]">
                 <i class="fa-solid fa-camera" aria-hidden="true"></i>Foto Struk
               </label>
             </div>
 
-            <div class="flex gap-1 mb-4 bg-gray-100 p-1 rounded-xl" role="tablist" aria-label="Tipe transaksi">
-              <button type="button" id="btnPemasukan" onclick="setTipe('Pemasukan')" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition">Pemasukan</button>
-              <button type="button" id="btnPengeluaran" onclick="setTipe('Pengeluaran')" class="flex-1 py-2 rounded-lg text-sm font-bold bg-white text-accent-700 shadow transition">Pengeluaran</button>
-              <button type="button" id="btnTabungan" onclick="setTipe('Tabungan')" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition">Tabungan</button>
+            <div class="flex gap-1 mb-4 bg-slate-100 p-1 rounded-xl" role="tablist" aria-label="Tipe transaksi">
+              <button type="button" id="btnPemasukan" onclick="setTipe('Pemasukan')" class="flex-1 min-h-[40px] py-2 rounded-lg text-sm font-bold text-slate-600 transition">Pemasukan</button>
+              <button type="button" id="btnPengeluaran" onclick="setTipe('Pengeluaran')" class="flex-1 min-h-[40px] py-2 rounded-lg text-sm font-bold bg-white text-accent-700 shadow transition">Pengeluaran</button>
+              <button type="button" id="btnTabungan" onclick="setTipe('Tabungan')" class="flex-1 min-h-[40px] py-2 rounded-lg text-sm font-bold text-slate-600 transition">Tabungan</button>
             </div>
 
             <div id="opsiTabungan" class="hide flex gap-2 mb-4 bg-accent-50 p-1 rounded-xl border border-accent-100">
-              <button type="button" id="btnSetor" onclick="setJenisTabungan('Setor')" class="flex-1 py-2 rounded-lg text-sm font-bold bg-white text-main-700 shadow transition">Setor (+)</button>
-              <button type="button" id="btnTarik" onclick="setJenisTabungan('Tarik')" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition">Tarik (-)</button>
+              <button type="button" id="btnSetor" onclick="setJenisTabungan('Setor')" class="flex-1 min-h-[40px] py-2 rounded-lg text-sm font-bold bg-white text-main-700 shadow transition">Setor (+)</button>
+              <button type="button" id="btnTarik" onclick="setJenisTabungan('Tarik')" class="flex-1 min-h-[40px] py-2 rounded-lg text-sm font-bold text-slate-600 transition">Tarik (-)</button>
             </div>
 
             <form id="formCatatTransaksi" onsubmit="simpanTransaksi(event)" class="space-y-4">
               <div class="w-full">
-                <label for="inputTanggal" class="text-sm font-semibold text-gray-700 ml-1 block mb-1">Tanggal</label>
-                <div class="relative w-full overflow-hidden rounded-xl border border-gray-200 bg-white focus-within:border-main-500">
-                  <input type="date" id="inputTanggal" required onchange="cekInfoPaylater()" class="w-full bg-transparent px-4 py-3 font-bold text-gray-800 text-left">
+                <label for="inputTanggal" class="text-xs font-bold text-slate-600 ml-1 block mb-1">Tanggal</label>
+                <div class="relative w-full overflow-hidden rounded-xl border border-slate-200 bg-white focus-within:border-main-500">
+                  <input type="date" id="inputTanggal" required onchange="cekInfoPaylater()" class="w-full bg-transparent px-4 py-3 font-bold text-slate-900 text-left">
                 </div>
               </div>
 
               <div class="w-full">
-                <label for="inputKategori" class="text-sm font-semibold text-gray-700 ml-1 block mb-1">Kategori / Pos</label>
-                <select id="inputKategori" required onchange="cekKategoriBaru()" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 font-semibold text-gray-800"></select>
+                <label for="inputKategori" class="text-xs font-bold text-slate-600 ml-1 block mb-1">Kategori / Pos</label>
+                <select id="inputKategori" required onchange="cekKategoriBaru()" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 font-semibold text-slate-900"></select>
               </div>
 
               <div id="wadahMetodeBayar" class="w-full">
-                <label for="inputMetode" id="labelMetodeBayar" class="text-sm font-semibold text-gray-700 ml-1 block mb-1">Pembayaran Menggunakan</label>
-                <select id="inputMetode" onchange="cekMetodeBaru()" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 font-semibold text-gray-800"></select>
-                <p id="hintMetodeTabungan" class="hide mt-1.5 text-xs text-gray-600">
+                <label for="inputMetode" id="labelMetodeBayar" class="text-xs font-bold text-slate-600 ml-1 block mb-1">Pembayaran Menggunakan</label>
+                <select id="inputMetode" onchange="cekMetodeBaru()" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 font-semibold text-slate-900"></select>
+                <p id="hintMetodeTabungan" class="hide mt-1.5 text-xs text-slate-600">
                   Pilih "Alokasi Virtual" jika hanya ingin mencatat target tanpa memotong saldo dompet, atau pilih dompet untuk memindahkan dananya.
                 </p>
                 <div id="infoPaylaterBox" class="hide mt-2 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-2.5 text-xs font-semibold flex items-start gap-2">
@@ -562,16 +623,26 @@
               </div>
 
               <div class="w-full">
-                <label for="inputNominal" class="text-sm font-semibold text-gray-700 ml-1 block mb-1">Nominal (Rp)</label>
-                <input type="number" id="inputNominal" min="1" step="1" inputmode="numeric" required placeholder="Contoh: 50000" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 font-bold text-lg text-gray-800">
+                <label for="inputNominal" class="text-xs font-bold text-slate-600 ml-1 block mb-1">Nominal (Rp)</label>
+                <div class="relative flex items-center">
+                  <span class="absolute left-4 text-sm font-bold text-slate-400 pointer-events-none">Rp</span>
+                  <input type="text" id="inputNominal" inputmode="numeric" autocomplete="off" required oninput="formatRupiahInput(this)" placeholder="50.000" class="num w-full bg-white border border-slate-200 rounded-xl pl-11 pr-4 py-3 font-bold text-lg text-slate-900 focus:border-main-500">
+                </div>
+                <div class="flex flex-wrap gap-1.5 mt-2">
+                  <button type="button" onclick="tambahNominalCepat(10000)" class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-main-50 text-slate-700 hover:text-main-700 text-xs font-bold transition">+10rb</button>
+                  <button type="button" onclick="tambahNominalCepat(25000)" class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-main-50 text-slate-700 hover:text-main-700 text-xs font-bold transition">+25rb</button>
+                  <button type="button" onclick="tambahNominalCepat(50000)" class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-main-50 text-slate-700 hover:text-main-700 text-xs font-bold transition">+50rb</button>
+                  <button type="button" onclick="tambahNominalCepat(100000)" class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-main-50 text-slate-700 hover:text-main-700 text-xs font-bold transition">+100rb</button>
+                  <button type="button" onclick="resetNominalCepat()" class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-700 text-xs font-bold transition ml-auto">Clear</button>
+                </div>
               </div>
 
               <div class="w-full">
-                <label for="inputCatatan" class="text-sm font-semibold text-gray-700 ml-1 block mb-1">Catatan</label>
-                <input type="text" id="inputCatatan" placeholder="Detail catatan..." class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 font-semibold text-gray-800">
+                <label for="inputCatatan" class="text-xs font-bold text-slate-600 ml-1 block mb-1">Catatan</label>
+                <input type="text" id="inputCatatan" placeholder="Detail catatan..." class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 font-semibold text-slate-900">
               </div>
 
-              <button type="submit" id="btnSimpan" class="w-full mt-2 bg-main-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-main-700 transition active:scale-[0.99]">
+              <button type="submit" id="btnSimpan" class="w-full min-h-[48px] mt-2 bg-main-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-main-700 transition active:scale-[0.99]">
                 Simpan Data
               </button>
             </form>
@@ -579,17 +650,17 @@
         </section>
 
         <!-- ================= TAB: HUTANG ================= -->
-        <section id="tab-hutang" class="hide px-6 space-y-4 pb-6" aria-label="Daftar Hutang">
-          <div class="bg-white rounded-3xl p-5 shadow-md border border-main-100 relative overflow-hidden flex-1 flex flex-col max-h-[78vh]">
-            <h3 class="text-xl font-bold text-gray-800 mb-3 shrink-0">
+        <section id="tab-hutang" class="hide px-5 space-y-4 pb-6" aria-label="Daftar Hutang">
+          <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/70 relative overflow-hidden flex-1 flex flex-col max-h-[78vh]">
+            <h3 class="text-lg font-bold text-slate-900 mb-3 shrink-0">
               Daftar Hutang Aktif <i class="fa-solid fa-credit-card text-main-600 ml-1" aria-hidden="true"></i>
             </h3>
 
-            <div class="flex gap-1 bg-gray-100 p-1 rounded-xl mb-3 shrink-0">
-              <button type="button" id="btnViewHutangku" onclick="switchOwnerHutang('me')" class="flex-1 py-2 rounded-lg text-xs font-bold bg-white text-main-700 shadow transition">
+            <div class="flex gap-1 bg-slate-100 p-1 rounded-xl mb-3 shrink-0">
+              <button type="button" id="btnViewHutangku" onclick="switchOwnerHutang('me')" class="flex-1 min-h-[40px] py-2 rounded-lg text-xs font-bold bg-white text-main-700 shadow transition">
                 Hutangku (<span id="countHutangku">0</span>)
               </button>
-              <button type="button" id="btnViewHutangPasangan" onclick="switchOwnerHutang('partner')" class="flex-1 py-2 rounded-lg text-xs font-bold text-gray-600 transition">
+              <button type="button" id="btnViewHutangPasangan" onclick="switchOwnerHutang('partner')" class="flex-1 min-h-[40px] py-2 rounded-lg text-xs font-bold text-slate-600 transition">
                 Hutang <span id="tabNamaPasanganHutang">Pasangan</span> (<span id="countHutangPasangan">0</span>)
               </button>
             </div>
@@ -597,18 +668,18 @@
             <div id="listHutang" class="space-y-3 mb-4 overflow-y-auto pr-1 flex-1"></div>
 
             <form id="formInputHutangBox" onsubmit="simpanHutangBaru(event)" class="shrink-0">
-              <hr class="border-gray-200 mb-3">
-              <h4 class="font-bold text-gray-800 mb-2.5 text-sm">Catat Hutangku Baru</h4>
+              <hr class="border-slate-200 mb-3">
+              <h4 class="font-bold text-slate-800 mb-2.5 text-sm">Catat Hutangku Baru</h4>
               <div class="space-y-2.5">
                 <div>
                   <label for="inputNamaHutang" class="sr-only">Nama Hutang</label>
-                  <input type="text" id="inputNamaHutang" required placeholder="Nama Hutang (cth: Cicilan Motor / KPR)" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 font-semibold text-sm text-gray-800 focus:bg-white">
+                  <input type="text" id="inputNamaHutang" required placeholder="Nama Hutang (cth: Cicilan Motor / KPR)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-semibold text-sm text-slate-900 focus:bg-white">
                 </div>
                 <div>
                   <label for="inputNominalHutang" class="sr-only">Total Hutang (Rp)</label>
-                  <input type="number" id="inputNominalHutang" min="1" step="1" inputmode="numeric" required placeholder="Total Hutang (Rp)" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 font-bold text-sm text-gray-800 focus:bg-white">
+                  <input type="text" id="inputNominalHutang" inputmode="numeric" autocomplete="off" required oninput="formatRupiahInput(this)" placeholder="Total Hutang (Rp)" class="num w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-sm text-slate-900 focus:bg-white">
                 </div>
-                <button type="submit" id="btnSimpanHutang" class="w-full bg-accent-600 text-white font-bold py-3 rounded-xl shadow hover:bg-accent-700 transition active:scale-[0.99] text-sm">
+                <button type="submit" id="btnSimpanHutang" class="w-full min-h-[46px] bg-accent-600 text-white font-bold py-3 rounded-xl shadow hover:bg-accent-700 transition active:scale-[0.99] text-sm">
                   Catat Hutang Baru
                 </button>
               </div>
@@ -617,79 +688,93 @@
         </section>
 
         <!-- ================= TAB: REKAP BULANAN ================= -->
-        <section id="tab-rekap" class="hide px-6 pb-6 h-full flex flex-col" aria-label="Rekap Bulanan">
-          <div class="bg-white rounded-3xl p-5 shadow-md border border-main-100 relative overflow-hidden flex-1 flex flex-col">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">
+        <section id="tab-rekap" class="hide px-5 pb-6 h-full flex flex-col" aria-label="Rekap Bulanan">
+          <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/70 relative overflow-hidden flex-1 flex flex-col">
+            <h3 class="text-lg font-bold text-slate-900 mb-4">
               Rekap Bulanan <i class="fa-solid fa-chart-column text-main-600 ml-1" aria-hidden="true"></i>
             </h3>
 
             <div class="mb-4 shrink-0">
               <label for="inputBulan" class="sr-only">Pilih Bulan Rekap</label>
-              <div class="relative w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-50 focus-within:bg-white focus-within:border-main-500">
-                <input type="month" id="inputBulan" class="w-full bg-transparent px-4 py-3 font-bold text-gray-800 text-left" onchange="loadRekap()">
+              <div class="relative w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 focus-within:bg-white focus-within:border-main-500">
+                <input type="month" id="inputBulan" class="w-full bg-transparent px-4 py-3 font-bold text-slate-900 text-left" onchange="loadRekap()">
               </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3 mb-4 shrink-0">
-              <div class="bg-main-50 rounded-2xl p-3.5 border border-main-100">
-                <p class="text-[11px] text-gray-600 font-semibold">Total Pemasukan</p>
-                <p class="font-bold text-main-700 text-base truncate mt-0.5" id="rekapMasuk">Rp 0</p>
-                <div class="mt-2 pt-2 border-t border-main-200/70 space-y-1 text-[11px]">
+              <div class="bg-main-50/70 rounded-2xl p-3.5 border border-main-100">
+                <p class="text-xs text-slate-600 font-semibold">Total Pemasukan</p>
+                <p class="num font-bold text-main-700 text-base truncate mt-0.5" id="rekapMasuk">Rp 0</p>
+                <div class="mt-2 pt-2 border-t border-main-200/70 space-y-1 text-xs">
                   <div class="flex justify-between items-center gap-1">
-                    <span class="text-gray-600 truncate" id="rekapMasukAkuLabel">Aku</span>
-                    <span class="font-bold text-main-700 shrink-0" id="rekapMasukAku">Rp 0</span>
+                    <span class="text-slate-600 truncate" id="rekapMasukAkuLabel">Aku</span>
+                    <span class="num font-bold text-main-700 shrink-0" id="rekapMasukAku">Rp 0</span>
                   </div>
                   <div class="flex justify-between items-center gap-1">
-                    <span class="text-gray-600 truncate" id="rekapMasukPasanganLabel">Pasangan</span>
-                    <span class="font-bold text-main-700 shrink-0" id="rekapMasukPasangan">Rp 0</span>
+                    <span class="text-slate-600 truncate" id="rekapMasukPasanganLabel">Pasangan</span>
+                    <span class="num font-bold text-main-700 shrink-0" id="rekapMasukPasangan">Rp 0</span>
                   </div>
                 </div>
               </div>
-              <div class="bg-accent-50 rounded-2xl p-3.5 border border-accent-100">
-                <p class="text-[11px] text-gray-600 font-semibold">Total Pengeluaran Kas</p>
-                <p class="font-bold text-accent-700 text-base truncate mt-0.5" id="rekapKeluar">Rp 0</p>
-                <div class="mt-2 pt-2 border-t border-accent-200/70 space-y-1 text-[11px]">
+              <div class="bg-accent-50/70 rounded-2xl p-3.5 border border-accent-100">
+                <p class="text-xs text-slate-600 font-semibold">Pengeluaran Kas</p>
+                <p class="num font-bold text-accent-700 text-base truncate mt-0.5" id="rekapKeluar">Rp 0</p>
+                <div class="mt-2 pt-2 border-t border-accent-200/70 space-y-1 text-xs">
                   <div class="flex justify-between items-center gap-1">
-                    <span class="text-gray-600 truncate" id="rekapKeluarAkuLabel">Aku</span>
-                    <span class="font-bold text-accent-700 shrink-0" id="rekapKeluarAku">Rp 0</span>
+                    <span class="text-slate-600 truncate" id="rekapKeluarAkuLabel">Aku</span>
+                    <span class="num font-bold text-accent-700 shrink-0" id="rekapKeluarAku">Rp 0</span>
                   </div>
                   <div class="flex justify-between items-center gap-1">
-                    <span class="text-gray-600 truncate" id="rekapKeluarPasanganLabel">Pasangan</span>
-                    <span class="font-bold text-accent-700 shrink-0" id="rekapKeluarPasangan">Rp 0</span>
+                    <span class="text-slate-600 truncate" id="rekapKeluarPasanganLabel">Pasangan</span>
+                    <span class="num font-bold text-accent-700 shrink-0" id="rekapKeluarPasangan">Rp 0</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <button type="button" onclick="exportXLS()" id="btnExport" class="w-full bg-[#107c41] text-white font-bold py-3 rounded-xl shadow hover:bg-green-800 transition active:scale-[0.99] mb-4 flex items-center justify-center gap-2 shrink-0">
+            <button type="button" onclick="exportXLS()" id="btnExport" class="w-full min-h-[46px] bg-[#107c41] text-white font-bold py-3 rounded-xl shadow hover:bg-green-800 transition active:scale-[0.99] mb-4 flex items-center justify-center gap-2 shrink-0 text-sm">
               <i class="fa-solid fa-file-excel" aria-hidden="true"></i>Download Excel (.xlsx)
             </button>
 
             <div class="flex justify-between items-center mb-2.5 shrink-0">
-              <h4 class="font-bold text-gray-800 text-sm">Rincian Transaksi</h4>
-              <span id="infoTotalRekap" class="text-xs font-bold text-gray-600"></span>
+              <h4 class="font-bold text-slate-800 text-sm">Rincian Transaksi</h4>
+              <span id="infoTotalRekap" class="text-xs font-bold text-slate-600"></span>
             </div>
 
-            <div class="flex gap-1 bg-gray-100 p-1 rounded-xl mb-3 shrink-0">
-              <button type="button" id="btnRekapAku" onclick="switchOwnerRekap('me')" class="flex-1 py-2 rounded-lg text-xs font-bold bg-white text-main-700 shadow transition">
+            <div class="flex gap-1 bg-slate-100 p-1 rounded-xl mb-2.5 shrink-0">
+              <button type="button" id="btnRekapAku" onclick="switchOwnerRekap('me')" class="flex-1 min-h-[40px] py-2 rounded-lg text-xs font-bold bg-white text-main-700 shadow transition">
                 <span id="rekapTabNamaAku">Transaksiku</span> (<span id="countRekapAku">0</span>)
               </button>
-              <button type="button" id="btnRekapPasangan" onclick="switchOwnerRekap('partner')" class="flex-1 py-2 rounded-lg text-xs font-bold text-gray-600 transition">
+              <button type="button" id="btnRekapPasangan" onclick="switchOwnerRekap('partner')" class="flex-1 min-h-[40px] py-2 rounded-lg text-xs font-bold text-slate-600 transition">
                 <span id="rekapTabNamaPasangan">Pasangan</span> (<span id="countRekapPasangan">0</span>)
               </button>
             </div>
 
-            <div id="listRekap" class="space-y-2.5 flex-1 overflow-y-auto pr-0.5">
-              <p class="text-center text-gray-600 text-sm py-4">Pilih bulan terlebih dahulu.</p>
+            <!-- Cari & Filter Tipe Transaksi -->
+            <div class="flex gap-2 mb-3 shrink-0">
+              <div class="relative flex-1 min-w-0">
+                <label for="inputCariRekap" class="sr-only">Cari transaksi</label>
+                <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true"></i>
+                <input type="search" id="inputCariRekap" oninput="ubahFilterRekap()" placeholder="Cari kategori, catatan, dompet..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 py-2 text-xs font-semibold text-slate-800 focus:bg-white focus:border-main-500">
+              </div>
+              <label for="filterRekapTipe" class="sr-only">Filter tipe transaksi</label>
+              <select id="filterRekapTipe" onchange="ubahFilterRekap()" class="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-700 shrink-0">
+                <option value="all">Semua</option>
+                <option value="Pengeluaran">Keluar</option>
+                <option value="Pemasukan">Masuk</option>
+                <option value="Tabungan">Tabungan</option>
+                <option value="Transfer">Transfer</option>
+                <option value="Penyesuaian">Penyesuaian</option>
+              </select>
             </div>
 
-            <div id="paginationRekap" class="hide flex justify-between items-center mt-4 pt-3 border-t border-gray-100 shrink-0">
-              <button type="button" onclick="gantiHalamanRekap(-1)" id="btnPrevRekap" class="px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:bg-main-50 hover:text-main-700 transition shadow-sm">
-                <i class="fa-solid fa-chevron-left mr-1" aria-hidden="true"></i>Sebelumnya
-              </button>
-              <span id="pageIndicatorRekap" class="text-xs font-bold text-gray-700">Hal 1 / 1</span>
-              <button type="button" onclick="gantiHalamanRekap(1)" id="btnNextRekap" class="px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:bg-main-50 hover:text-main-700 transition shadow-sm">
-                Selanjutnya<i class="fa-solid fa-chevron-right ml-1" aria-hidden="true"></i>
+            <div id="listRekap" class="space-y-2.5 flex-1 overflow-y-auto pr-0.5">
+              <p class="text-center text-slate-600 text-sm py-4">Pilih bulan terlebih dahulu.</p>
+            </div>
+
+            <div id="loadMoreRekapBox" class="hide mt-3 pt-3 border-t border-slate-100 shrink-0">
+              <button type="button" id="btnLoadMoreRekap" onclick="muatLebihBanyakRekap()" class="w-full min-h-[44px] py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition">
+                Tampilkan Lebih Banyak
               </button>
             </div>
           </div>
@@ -699,70 +784,201 @@
     </div>
 
     <!-- ================= BOTTOM NAVIGATION ================= -->
-    <nav id="bottomNav" aria-label="Navigasi utama" class="hide fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200 rounded-t-3xl flex justify-around py-2 px-2 text-gray-500 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+    <nav id="bottomNav" aria-label="Navigasi utama" class="hide fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg bg-white/95 backdrop-blur-md border-t border-slate-200 rounded-t-3xl flex justify-around pt-2 px-2 text-slate-500 z-40 shadow-[0_-4px_20px_rgba(15,23,42,0.06)]">
       <button type="button" onclick="switchTab('dashboard')" aria-current="page" class="flex flex-col items-center justify-center min-h-[48px] w-16 text-main-600 font-bold" id="nav-dashboard">
-        <i class="fa-solid fa-house-chimney text-lg mb-0.5" aria-hidden="true"></i><span class="text-[11px]">Beranda</span>
+        <i class="fa-solid fa-house-chimney text-lg mb-0.5" aria-hidden="true"></i><span class="text-xs">Beranda</span>
       </button>
-      <button type="button" onclick="switchTab('saldo')" class="flex flex-col items-center justify-center min-h-[48px] w-16 text-gray-500 hover:text-main-600 transition font-semibold" id="nav-saldo">
-        <i class="fa-solid fa-building-columns text-lg mb-0.5" aria-hidden="true"></i><span class="text-[11px]">Saldo</span>
+      <button type="button" onclick="switchTab('saldo')" class="flex flex-col items-center justify-center min-h-[48px] w-16 text-slate-500 hover:text-main-600 transition font-semibold" id="nav-saldo">
+        <i class="fa-solid fa-building-columns text-lg mb-0.5" aria-hidden="true"></i><span class="text-xs">Saldo</span>
       </button>
-      <button type="button" onclick="switchTab('catat')" class="flex flex-col items-center justify-center min-h-[48px] w-16 text-gray-500 hover:text-main-600 transition font-semibold" id="nav-catat">
-        <i class="fa-solid fa-cat text-lg mb-0.5" aria-hidden="true"></i><span class="text-[11px]">Catat</span>
+      <button type="button" onclick="switchTab('catat')" class="flex flex-col items-center justify-center min-h-[48px] w-16 text-slate-500 hover:text-main-600 transition font-semibold" id="nav-catat">
+        <i class="fa-solid fa-cat text-lg mb-0.5" aria-hidden="true"></i><span class="text-xs">Catat</span>
       </button>
-      <button type="button" onclick="switchTab('hutang')" class="flex flex-col items-center justify-center min-h-[48px] w-16 text-gray-500 hover:text-main-600 transition font-semibold" id="nav-hutang">
-        <i class="fa-solid fa-credit-card text-lg mb-0.5" aria-hidden="true"></i><span class="text-[11px]">Hutang</span>
+      <button type="button" onclick="switchTab('hutang')" class="flex flex-col items-center justify-center min-h-[48px] w-16 text-slate-500 hover:text-main-600 transition font-semibold" id="nav-hutang">
+        <i class="fa-solid fa-credit-card text-lg mb-0.5" aria-hidden="true"></i><span class="text-xs">Hutang</span>
       </button>
-      <button type="button" onclick="switchTab('rekap')" class="flex flex-col items-center justify-center min-h-[48px] w-16 text-gray-500 hover:text-main-600 transition font-semibold" id="nav-rekap">
-        <i class="fa-solid fa-list-ul text-lg mb-0.5" aria-hidden="true"></i><span class="text-[11px]">Rekap</span>
+      <button type="button" onclick="switchTab('rekap')" class="flex flex-col items-center justify-center min-h-[48px] w-16 text-slate-500 hover:text-main-600 transition font-semibold" id="nav-rekap">
+        <i class="fa-solid fa-list-ul text-lg mb-0.5" aria-hidden="true"></i><span class="text-xs">Rekap</span>
       </button>
     </nav>
 
   </div>
 
-  <!-- ================= MODAL EDIT TRANSAKSI ================= -->
-  <div id="editTrxModal" role="dialog" aria-modal="true" aria-labelledby="editTrxTitle" onclick="handleBackdropClose(event, closeEditTrxModal)" class="hide fixed inset-0 z-[95] bg-gray-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
-    <form onsubmit="simpanEditTransaksi(event)" class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative max-h-[90vh] overflow-y-auto">
+  <!-- ================= MODAL PENGATURAN & AKUN (BOTTOM SHEET) ================= -->
+  <div id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle" onclick="handleBackdropClose(event, closeSettingsModal)" class="hide fixed inset-0 z-[95] bg-slate-900/60 flex items-end sm:items-center justify-center p-0 sm:p-5 backdrop-blur-sm">
+    <div class="bg-white rounded-t-3xl sm:rounded-3xl p-6 w-full max-w-md shadow-2xl relative max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4">
-        <h3 id="editTrxTitle" class="text-lg font-bold text-gray-800">
-          <i class="fa-solid fa-pen-to-square text-main-600 mr-1.5" aria-hidden="true"></i>Edit Catatanku
+        <div>
+          <h3 id="settingsModalTitle" class="text-lg font-bold text-slate-900">Pengaturan &amp; Akun</h3>
+          <p class="text-xs text-slate-500 font-medium" id="settingsUserSummary"></p>
+        </div>
+        <button type="button" onclick="closeSettingsModal()" aria-label="Tutup pengaturan" class="h-11 w-11 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-900">
+          <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <div class="space-y-2.5">
+        <button type="button" onclick="closeSettingsModal(); openBudgetModal();" class="w-full min-h-[52px] flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left transition">
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="h-9 w-9 rounded-xl bg-main-100 text-main-700 flex items-center justify-center shrink-0"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i></span>
+            <div class="min-w-0">
+              <p class="font-bold text-sm text-slate-800">Atur Budget Bulanan</p>
+              <p class="text-xs text-slate-500">Batas pengeluaran per kategori</p>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-slate-400 text-xs shrink-0" aria-hidden="true"></i>
+        </button>
+
+        <button type="button" onclick="closeSettingsModal(); openChangePasswordModal();" class="w-full min-h-[52px] flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left transition">
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="h-9 w-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0"><i class="fa-solid fa-key" aria-hidden="true"></i></span>
+            <div class="min-w-0">
+              <p class="font-bold text-sm text-slate-800">Ganti Password</p>
+              <p class="text-xs text-slate-500">Perbarui kata sandi akunmu</p>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-slate-400 text-xs shrink-0" aria-hidden="true"></i>
+        </button>
+
+        <button type="button" onclick="toggleNekoFromSettings()" class="w-full min-h-[52px] flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left transition">
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="h-9 w-9 rounded-xl bg-accent-100 text-accent-700 flex items-center justify-center shrink-0"><i class="fa-solid fa-cat" aria-hidden="true"></i></span>
+            <div class="min-w-0">
+              <p class="font-bold text-sm text-slate-800">Tampilan Maskot Neko 3D</p>
+              <p class="text-xs text-slate-500" id="settingsNekoStatusText">Melayang di layar</p>
+            </div>
+          </div>
+          <span class="text-xs font-bold text-main-700 shrink-0">Ubah</span>
+        </button>
+
+        <div class="pt-3 mt-3 border-t border-slate-200 space-y-2.5">
+          <p class="text-xs font-bold text-slate-500 px-1 uppercase tracking-wider">Zona Akun</p>
+          <button type="button" onclick="closeSettingsModal(); openResetUserModal();" class="w-full min-h-[50px] flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-left transition">
+            <div class="flex items-center gap-3 min-w-0">
+              <span class="h-9 w-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i></span>
+              <div class="min-w-0">
+                <p class="font-bold text-sm text-amber-900">Reset Catatanku dari Awal</p>
+                <p class="text-xs text-amber-800">Hapus datamu saja (pasangan aman)</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-amber-700 text-xs shrink-0" aria-hidden="true"></i>
+          </button>
+
+          <button type="button" onclick="closeSettingsModal(); prosesLogout(false);" class="w-full min-h-[48px] flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-sm transition">
+            <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>Keluar dari Akun
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL GANTI PASSWORD ================= -->
+  <div id="changePassModal" role="dialog" aria-modal="true" aria-labelledby="changePassTitle" onclick="handleBackdropClose(event, closeChangePasswordModal)" class="hide fixed inset-0 z-[98] bg-slate-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
+    <form onsubmit="simpanGantiPassword(event)" class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
+      <div class="flex justify-between items-center mb-4">
+        <h3 id="changePassTitle" class="text-lg font-bold text-slate-900">
+          <i class="fa-solid fa-key text-emerald-600 mr-1.5" aria-hidden="true"></i>Ganti Password
         </h3>
-        <button type="button" onclick="closeEditTrxModal()" aria-label="Tutup dialog" class="h-9 w-9 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-800">
+        <button type="button" onclick="closeChangePasswordModal()" aria-label="Tutup dialog" class="h-11 w-11 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-900">
           <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
         </button>
       </div>
       <div class="space-y-3">
         <div>
-          <label for="editTrxTanggal" class="text-xs font-bold text-gray-600 block mb-1">Tanggal</label>
-          <div class="relative w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
-            <input type="date" id="editTrxTanggal" required onchange="cekEditInfoPaylater()" class="w-full bg-transparent px-3 py-2.5 font-bold text-sm text-gray-800">
+          <label for="inputPassLama" class="text-xs font-bold text-slate-600 block mb-1">Password Lama</label>
+          <input type="password" id="inputPassLama" autocomplete="current-password" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-semibold text-sm text-slate-900">
+        </div>
+        <div>
+          <label for="inputPassBaru" class="text-xs font-bold text-slate-600 block mb-1">Password Baru (min. 6 karakter)</label>
+          <input type="password" id="inputPassBaru" autocomplete="new-password" minlength="6" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-semibold text-sm text-slate-900">
+        </div>
+        <div>
+          <label for="inputPassKonfirm" class="text-xs font-bold text-slate-600 block mb-1">Ulangi Password Baru</label>
+          <input type="password" id="inputPassKonfirm" autocomplete="new-password" minlength="6" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-semibold text-sm text-slate-900">
+        </div>
+        <button type="submit" id="btnSimpanPass" class="w-full min-h-[46px] bg-slate-900 text-white font-bold py-3 rounded-xl shadow hover:bg-slate-800 transition active:scale-[0.99] mt-2">
+          Simpan Password Baru
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ================= MODAL ATUR BUDGET BULANAN ================= -->
+  <div id="budgetModal" role="dialog" aria-modal="true" aria-labelledby="budgetModalTitle" onclick="handleBackdropClose(event, closeBudgetModal)" class="hide fixed inset-0 z-[96] bg-slate-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
+    <form onsubmit="simpanBudgetKategori(event)" class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-3">
+        <h3 id="budgetModalTitle" class="text-lg font-bold text-slate-900">
+          <i class="fa-solid fa-chart-simple text-main-600 mr-1.5" aria-hidden="true"></i>Budget Bulanan
+        </h3>
+        <button type="button" onclick="closeBudgetModal()" aria-label="Tutup dialog" class="h-11 w-11 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-900">
+          <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label for="budgetKategoriSelect" class="text-xs font-bold text-slate-600 block mb-1">Kategori Pengeluaran</label>
+          <select id="budgetKategoriSelect" onchange="isiNominalBudgetTerpilih()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-slate-900"></select>
+        </div>
+        <div>
+          <label for="budgetNominalInput" class="text-xs font-bold text-slate-600 block mb-1">Batas Pengeluaran / Bulan (Rp)</label>
+          <input type="text" id="budgetNominalInput" inputmode="numeric" autocomplete="off" required oninput="formatRupiahInput(this)" placeholder="Contoh: 1.500.000" class="num w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-bold text-sm text-slate-900">
+          <p class="text-xs text-slate-500 mt-1">Isi 0 untuk menghapus budget pada kategori ini.</p>
+        </div>
+        <button type="submit" id="btnSimpanBudget" class="w-full min-h-[46px] bg-main-600 text-white font-bold py-3 rounded-xl shadow hover:bg-main-700 transition active:scale-[0.99]">
+          Simpan Budget
+        </button>
+      </div>
+      <div id="budgetAktifListWrap" class="mt-4 pt-4 border-t border-slate-200">
+        <p class="text-xs font-bold text-slate-600 mb-2">Budget Aktifmu Saat Ini</p>
+        <div id="budgetAktifList" class="space-y-2"></div>
+      </div>
+    </form>
+  </div>
+
+  <!-- ================= MODAL EDIT TRANSAKSI ================= -->
+  <div id="editTrxModal" role="dialog" aria-modal="true" aria-labelledby="editTrxTitle" onclick="handleBackdropClose(event, closeEditTrxModal)" class="hide fixed inset-0 z-[95] bg-slate-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
+    <form onsubmit="simpanEditTransaksi(event)" class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h3 id="editTrxTitle" class="text-lg font-bold text-slate-900">
+          <i class="fa-solid fa-pen-to-square text-main-600 mr-1.5" aria-hidden="true"></i>Edit Catatanku
+        </h3>
+        <button type="button" onclick="closeEditTrxModal()" aria-label="Tutup dialog" class="h-11 w-11 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-900">
+          <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label for="editTrxTanggal" class="text-xs font-bold text-slate-600 block mb-1">Tanggal</label>
+          <div class="relative w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+            <input type="date" id="editTrxTanggal" required onchange="cekEditInfoPaylater()" class="w-full bg-transparent px-3 py-2.5 font-bold text-sm text-slate-900">
           </div>
         </div>
         <div id="editTrxJenisTabBox" class="hide">
-          <label for="editTrxJenisTab" class="text-xs font-bold text-gray-600 block mb-1">Jenis Tabungan</label>
-          <select id="editTrxJenisTab" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-800">
+          <label for="editTrxJenisTab" class="text-xs font-bold text-slate-600 block mb-1">Jenis Tabungan</label>
+          <select id="editTrxJenisTab" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-slate-900">
             <option value="Setor">Setor (+)</option>
             <option value="Tarik">Tarik (-)</option>
           </select>
         </div>
         <div>
-          <label for="editTrxKategori" class="text-xs font-bold text-gray-600 block mb-1">Kategori / Pos</label>
-          <select id="editTrxKategori" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-800"></select>
+          <label for="editTrxKategori" class="text-xs font-bold text-slate-600 block mb-1">Kategori / Pos</label>
+          <select id="editTrxKategori" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-slate-900"></select>
         </div>
         <div id="editTrxMetodeBox">
-          <label for="editTrxMetode" id="labelEditTrxMetode" class="text-xs font-bold text-gray-600 block mb-1">Metode / Saldo</label>
-          <select id="editTrxMetode" onchange="cekEditInfoPaylater()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-800"></select>
+          <label for="editTrxMetode" id="labelEditTrxMetode" class="text-xs font-bold text-slate-600 block mb-1">Metode / Saldo</label>
+          <select id="editTrxMetode" onchange="cekEditInfoPaylater()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-slate-900"></select>
           <div id="editInfoPaylaterBox" class="hide mt-2 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-2 text-xs font-semibold"></div>
         </div>
         <div>
-          <label for="editTrxNominal" class="text-xs font-bold text-gray-600 block mb-1">Nominal (Rp)</label>
-          <input type="number" id="editTrxNominal" step="1" inputmode="numeric" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-bold text-sm text-gray-800">
-          <p id="editTrxNominalHint" class="hide text-[11px] text-gray-600 mt-1">Untuk penyesuaian saldo, angka boleh negatif (-) atau positif (+).</p>
+          <label for="editTrxNominal" class="text-xs font-bold text-slate-600 block mb-1">Nominal (Rp)</label>
+          <input type="text" id="editTrxNominal" inputmode="numeric" autocomplete="off" required oninput="formatEditTrxNominal(this)" class="num w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-bold text-sm text-slate-900">
+          <p id="editTrxNominalHint" class="hide text-xs text-slate-600 mt-1">Untuk penyesuaian saldo, angka boleh negatif (-) atau positif (+).</p>
         </div>
         <div>
-          <label for="editTrxCatatan" class="text-xs font-bold text-gray-600 block mb-1">Catatan</label>
-          <input type="text" id="editTrxCatatan" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-800">
+          <label for="editTrxCatatan" class="text-xs font-bold text-slate-600 block mb-1">Catatan</label>
+          <input type="text" id="editTrxCatatan" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-slate-900">
         </div>
-        <button type="submit" id="btnSimpanEditTrx" class="w-full bg-main-600 text-white font-bold py-3 rounded-xl shadow hover:bg-main-700 transition active:scale-[0.99] mt-2">
+        <button type="submit" id="btnSimpanEditTrx" class="w-full min-h-[46px] bg-main-600 text-white font-bold py-3 rounded-xl shadow hover:bg-main-700 transition active:scale-[0.99] mt-2">
           Simpan Perubahan
         </button>
       </div>
@@ -770,39 +986,39 @@
   </div>
 
   <!-- ================= MODAL PINDAH / TOP UP SALDO ================= -->
-  <div id="transferModal" role="dialog" aria-modal="true" aria-labelledby="transferTitle" onclick="handleBackdropClose(event, closeTransferModal)" class="hide fixed inset-0 z-[90] bg-gray-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
+  <div id="transferModal" role="dialog" aria-modal="true" aria-labelledby="transferTitle" onclick="handleBackdropClose(event, closeTransferModal)" class="hide fixed inset-0 z-[90] bg-slate-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
     <form onsubmit="prosesTransferSaldo(event)" class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
       <div class="flex justify-between items-center mb-4">
-        <h3 id="transferTitle" class="text-lg font-bold text-gray-800">
+        <h3 id="transferTitle" class="text-lg font-bold text-slate-900">
           <i class="fa-solid fa-right-left text-main-600 mr-1.5" aria-hidden="true"></i>Pindah / Top Up Saldoku
         </h3>
-        <button type="button" onclick="closeTransferModal()" aria-label="Tutup dialog" class="h-9 w-9 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-800">
+        <button type="button" onclick="closeTransferModal()" aria-label="Tutup dialog" class="h-11 w-11 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-900">
           <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
         </button>
       </div>
       <div class="space-y-3">
         <div>
-          <label for="trfDari" class="text-xs font-bold text-gray-600 block mb-1">Dari Saldoku</label>
-          <select id="trfDari" onchange="cekInfoAdminTransfer()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-800"></select>
+          <label for="trfDari" class="text-xs font-bold text-slate-600 block mb-1">Dari Saldoku</label>
+          <select id="trfDari" onchange="cekInfoAdminTransfer()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-slate-900"></select>
         </div>
         <div>
-          <label for="trfKe" class="text-xs font-bold text-gray-600 block mb-1">Ke Saldoku / Tujuan Top Up</label>
-          <select id="trfKe" onchange="cekInfoAdminTransfer()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-800"></select>
+          <label for="trfKe" class="text-xs font-bold text-slate-600 block mb-1">Ke Saldoku / Tujuan Top Up</label>
+          <select id="trfKe" onchange="cekInfoAdminTransfer()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-slate-900"></select>
         </div>
         <div>
-          <label for="trfNominal" class="text-xs font-bold text-gray-600 block mb-1">Nominal (Rp)</label>
-          <input type="number" id="trfNominal" min="1" step="1" inputmode="numeric" required placeholder="Contoh: 100000" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-bold text-sm text-gray-800">
+          <label for="trfNominal" class="text-xs font-bold text-slate-600 block mb-1">Nominal (Rp)</label>
+          <input type="text" id="trfNominal" inputmode="numeric" autocomplete="off" required oninput="formatRupiahInput(this)" placeholder="Contoh: 100.000" class="num w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-bold text-sm text-slate-900">
         </div>
         <div>
-          <label for="trfAdmin" class="text-xs font-bold text-gray-600 block mb-1">Biaya Admin (Rp, opsional)</label>
-          <input type="number" id="trfAdmin" min="0" step="1" inputmode="numeric" value="0" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-bold text-sm text-gray-800">
-          <p id="infoAdminTrf" class="text-[11px] text-gray-600 mt-1">Isi 0 jika bebas biaya admin (dipotong dari saldo pengirim).</p>
+          <label for="trfAdmin" class="text-xs font-bold text-slate-600 block mb-1">Biaya Admin (Rp, opsional)</label>
+          <input type="text" id="trfAdmin" inputmode="numeric" autocomplete="off" value="0" oninput="formatRupiahInput(this)" class="num w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-bold text-sm text-slate-900">
+          <p id="infoAdminTrf" class="text-xs text-slate-600 mt-1">Isi 0 jika bebas biaya admin (dipotong dari saldo pengirim).</p>
         </div>
         <div>
-          <label for="trfCatatan" class="text-xs font-bold text-gray-600 block mb-1">Catatan (Opsional)</label>
-          <input type="text" id="trfCatatan" placeholder="Cth: Top Up GoPay" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-800">
+          <label for="trfCatatan" class="text-xs font-bold text-slate-600 block mb-1">Catatan (Opsional)</label>
+          <input type="text" id="trfCatatan" placeholder="Cth: Top Up GoPay" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-slate-900">
         </div>
-        <button type="submit" id="btnProsesTrf" class="w-full bg-main-600 text-white font-bold py-3 rounded-xl shadow hover:bg-main-700 transition active:scale-[0.99] mt-2">
+        <button type="submit" id="btnProsesTrf" class="w-full min-h-[46px] bg-main-600 text-white font-bold py-3 rounded-xl shadow hover:bg-main-700 transition active:scale-[0.99] mt-2">
           Pindahkan Saldo Sekarang
         </button>
       </div>
@@ -810,27 +1026,27 @@
   </div>
 
   <!-- ================= MODAL BAYAR HUTANG ================= -->
-  <div id="bayarHutangModal" role="dialog" aria-modal="true" aria-labelledby="bayarHutangTitle" onclick="handleBackdropClose(event, closeBayarHutangModal)" class="hide fixed inset-0 z-[90] bg-gray-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
+  <div id="bayarHutangModal" role="dialog" aria-modal="true" aria-labelledby="bayarHutangTitle" onclick="handleBackdropClose(event, closeBayarHutangModal)" class="hide fixed inset-0 z-[90] bg-slate-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
     <form onsubmit="konfirmasiBayarHutang(event)" class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
       <div class="flex justify-between items-center mb-2">
-        <h3 id="bayarHutangTitle" class="text-lg font-bold text-gray-800">
+        <h3 id="bayarHutangTitle" class="text-lg font-bold text-slate-900">
           <i class="fa-solid fa-hand-holding-dollar text-main-600 mr-1.5" aria-hidden="true"></i>Bayar Cicilan / Tagihan
         </h3>
-        <button type="button" onclick="closeBayarHutangModal()" aria-label="Tutup dialog" class="h-9 w-9 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-800">
+        <button type="button" onclick="closeBayarHutangModal()" aria-label="Tutup dialog" class="h-11 w-11 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-900">
           <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
         </button>
       </div>
       <p id="labelNamaHutangBayar" class="text-xs font-bold text-accent-700 mb-4"></p>
       <div class="space-y-3">
         <div>
-          <label for="bayarHutangMetode" class="text-xs font-bold text-gray-600 block mb-1">Bayar Menggunakan Saldoku</label>
-          <select id="bayarHutangMetode" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-800"></select>
+          <label for="bayarHutangMetode" class="text-xs font-bold text-slate-600 block mb-1">Bayar Menggunakan Saldoku</label>
+          <select id="bayarHutangMetode" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-slate-900"></select>
         </div>
         <div>
-          <label for="bayarHutangNominal" class="text-xs font-bold text-gray-600 block mb-1">Nominal Pembayaran (Rp)</label>
-          <input type="number" id="bayarHutangNominal" min="1" step="1" inputmode="numeric" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-bold text-sm text-gray-800">
+          <label for="bayarHutangNominal" class="text-xs font-bold text-slate-600 block mb-1">Nominal Pembayaran (Rp)</label>
+          <input type="text" id="bayarHutangNominal" inputmode="numeric" autocomplete="off" required oninput="formatRupiahInput(this)" class="num w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-bold text-sm text-slate-900">
         </div>
-        <button type="submit" id="btnKonfirmasiBayarHutang" class="w-full bg-main-600 text-white font-bold py-3 rounded-xl shadow hover:bg-main-700 transition active:scale-[0.99] mt-2">
+        <button type="submit" id="btnKonfirmasiBayarHutang" class="w-full min-h-[46px] bg-main-600 text-white font-bold py-3 rounded-xl shadow hover:bg-main-700 transition active:scale-[0.99] mt-2">
           Bayar Sekarang
         </button>
       </div>
@@ -838,35 +1054,35 @@
   </div>
 
   <!-- ================= MODAL EDIT HUTANG (PENGGANTI 4 PROMPT) ================= -->
-  <div id="editHutangModal" role="dialog" aria-modal="true" aria-labelledby="editHutangTitle" onclick="handleBackdropClose(event, closeEditHutangModal)" class="hide fixed inset-0 z-[95] bg-gray-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
+  <div id="editHutangModal" role="dialog" aria-modal="true" aria-labelledby="editHutangTitle" onclick="handleBackdropClose(event, closeEditHutangModal)" class="hide fixed inset-0 z-[95] bg-slate-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
     <form onsubmit="simpanEditHutang(event)" class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
       <div class="flex justify-between items-center mb-4">
-        <h3 id="editHutangTitle" class="text-lg font-bold text-gray-800">
+        <h3 id="editHutangTitle" class="text-lg font-bold text-slate-900">
           <i class="fa-solid fa-pen-to-square text-main-600 mr-1.5" aria-hidden="true"></i>Edit Data Hutang
         </h3>
-        <button type="button" onclick="closeEditHutangModal()" aria-label="Tutup dialog" class="h-9 w-9 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-800">
+        <button type="button" onclick="closeEditHutangModal()" aria-label="Tutup dialog" class="h-11 w-11 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-900">
           <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
         </button>
       </div>
       <div class="space-y-3">
         <div>
-          <label for="editHutangNama" class="text-xs font-bold text-gray-600 block mb-1">Nama Hutang</label>
-          <input type="text" id="editHutangNama" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-800">
+          <label for="editHutangNama" class="text-xs font-bold text-slate-600 block mb-1">Nama Hutang</label>
+          <input type="text" id="editHutangNama" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-slate-900">
         </div>
         <div>
-          <label for="editHutangSisa" class="text-xs font-bold text-gray-600 block mb-1">Sisa Hutang Saat Ini (Rp)</label>
-          <input type="number" id="editHutangSisa" min="0" step="1" inputmode="numeric" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-bold text-sm text-gray-800">
+          <label for="editHutangSisa" class="text-xs font-bold text-slate-600 block mb-1">Sisa Hutang Saat Ini (Rp)</label>
+          <input type="text" id="editHutangSisa" inputmode="numeric" autocomplete="off" required oninput="formatRupiahInput(this)" class="num w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-bold text-sm text-slate-900">
         </div>
         <div>
-          <label for="editHutangTempo" class="text-xs font-bold text-gray-600 block mb-1">Pengingat Jatuh Tempo</label>
-          <input type="text" id="editHutangTempo" placeholder="Cth: 1 Jan 2027, 15, Akhir Bulan" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-800">
+          <label for="editHutangTempo" class="text-xs font-bold text-slate-600 block mb-1">Pengingat Jatuh Tempo</label>
+          <input type="text" id="editHutangTempo" placeholder="Cth: 1 Jan 2027, 15, Akhir Bulan" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-slate-900">
         </div>
         <div>
-          <label for="editHutangCicilan" class="text-xs font-bold text-gray-600 block mb-1">Cicilan Rutin / Bulan (Rp)</label>
-          <input type="number" id="editHutangCicilan" min="0" step="1" inputmode="numeric" value="0" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-bold text-sm text-gray-800">
-          <p class="text-[11px] text-gray-600 mt-1">Isi 0 jika pembayaran sesuai tagihan.</p>
+          <label for="editHutangCicilan" class="text-xs font-bold text-slate-600 block mb-1">Cicilan Rutin / Bulan (Rp)</label>
+          <input type="text" id="editHutangCicilan" inputmode="numeric" autocomplete="off" value="0" oninput="formatRupiahInput(this)" class="num w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-bold text-sm text-slate-900">
+          <p class="text-xs text-slate-500 mt-1">Isi 0 jika pembayaran sesuai tagihan.</p>
         </div>
-        <button type="submit" id="btnSimpanEditHutang" class="w-full bg-main-600 text-white font-bold py-3 rounded-xl shadow hover:bg-main-700 transition active:scale-[0.99] mt-2">
+        <button type="submit" id="btnSimpanEditHutang" class="w-full min-h-[46px] bg-main-600 text-white font-bold py-3 rounded-xl shadow hover:bg-main-700 transition active:scale-[0.99] mt-2">
           Simpan Perubahan
         </button>
       </div>
@@ -874,26 +1090,26 @@
   </div>
 
   <!-- ================= MODAL SET TARGET TABUNGAN ================= -->
-  <div id="targetModal" role="dialog" aria-modal="true" aria-labelledby="targetModalTitle" onclick="handleBackdropClose(event, closeTargetModal)" class="hide fixed inset-0 z-[95] bg-gray-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
+  <div id="targetModal" role="dialog" aria-modal="true" aria-labelledby="targetModalTitle" onclick="handleBackdropClose(event, closeTargetModal)" class="hide fixed inset-0 z-[95] bg-slate-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
     <form onsubmit="simpanTargetBaru(event)" class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
       <div class="flex justify-between items-center mb-4">
-        <h3 id="targetModalTitle" class="text-lg font-bold text-gray-800">
+        <h3 id="targetModalTitle" class="text-lg font-bold text-slate-900">
           <i class="fa-solid fa-bullseye text-accent-600 mr-1.5" aria-hidden="true"></i>Atur Target Tabungan
         </h3>
-        <button type="button" onclick="closeTargetModal()" aria-label="Tutup dialog" class="h-9 w-9 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-800">
+        <button type="button" onclick="closeTargetModal()" aria-label="Tutup dialog" class="h-11 w-11 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-900">
           <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
         </button>
       </div>
       <div class="space-y-3">
         <div>
-          <label for="targetPosSelect" class="text-xs font-bold text-gray-600 block mb-1">Pos Tabungan yang Dilacak</label>
-          <select id="targetPosSelect" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-800"></select>
+          <label for="targetPosSelect" class="text-xs font-bold text-slate-600 block mb-1">Pos Tabungan yang Dilacak</label>
+          <select id="targetPosSelect" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-slate-900"></select>
         </div>
         <div>
-          <label for="targetNominalInput" class="text-xs font-bold text-gray-600 block mb-1">Target Nominal (Rp)</label>
-          <input type="number" id="targetNominalInput" min="1" step="1" inputmode="numeric" required placeholder="Contoh: 10000000" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-bold text-sm text-gray-800">
+          <label for="targetNominalInput" class="text-xs font-bold text-slate-600 block mb-1">Target Nominal (Rp)</label>
+          <input type="text" id="targetNominalInput" inputmode="numeric" autocomplete="off" required oninput="formatRupiahInput(this)" placeholder="Contoh: 10.000.000" class="num w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-bold text-sm text-slate-900">
         </div>
-        <button type="submit" id="btnSimpanTarget" class="w-full bg-main-600 text-white font-bold py-3 rounded-xl shadow hover:bg-main-700 transition active:scale-[0.99] mt-2">
+        <button type="submit" id="btnSimpanTarget" class="w-full min-h-[46px] bg-main-600 text-white font-bold py-3 rounded-xl shadow hover:bg-main-700 transition active:scale-[0.99] mt-2">
           Simpan Target
         </button>
       </div>
@@ -901,27 +1117,27 @@
   </div>
 
   <!-- ================= MODAL SESUAIKAN SALDO ================= -->
-  <div id="sesuaikanSaldoModal" role="dialog" aria-modal="true" aria-labelledby="sesuaikanSaldoTitle" onclick="handleBackdropClose(event, closeSesuaikanSaldoModal)" class="hide fixed inset-0 z-[95] bg-gray-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
+  <div id="sesuaikanSaldoModal" role="dialog" aria-modal="true" aria-labelledby="sesuaikanSaldoTitle" onclick="handleBackdropClose(event, closeSesuaikanSaldoModal)" class="hide fixed inset-0 z-[95] bg-slate-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
     <form onsubmit="simpanSesuaikanSaldo(event)" class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
       <div class="flex justify-between items-center mb-3">
-        <h3 id="sesuaikanSaldoTitle" class="text-lg font-bold text-gray-800">
+        <h3 id="sesuaikanSaldoTitle" class="text-lg font-bold text-slate-900">
           <i class="fa-solid fa-sliders text-main-600 mr-1.5" aria-hidden="true"></i>Sesuaikan Saldo
         </h3>
-        <button type="button" onclick="closeSesuaikanSaldoModal()" aria-label="Tutup dialog" class="h-9 w-9 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-800">
+        <button type="button" onclick="closeSesuaikanSaldoModal()" aria-label="Tutup dialog" class="h-11 w-11 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-900">
           <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
         </button>
       </div>
-      <p id="adjDompetInfo" class="text-xs font-bold text-gray-600 mb-3"></p>
+      <p id="adjDompetInfo" class="text-xs font-bold text-slate-600 mb-3"></p>
       <div class="space-y-3">
         <div>
-          <label for="adjSaldoBaru" class="text-xs font-bold text-gray-600 block mb-1">Saldo Sebenarnya Saat Ini (Rp)</label>
-          <input type="number" id="adjSaldoBaru" min="0" step="1" inputmode="numeric" required oninput="updatePreviewSelisihSaldo()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-bold text-sm text-gray-800">
+          <label for="adjSaldoBaru" class="text-xs font-bold text-slate-600 block mb-1">Saldo Sebenarnya Saat Ini (Rp)</label>
+          <input type="text" id="adjSaldoBaru" inputmode="numeric" autocomplete="off" required oninput="formatRupiahInput(this); updatePreviewSelisihSaldo()" class="num w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-bold text-sm text-slate-900">
           <p id="adjPreviewSelisih" class="text-xs font-semibold text-main-700 mt-1.5"></p>
         </div>
-        <p class="text-[11px] text-gray-600 bg-gray-50 border border-gray-200 rounded-xl p-2.5">
+        <p class="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-xl p-2.5">
           Saldo minimal Rp 0 (tidak boleh minus). Dicatat sebagai penyesuaian saldo khusus agar tidak mengganggu pemasukan/pengeluaran bulanan.
         </p>
-        <button type="submit" id="btnSimpanAdjSaldo" class="w-full bg-main-600 text-white font-bold py-3 rounded-xl shadow hover:bg-main-700 transition active:scale-[0.99]">
+        <button type="submit" id="btnSimpanAdjSaldo" class="w-full min-h-[46px] bg-main-600 text-white font-bold py-3 rounded-xl shadow hover:bg-main-700 transition active:scale-[0.99]">
           Simpan Saldo Aktual
         </button>
       </div>
@@ -929,25 +1145,25 @@
   </div>
 
   <!-- ================= MODAL TAMBAH DOMPET / KATEGORI ================= -->
-  <div id="addMasterModal" role="dialog" aria-modal="true" aria-labelledby="addMasterTitle" onclick="handleBackdropClose(event, closeAddMasterModal)" class="hide fixed inset-0 z-[95] bg-gray-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
+  <div id="addMasterModal" role="dialog" aria-modal="true" aria-labelledby="addMasterTitle" onclick="handleBackdropClose(event, closeAddMasterModal)" class="hide fixed inset-0 z-[95] bg-slate-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
     <form onsubmit="simpanAddMaster(event)" class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
       <div class="flex justify-between items-center mb-4">
-        <h3 id="addMasterTitle" class="text-lg font-bold text-gray-800">Tambah Baru</h3>
-        <button type="button" onclick="closeAddMasterModal()" aria-label="Tutup dialog" class="h-9 w-9 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-800">
+        <h3 id="addMasterTitle" class="text-lg font-bold text-slate-900">Tambah Baru</h3>
+        <button type="button" onclick="closeAddMasterModal()" aria-label="Tutup dialog" class="h-11 w-11 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-900">
           <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
         </button>
       </div>
       <div class="space-y-3">
         <div>
-          <label for="addMasterInput" id="addMasterLabel" class="text-xs font-bold text-gray-600 block mb-1">Nama</label>
-          <input type="text" id="addMasterInput" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-800">
+          <label for="addMasterInput" id="addMasterLabel" class="text-xs font-bold text-slate-600 block mb-1">Nama</label>
+          <input type="text" id="addMasterInput" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-semibold text-sm text-slate-900">
           <div id="addMasterQuickBox" class="hide mt-2.5">
-            <p class="text-[11px] font-bold text-gray-600 mb-1.5">Atau pilih dompet yang sudah tersedia:</p>
+            <p class="text-xs font-bold text-slate-600 mb-1.5">Atau pilih dompet yang sudah tersedia:</p>
             <div id="addMasterQuickChips" class="flex flex-wrap gap-1.5"></div>
           </div>
-          <p id="addMasterHint" class="text-[11px] text-gray-600 mt-1.5"></p>
+          <p id="addMasterHint" class="text-xs text-slate-600 mt-1.5"></p>
         </div>
-        <button type="submit" id="btnSimpanAddMaster" class="w-full bg-main-600 text-white font-bold py-3 rounded-xl shadow hover:bg-main-700 transition active:scale-[0.99]">
+        <button type="submit" id="btnSimpanAddMaster" class="w-full min-h-[46px] bg-main-600 text-white font-bold py-3 rounded-xl shadow hover:bg-main-700 transition active:scale-[0.99]">
           Tambahkan
         </button>
       </div>
@@ -955,13 +1171,13 @@
   </div>
 
   <!-- ================= MODAL RESET CATATAN PER USER ================= -->
-  <div id="resetUserModal" role="dialog" aria-modal="true" aria-labelledby="resetUserTitle" onclick="handleBackdropClose(event, closeResetUserModal)" class="hide fixed inset-0 z-[105] bg-gray-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
+  <div id="resetUserModal" role="dialog" aria-modal="true" aria-labelledby="resetUserTitle" onclick="handleBackdropClose(event, closeResetUserModal)" class="hide fixed inset-0 z-[105] bg-slate-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
     <form onsubmit="konfirmasiResetUser(event)" class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
       <div class="flex justify-between items-center mb-3">
         <h3 id="resetUserTitle" class="text-lg font-bold text-red-700">
           <i class="fa-solid fa-triangle-exclamation mr-1.5" aria-hidden="true"></i>Reset Catatanku
         </h3>
-        <button type="button" onclick="closeResetUserModal()" aria-label="Tutup dialog" class="h-9 w-9 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-800">
+        <button type="button" onclick="closeResetUserModal()" aria-label="Tutup dialog" class="h-11 w-11 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-900">
           <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
         </button>
       </div>
@@ -973,50 +1189,50 @@
       </div>
       <div class="space-y-3">
         <div>
-          <label for="inputKonfirmasiReset" class="text-xs font-bold text-gray-700 block mb-1">Ketik <span class="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-red-700">RESET</span> untuk melanjutkan</label>
-          <input type="text" id="inputKonfirmasiReset" autocomplete="off" oninput="cekInputKonfirmasiReset()" placeholder="Ketik RESET" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-bold text-sm text-gray-800 uppercase">
+          <label for="inputKonfirmasiReset" class="text-xs font-bold text-slate-700 block mb-1">Ketik <span class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-red-700">RESET</span> untuk melanjutkan</label>
+          <input type="text" id="inputKonfirmasiReset" autocomplete="off" oninput="cekInputKonfirmasiReset()" placeholder="Ketik RESET" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-bold text-sm text-slate-900 uppercase">
         </div>
         <div class="flex gap-2">
-          <button type="button" onclick="closeResetUserModal()" class="flex-1 bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition text-sm">Batal</button>
-          <button type="submit" id="btnKonfirmasiResetUser" disabled class="flex-1 bg-red-600 text-white font-bold py-2.5 rounded-xl hover:bg-red-700 transition text-sm">Reset Sekarang</button>
+          <button type="button" onclick="closeResetUserModal()" class="flex-1 min-h-[44px] bg-slate-100 text-slate-700 font-bold py-2.5 rounded-xl hover:bg-slate-200 transition text-sm">Batal</button>
+          <button type="submit" id="btnKonfirmasiResetUser" disabled class="flex-1 min-h-[44px] bg-red-600 text-white font-bold py-2.5 rounded-xl hover:bg-red-700 transition text-sm">Reset Sekarang</button>
         </div>
       </div>
     </form>
   </div>
 
   <!-- ================= MODAL KONFIRMASI HAPUS ================= -->
-  <div id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle" onclick="handleBackdropClose(event, closeConfirmModal)" class="hide fixed inset-0 z-[105] bg-gray-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
+  <div id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle" onclick="handleBackdropClose(event, closeConfirmModal)" class="hide fixed inset-0 z-[105] bg-slate-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
     <div class="bg-white rounded-3xl p-6 w-full max-w-xs shadow-2xl">
-      <h3 id="confirmModalTitle" class="text-lg font-bold text-gray-800 mb-2">Konfirmasi Hapus</h3>
-      <p id="confirmModalText" class="text-sm text-gray-600 mb-5">Apakah kamu yakin ingin menghapus catatan ini?</p>
+      <h3 id="confirmModalTitle" class="text-lg font-bold text-slate-900 mb-2">Konfirmasi Hapus</h3>
+      <p id="confirmModalText" class="text-sm text-slate-600 mb-5">Apakah kamu yakin ingin menghapus catatan ini?</p>
       <div class="flex gap-2">
-        <button type="button" onclick="closeConfirmModal()" class="flex-1 bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition">Batal</button>
-        <button type="button" id="btnConfirmAction" class="flex-1 bg-red-600 text-white font-bold py-2.5 rounded-xl hover:bg-red-700 transition">Hapus</button>
+        <button type="button" onclick="closeConfirmModal()" class="flex-1 min-h-[44px] bg-slate-100 text-slate-700 font-bold py-2.5 rounded-xl hover:bg-slate-200 transition">Batal</button>
+        <button type="button" id="btnConfirmAction" class="flex-1 min-h-[44px] bg-red-600 text-white font-bold py-2.5 rounded-xl hover:bg-red-700 transition">Hapus</button>
       </div>
     </div>
   </div>
 
   <!-- ================= FLOATING 3D ANIME NEKO COMPANION ================= -->
   <div id="floatingNekoWrap" class="hide" style="left: 0; top: 0;">
-    <div id="floatingNekoBubble" class="bubble-hidden absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md border border-main-100">
+    <div id="floatingNekoBubble" class="bubble-hidden absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white/95 backdrop-blur-sm text-slate-800 text-xs font-bold px-3 py-1 rounded-full shadow-md border border-slate-200">
       <span id="floatingNekoBubbleText">Meong! Klik Neko~</span>
     </div>
     <div id="floatingNekoStage" role="button" tabindex="0" aria-label="Maskot 3D Neko, klik untuk buka wejangan atau seret untuk memindahkan" title="Klik untuk Wejangan Neko • Seret untuk geser">
       <div id="floatingNekoShadow" class="neko3d-shadow" style="bottom: 12px;"></div>
       <canvas id="floatingNekoCanvas" class="relative z-10 w-full h-full block"></canvas>
     </div>
-    <div id="floatingNekoControls" class="flex items-center justify-center gap-1.5 -mt-2">
-      <button type="button" id="btnFloatRoam" onclick="toggleFloatingNekoRoam()" aria-label="Atur gerak melayang Neko" title="Aktifkan/hentikan melayang keliling" class="w-6 h-6 rounded-full bg-white/90 hover:bg-white text-main-600 text-[10px] shadow-sm border border-gray-200 flex items-center justify-center transition active:scale-95">
+    <div id="floatingNekoControls" class="flex items-center justify-center gap-2 -mt-2">
+      <button type="button" id="btnFloatRoam" onclick="toggleFloatingNekoRoam()" aria-label="Atur gerak melayang Neko" title="Aktifkan/hentikan melayang keliling" class="w-9 h-9 rounded-full bg-white/95 hover:bg-white text-main-600 text-xs shadow-md border border-slate-200 flex items-center justify-center transition active:scale-95">
         <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
       </button>
-      <button type="button" onclick="toggleFloatingNekoMinimize(true)" aria-label="Sembunyikan Neko ke belakang tab" title="Sembunyikan (Neko ngintip di balik tab)" class="w-6 h-6 rounded-full bg-white/90 hover:bg-white text-gray-500 hover:text-gray-800 text-[10px] shadow-sm border border-gray-200 flex items-center justify-center transition active:scale-95">
+      <button type="button" onclick="toggleFloatingNekoMinimize(true)" aria-label="Sembunyikan Neko ke belakang tab" title="Sembunyikan (Neko ngintip di balik tab)" class="w-9 h-9 rounded-full bg-white/95 hover:bg-white text-slate-600 hover:text-slate-900 text-xs shadow-md border border-slate-200 flex items-center justify-center transition active:scale-95">
         <i class="fa-solid fa-minus" aria-hidden="true"></i>
       </button>
     </div>
   </div>
 
   <!-- ================= POPUP MODAL NEKO AI ================= -->
-  <div id="nekoModal" role="dialog" aria-modal="true" aria-labelledby="nekoModalTitle" onclick="handleBackdropClose(event, closeNekoModal)" class="hide fixed inset-0 z-[100] bg-gray-900/60 flex items-center justify-center p-5 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+  <div id="nekoModal" role="dialog" aria-modal="true" aria-labelledby="nekoModalTitle" onclick="handleBackdropClose(event, closeNekoModal)" class="hide fixed inset-0 z-[100] bg-slate-900/60 flex items-center justify-center p-5 backdrop-blur-sm opacity-0 transition-opacity duration-300">
     <div id="nekoModalContent" class="relative w-full max-w-sm mt-20 transform scale-95 transition-all duration-300">
       <div class="absolute -top-28 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center">
         <div id="nekoModal3dStage" role="button" tabindex="0" aria-label="Maskot 3D Neko, klik untuk mulai atau hentikan suara, seret untuk putar 3D" title="Klik untuk bicara • Seret untuk putar 360°" class="relative w-44 h-44 flex items-center justify-center cursor-grab active:cursor-grabbing select-none touch-none">
@@ -1026,12 +1242,12 @@
         </div>
       </div>
       <div class="bg-white rounded-3xl px-5 pb-5 pt-14 w-full shadow-2xl max-h-[78vh] overflow-y-auto">
-        <h3 id="nekoModalTitle" class="text-lg font-bold text-center text-gray-800 mt-1 mb-2">Wejangan Neko</h3>
-        <div id="nekoModalText" class="text-sm text-gray-700 text-center mb-4 min-h-[80px] flex flex-col items-center justify-center">
+        <h3 id="nekoModalTitle" class="font-display text-lg font-bold text-center text-slate-900 mt-1 mb-2">Wejangan Neko</h3>
+        <div id="nekoModalText" class="text-sm text-slate-700 text-center mb-4 min-h-[80px] flex flex-col items-center justify-center">
           <i class="fa-solid fa-spinner fa-spin text-main-600 text-2xl mb-2" aria-hidden="true"></i>
           <p class="font-semibold text-main-700 text-xs">Neko sedang mengintip dompet kalian...</p>
         </div>
-        <button type="button" onclick="closeNekoModal()" class="w-full bg-main-600 text-white font-bold py-3 rounded-xl shadow hover:bg-main-700 transition active:scale-[0.99]">
+        <button type="button" onclick="closeNekoModal()" class="w-full min-h-[46px] bg-slate-900 text-white font-bold py-3 rounded-xl shadow hover:bg-slate-800 transition active:scale-[0.99]">
           Oke, Siap Neko!
         </button>
       </div>
@@ -1042,7 +1258,7 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbzufhYyOQwVmj0qEPWd_vZwYHh-nnGo5iKNQrZFMXBHJcoFOvECMkr1qg0Y-VB7kpGf/exec";
 
     const BULAN_INDO = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-    const ITEMS_PER_PAGE_REKAP = 5;
+    const REKAP_BATCH_SIZE = 10;
     const DASHBOARD_STALE_MS = 60000;
 
     const BANK_KEYWORDS = ["bni", "bri", "bca", "mandiri", "bsi", "cimb", "seabank", "jago", "permata", "btn", "danamon", "blu", "ocbc", "jenius", "mega", "panin", "maybank", "neo", "allo", "superbank", "krom"];
@@ -1051,6 +1267,89 @@
     const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(Number(angka) || 0);
     const cleanPosName = (str = '') => String(str).replace(/^[^a-zA-Z0-9]+/, '').trim();
     const todayIso = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+
+    function parseRupiahInput(rawVal, allowNegative = false) {
+      const s = String(rawVal ?? '').trim();
+      if (!s) return NaN;
+      const isNeg = allowNegative && s.startsWith('-');
+      const digits = s.replace(/[^\d]/g, '');
+      if (!digits) return NaN;
+      const num = parseInt(digits, 10);
+      if (!Number.isFinite(num)) return NaN;
+      return isNeg ? -num : num;
+    }
+
+    function formatRupiahString(num, allowNegative = false) {
+      if (num === '' || num === null || num === undefined) return '';
+      const n = Number(num);
+      if (!Number.isFinite(n)) return '';
+      const absStr = Math.abs(Math.round(n)).toLocaleString('id-ID');
+      return (allowNegative && n < 0) ? `-${absStr}` : absStr;
+    }
+
+    function formatRupiahInput(el, allowNegative = false) {
+      if (!el) return;
+      const raw = String(el.value || '');
+      const isNeg = allowNegative && raw.trim().startsWith('-');
+      const digits = raw.replace(/[^\d]/g, '');
+      if (!digits) {
+        el.value = isNeg ? '-' : '';
+        return;
+      }
+      const formatted = parseInt(digits, 10).toLocaleString('id-ID');
+      el.value = isNeg ? `-${formatted}` : formatted;
+    }
+
+    function setRupiahInputValue(elId, value, allowNegative = false) {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      if (value === '' || value === null || value === undefined) {
+        el.value = '';
+        return;
+      }
+      el.value = formatRupiahString(value, allowNegative);
+    }
+
+    function formatEditTrxNominal(el) {
+      formatRupiahInput(el, selectedTrxToEdit?.Tipe === 'Penyesuaian');
+    }
+
+    function tambahNominalCepat(delta) {
+      const el = document.getElementById('inputNominal');
+      if (!el) return;
+      const current = parseRupiahInput(el.value);
+      const next = (Number.isFinite(current) ? current : 0) + Number(delta || 0);
+      el.value = formatRupiahString(Math.max(0, next));
+      el.focus();
+    }
+
+    function resetNominalCepat() {
+      const el = document.getElementById('inputNominal');
+      if (!el) return;
+      el.value = '';
+      el.focus();
+    }
+
+    function injectPwaManifest() {
+      try {
+        const iconSvg = "data:image/svg+xml," + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='44' fill='#0f172a'/><circle cx='60' cy='76' r='18' fill='#60a5fa'/><circle cx='96' cy='54' r='18' fill='#60a5fa'/><circle cx='132' cy='76' r='18' fill='#60a5fa'/><path d='M96 86c-27 0-48 21-48 42 0 15 12 24 27 24 9 0 15-3 21-3s12 3 21 3c15 0 27-9 27-24 0-21-21-42-48-42z' fill='#f472b6'/></svg>");
+        const manifest = {
+          name: "PAWket - Couple Finance Tracker",
+          short_name: "PAWket",
+          description: "Catatan keuangan bersama pasangan dengan maskot 3D Neko AI",
+          start_url: location.href.split('#')[0],
+          display: "standalone",
+          background_color: "#f8fafc",
+          theme_color: "#0f172a",
+          icons: [{ src: iconSvg, sizes: "192x192", type: "image/svg+xml", purpose: "any" }]
+        };
+        const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+        const link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = URL.createObjectURL(blob);
+        document.head.appendChild(link);
+      } catch (_) {}
+    }
 
     const escapeHtml = (str = '') => String(str)
       .replace(/&/g, '&amp;')
@@ -1098,8 +1397,11 @@
     let latestDompetPerUser = {};
     let latestDaftarHutang = [];
     let latestTargetTabungan = { pos: "Semua", nominal: 10000000 };
-    let latestChartStats = null;
-    let chartsPendingRender = false;
+    let latestBudgetPerUser = {};
+    let latestBulananPerUser = {};
+    let latestPengeluaranKategori = {};
+    let latestRiwayatTrx = [];
+    let activeKategoriScope = "me";
     let lastDashboardFetchAt = 0;
 
     let activeSaldoOwner = "me";
@@ -1107,7 +1409,9 @@
     let activeRekapOwner = "me";
     let dataRekapBulanIni = [];
     let rekapPerUserBulanIni = {};
-    let currentPageRekap = 1;
+    let rekapVisibleCount = REKAP_BATCH_SIZE;
+    let rekapSearchQuery = "";
+    let rekapFilterTipe = "all";
     let selectedHutangToPay = { id: "", sisa: 0, nama: "" };
     let selectedHutangToEdit = null;
     let selectedTrxToEdit = null;
@@ -1115,8 +1419,6 @@
     let addMasterContext = { tipe: "Dompet", onSuccess: null };
     let pendingConfirmAction = null;
 
-    let pieChartAkuInstance = null;
-    let pieChartPasanganInstance = null;
     let isNekoCalled = false;
     let currentFinanceSignature = "";
 
@@ -1193,6 +1495,9 @@
       if (!document.getElementById('resetUserModal').classList.contains('hide')) return closeResetUserModal();
       if (!document.getElementById('confirmModal').classList.contains('hide')) return closeConfirmModal();
       if (!document.getElementById('nekoModal').classList.contains('hide')) return closeNekoModal();
+      if (!document.getElementById('changePassModal').classList.contains('hide')) return closeChangePasswordModal();
+      if (!document.getElementById('budgetModal').classList.contains('hide')) return closeBudgetModal();
+      if (!document.getElementById('settingsModal').classList.contains('hide')) return closeSettingsModal();
       if (!document.getElementById('editTrxModal').classList.contains('hide')) return closeEditTrxModal();
       if (!document.getElementById('editHutangModal').classList.contains('hide')) return closeEditHutangModal();
       if (!document.getElementById('targetModal').classList.contains('hide')) return closeTargetModal();
@@ -1277,6 +1582,7 @@
       // Bersihkan sisa penyimpanan password plaintext lama jika masih ada di perangkat
       localStorage.removeItem('pawketPassword');
       localStorage.removeItem('pawketUsername');
+      injectPwaManifest();
 
       document.getElementById('inputTanggal').value = todayIso();
       initNeko3DSystem();
@@ -1371,18 +1677,19 @@
       isNekoCalled = false;
       latestDompetPerUser = {};
       latestDaftarHutang = [];
-      latestChartStats = null;
-      chartsPendingRender = false;
+      latestBudgetPerUser = {};
+      latestBulananPerUser = {};
+      latestPengeluaranKategori = {};
+      latestRiwayatTrx = [];
       dataRekapBulanIni = [];
       rekapPerUserBulanIni = {};
       activeRekapOwner = "me";
-      currentPageRekap = 1;
+      rekapVisibleCount = REKAP_BATCH_SIZE;
+      rekapSearchQuery = "";
+      rekapFilterTipe = "all";
       currentFinanceSignature = "";
       lastDashboardFetchAt = 0;
       wejanganState = { mode: "me", isAI: true, debugPesan: "", komentarKu: "", komentarPasangan: "", moodKu: "santai", moodPasangan: "santai", namaPasangan: "Pasangan" };
-
-      if (pieChartAkuInstance) { pieChartAkuInstance.destroy(); pieChartAkuInstance = null; }
-      if (pieChartPasanganInstance) { pieChartPasanganInstance.destroy(); pieChartPasanganInstance = null; }
 
       localStorage.removeItem('pawketToken');
       localStorage.removeItem('pawketActiveUser');
@@ -1395,8 +1702,11 @@
       document.getElementById('btnLogin').innerHTML = 'Masuk';
       document.getElementById('btnLogin').disabled = false;
       document.getElementById('tempatWejangan').innerText = 'Neko akan segera memberikan wejangannya di sini...';
-      document.getElementById('listTrxTerbaru').innerHTML = '<p class="text-center text-gray-600 text-xs py-3">Memuat transaksi...</p>';
-      document.getElementById('listRekap').innerHTML = '<p class="text-center text-gray-600 text-sm py-4">Pilih bulan terlebih dahulu.</p>';
+      document.getElementById('listTrxTerbaru').innerHTML = '<p class="text-center text-slate-600 text-xs py-3">Memuat transaksi...</p>';
+      document.getElementById('listRekap').innerHTML = '<p class="text-center text-slate-600 text-sm py-4">Pilih bulan terlebih dahulu.</p>';
+      document.getElementById('inputCariRekap').value = '';
+      document.getElementById('filterRekapTipe').value = 'all';
+      document.getElementById('dueSoonBanner').classList.add('hide');
       document.getElementById('dashboardErrorBox').classList.add('hide');
 
       document.getElementById('appScreen').classList.add('hide');
@@ -1466,6 +1776,174 @@
         if (activeTab === 'rekap') await loadRekap();
       } else if (!res?.authError) {
         showToast(res?.pesan || 'Gagal mereset catatan keuangan.', 'error');
+      }
+    }
+
+    // ================= PENGATURAN, GANTI PASSWORD & BUDGET BULANAN =================
+    function openSettingsModal() {
+      if (!activeUser || !activeToken) return;
+      const partnerShort = partnerFullName && partnerFullName !== 'Pasangan' ? partnerFullName : 'Pasangan';
+      document.getElementById('settingsUserSummary').innerText = `${activeUser} & ${partnerShort}`;
+      document.getElementById('settingsNekoStatusText').innerText = nekoFloatState.minimized
+        ? 'Sedang ngintip di balik tab'
+        : (nekoFloatState.roaming ? 'Melayang bebas di layar' : 'Parkir diam di layar');
+      document.getElementById('settingsModal').classList.remove('hide');
+    }
+
+    function closeSettingsModal() {
+      document.getElementById('settingsModal').classList.add('hide');
+    }
+
+    function toggleNekoFromSettings() {
+      toggleFloatingNekoMinimize(!nekoFloatState.minimized);
+      document.getElementById('settingsNekoStatusText').innerText = nekoFloatState.minimized
+        ? 'Sedang ngintip di balik tab'
+        : (nekoFloatState.roaming ? 'Melayang bebas di layar' : 'Parkir diam di layar');
+    }
+
+    function openChangePasswordModal() {
+      document.getElementById('inputPassLama').value = '';
+      document.getElementById('inputPassBaru').value = '';
+      document.getElementById('inputPassKonfirm').value = '';
+      document.getElementById('changePassModal').classList.remove('hide');
+      document.getElementById('inputPassLama').focus();
+    }
+
+    function closeChangePasswordModal() {
+      document.getElementById('changePassModal').classList.add('hide');
+    }
+
+    async function simpanGantiPassword(event) {
+      event.preventDefault();
+      const lama = document.getElementById('inputPassLama').value.trim();
+      const baru = document.getElementById('inputPassBaru').value.trim();
+      const konfirm = document.getElementById('inputPassKonfirm').value.trim();
+      if (!lama || !baru) return showToast('Password lama dan baru wajib diisi.', 'error');
+      if (baru.length < 6) return showToast('Password baru minimal 6 karakter.', 'error');
+      if (baru !== konfirm) return showToast('Konfirmasi password baru tidak cocok.', 'error');
+
+      const btn = document.getElementById('btnSimpanPass');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Menyimpan...';
+
+      const res = await callAPI('gantiPassword', { passwordLama: lama, passwordBaru: baru });
+
+      btn.disabled = false;
+      btn.innerHTML = 'Simpan Password Baru';
+
+      if (res?.sukses) {
+        showToast(res.pesan || 'Password berhasil diperbarui.', 'success');
+        closeChangePasswordModal();
+      } else if (!res?.authError) {
+        showToast(res?.pesan || 'Gagal mengganti password.', 'error');
+      }
+    }
+
+    function getMyBudgets() {
+      return (latestBudgetPerUser && latestBudgetPerUser[activeUser]) ? latestBudgetPerUser[activeUser] : {};
+    }
+
+    function openBudgetModal(prefillKat = '') {
+      const sel = document.getElementById('budgetKategoriSelect');
+      const keluarOpts = (listKategori.keluar && listKategori.keluar.length > 0)
+        ? listKategori.keluar
+        : ['🍔 Makan & Minum', '🛒 Belanja Bulanan', '⛽ Transportasi', '🎬 Hiburan & Kencan', '🐱 Keperluan Anabul'];
+      const myBudgets = getMyBudgets();
+      const allOpts = [...new Set([...keluarOpts, ...Object.keys(myBudgets)])];
+      sel.innerHTML = allOpts.map(k => `<option value="${escapeHtml(k)}">${escapeHtml(k)}</option>`).join('');
+      if (prefillKat) {
+        const matched = allOpts.find(k => cleanPosName(k).toLowerCase() === cleanPosName(prefillKat).toLowerCase());
+        if (matched) sel.value = matched;
+      }
+      isiNominalBudgetTerpilih();
+      renderBudgetAktifList();
+      document.getElementById('budgetModal').classList.remove('hide');
+      document.getElementById('budgetNominalInput').focus();
+    }
+
+    function closeBudgetModal() {
+      document.getElementById('budgetModal').classList.add('hide');
+    }
+
+    function isiNominalBudgetTerpilih() {
+      const kat = document.getElementById('budgetKategoriSelect').value;
+      const myBudgets = getMyBudgets();
+      const existing = myBudgets[kat] ?? 0;
+      setRupiahInputValue('budgetNominalInput', existing > 0 ? existing : '');
+    }
+
+    function renderBudgetAktifList() {
+      const listEl = document.getElementById('budgetAktifList');
+      const entries = Object.entries(getMyBudgets()).filter(([, v]) => Number(v) > 0);
+      if (entries.length === 0) {
+        listEl.innerHTML = '<p class="text-xs text-slate-500">Belum ada budget bulanan yang diatur.</p>';
+        return;
+      }
+      listEl.innerHTML = entries.map(([kat, nom]) => `
+        <div class="flex items-center justify-between gap-2 bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-2">
+          <div class="min-w-0">
+            <p class="text-xs font-bold text-slate-800 truncate">${escapeHtml(kat)}</p>
+            <p class="num text-xs text-main-700 font-bold">${formatRp(nom)} / bln</p>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button type="button" data-kat="${escapeHtml(kat)}" onclick="pilihEditBudget(this.dataset.kat)" aria-label="Edit budget ${escapeHtml(kat)}" class="h-9 w-9 rounded-lg flex items-center justify-center text-main-700 hover:bg-main-100 transition">
+              <i class="fa-solid fa-pen text-xs" aria-hidden="true"></i>
+            </button>
+            <button type="button" data-kat="${escapeHtml(kat)}" onclick="hapusBudgetKategori(this.dataset.kat)" aria-label="Hapus budget ${escapeHtml(kat)}" class="h-9 w-9 rounded-lg flex items-center justify-center text-rose-600 hover:bg-rose-100 transition">
+              <i class="fa-solid fa-trash text-xs" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function pilihEditBudget(kat) {
+      const sel = document.getElementById('budgetKategoriSelect');
+      sel.value = kat;
+      isiNominalBudgetTerpilih();
+      document.getElementById('budgetNominalInput').focus();
+    }
+
+    async function simpanBudgetKategori(event) {
+      event.preventDefault();
+      const kategori = document.getElementById('budgetKategoriSelect').value;
+      const nominal = parseRupiahInput(document.getElementById('budgetNominalInput').value);
+      if (!kategori) return showToast('Pilih kategori pengeluaran terlebih dahulu.', 'error');
+      if (!Number.isFinite(nominal) || nominal < 0) return showToast('Masukkan nominal budget yang valid (minimal 0).', 'error');
+
+      const btn = document.getElementById('btnSimpanBudget');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Menyimpan...';
+
+      const res = await callAPI('setBudget', { kategori, nominal });
+
+      btn.disabled = false;
+      btn.innerHTML = 'Simpan Budget';
+
+      if (res?.sukses) {
+        if (!latestBudgetPerUser) latestBudgetPerUser = {};
+        latestBudgetPerUser[activeUser] = res.budgets || res.budgetMap || {};
+        renderBudgetAktifList();
+        renderKategoriDanBudget();
+        showToast(nominal === 0 ? `Budget "${kategori}" dihapus.` : `Budget "${kategori}" disimpan.`, 'success');
+        loadDataDashboard(true);
+      } else if (!res?.authError) {
+        showToast(res?.pesan || 'Gagal menyimpan budget.', 'error');
+      }
+    }
+
+    async function hapusBudgetKategori(kat) {
+      const res = await callAPI('setBudget', { kategori: kat, nominal: 0 });
+      if (res?.sukses) {
+        if (!latestBudgetPerUser) latestBudgetPerUser = {};
+        latestBudgetPerUser[activeUser] = res.budgets || res.budgetMap || {};
+        isiNominalBudgetTerpilih();
+        renderBudgetAktifList();
+        renderKategoriDanBudget();
+        showToast(`Budget "${kat}" dihapus.`, 'success');
+        loadDataDashboard(true);
+      } else if (!res?.authError) {
+        showToast(res?.pesan || 'Gagal menghapus budget.', 'error');
       }
     }
 
@@ -2464,7 +2942,7 @@
     };
 
     function getFloatingNekoBounds() {
-      const appCard = document.querySelector('.max-w-md');
+      const appCard = document.getElementById('appShell') || document.querySelector('.max-w-lg');
       const rect = appCard ? appCard.getBoundingClientRect() : { left: 0, right: window.innerWidth };
       const minX = Math.max(4, rect.left + 4);
       const maxX = Math.max(minX, Math.min(window.innerWidth - 156, rect.right - 156));
@@ -2516,8 +2994,8 @@
       const btnRoam = document.getElementById('btnFloatRoam');
       if (btnRoam) {
         btnRoam.className = nekoFloatState.roaming
-          ? 'w-6 h-6 rounded-full bg-main-600 text-white text-[10px] shadow-sm border border-main-600 flex items-center justify-center transition active:scale-95'
-          : 'w-6 h-6 rounded-full bg-white/90 hover:bg-white text-gray-500 text-[10px] shadow-sm border border-gray-200 flex items-center justify-center transition active:scale-95';
+          ? 'w-9 h-9 rounded-full bg-main-600 text-white text-xs shadow-md border border-main-600 flex items-center justify-center transition active:scale-95'
+          : 'w-9 h-9 rounded-full bg-white/95 hover:bg-white text-slate-600 text-xs shadow-md border border-slate-200 flex items-center justify-center transition active:scale-95';
         btnRoam.title = nekoFloatState.roaming ? 'Melayang keliling: AKTIF (klik untuk parkir)' : 'Mode parkir: klik agar Neko melayang keliling';
       }
       const fStage = document.getElementById('floatingNekoStage');
@@ -3371,9 +3849,13 @@
         renderMetodePembayaran();
       }
 
+      const bulanLabel = res.bulanIniLabel || `${BULAN_INDO[new Date().getMonth()]} ${new Date().getFullYear()}`;
+      document.getElementById('dashBulanLabel').innerText = bulanLabel;
+      document.getElementById('katBulanLabel').innerText = bulanLabel;
+
       document.getElementById('saldoUtama').innerText = formatRp(res.saldoUtama);
-      document.getElementById('totalMasuk').innerText = formatRp(res.totalMasuk);
-      document.getElementById('totalKeluar').innerText = formatRp(res.totalKeluar);
+      document.getElementById('totalMasuk').innerText = formatRp(res.totalMasukBulanIni ?? res.totalMasuk);
+      document.getElementById('totalKeluar').innerText = formatRp(res.totalKeluarBulanIni ?? res.totalKeluar);
 
       const uStats = res.userStats || {};
       const usernames = Object.keys(uStats);
@@ -3383,7 +3865,6 @@
       const partnerStats = uStats[partnerFullName] || { masuk: 0, keluar: 0 };
 
       const myShortName = (activeUser || 'Aku').split(' ')[0];
-      document.getElementById('namaPasanganText').innerText = partnerShortName;
       document.getElementById('namaPasanganDompet').innerText = partnerShortName;
       document.getElementById('tabNamaPasanganSaldo').innerText = partnerShortName;
       document.getElementById('tabNamaPasanganHutang').innerText = partnerShortName;
@@ -3401,26 +3882,40 @@
       document.getElementById('saldoPasangan').innerText = formatRp(saldoPasanganRiil);
 
       latestDompetPerUser = res.dompetPerUser || {};
+      latestBudgetPerUser = res.budgetPerUser || {};
+      latestBulananPerUser = res.bulananPerUser || {};
+      latestPengeluaranKategori = res.pengeluaranPerKategori || {};
       renderMenuSaldo();
       renderMetodePembayaran();
 
       const tabObj = res.tabungan || {};
       const labelTabObj = res.labelTabungan || {};
       const tabKeys = Object.keys(tabObj);
-      const tabContainer = document.getElementById('kantongTabunganContainer');
+      const sumTabungan = res.totalTabungan !== undefined
+        ? Number(res.totalTabungan) || 0
+        : tabKeys.reduce((acc, k) => acc + (Number(tabObj[k]) || 0), 0);
+      const totalHutang = Number(res.totalSisaHutang) || 0;
+      const netWorthVal = res.netWorth !== undefined
+        ? Number(res.netWorth) || 0
+        : ((Number(res.saldoUtama) || 0) + sumTabungan - totalHutang);
 
+      document.getElementById('dashTotalTabungan').innerText = formatRp(sumTabungan);
+      document.getElementById('dashTotalHutang').innerText = formatRp(totalHutang);
+      document.getElementById('dashNetWorth').innerText = formatRp(netWorthVal);
+
+      const tabContainer = document.getElementById('kantongTabunganContainer');
       if (tabKeys.length > 0) {
         tabContainer.innerHTML = tabKeys.map((key, idx) => {
           const isMain = idx % 2 === 0;
           return `
             <div class="bg-white rounded-2xl p-3.5 shadow-sm border ${isMain ? 'border-main-100' : 'border-accent-100'}">
               <p class="text-xs ${isMain ? 'text-main-700' : 'text-accent-700'} font-bold truncate">${escapeHtml(labelTabObj[key] || key)}</p>
-              <p class="font-bold text-gray-800 text-sm truncate mt-0.5">${formatRp(tabObj[key] || 0)}</p>
+              <p class="num font-bold text-slate-900 text-sm truncate mt-0.5">${formatRp(tabObj[key] || 0)}</p>
             </div>
           `;
         }).join('');
       } else {
-        tabContainer.innerHTML = '<p class="col-span-2 text-center text-gray-600 text-xs py-3">Belum ada kantong tabungan.</p>';
+        tabContainer.innerHTML = '<p class="col-span-2 text-center text-slate-600 text-xs py-3">Belum ada kantong tabungan.</p>';
       }
 
       latestTargetTabungan = {
@@ -3428,7 +3923,7 @@
         nominal: Number(res.targetTabungan?.nominal) || 0
       };
       const terkumpul = latestTargetTabungan.pos === "Semua"
-        ? tabKeys.reduce((acc, k) => acc + (Number(tabObj[k]) || 0), 0)
+        ? sumTabungan
         : (tabObj[cleanPosName(latestTargetTabungan.pos)] ?? tabObj[latestTargetTabungan.pos] ?? 0);
 
       const persen = latestTargetTabungan.nominal > 0 ? Math.min(100, Math.max(0, Math.round((terkumpul / latestTargetTabungan.nominal) * 100))) : 0;
@@ -3440,81 +3935,256 @@
 
       latestDaftarHutang = Array.isArray(res.daftarHutang) ? res.daftarHutang : [];
       renderHutang();
+      renderDueSoonBanner();
+      renderKategoriDanBudget();
 
+      latestRiwayatTrx = Array.isArray(res.riwayatTrx) ? res.riwayatTrx : [];
       const listTrx = document.getElementById('listTrxTerbaru');
-      if (res.riwayatTrx?.length > 0) {
-        listTrx.innerHTML = res.riwayatTrx.slice(0, 4).map(d => {
+      if (latestRiwayatTrx.length > 0) {
+        listTrx.innerHTML = latestRiwayatTrx.slice(0, 5).map(d => {
+          const isOwner = String(d.oleh).trim() === activeUser && Boolean(d.id);
           const isMasuk = d.tipe === 'Pemasukan';
           const isTrf = d.tipe === 'Transfer';
           const isAdj = d.tipe === 'Penyesuaian';
           const icon = isAdj
-            ? '<i class="fa-solid fa-sliders text-amber-700 bg-amber-100 p-2 rounded-lg shrink-0" aria-hidden="true"></i>'
+            ? '<i class="fa-solid fa-sliders text-amber-700 bg-amber-100 p-2 rounded-xl shrink-0" aria-hidden="true"></i>'
             : (isTrf
-              ? '<i class="fa-solid fa-right-left text-purple-700 bg-purple-100 p-2 rounded-lg shrink-0" aria-hidden="true"></i>'
+              ? '<i class="fa-solid fa-right-left text-purple-700 bg-purple-100 p-2 rounded-xl shrink-0" aria-hidden="true"></i>'
               : (isMasuk
-                ? '<i class="fa-solid fa-arrow-down text-main-700 bg-main-100 p-2 rounded-lg shrink-0" aria-hidden="true"></i>'
-                : '<i class="fa-solid fa-arrow-up text-accent-700 bg-accent-100 p-2 rounded-lg shrink-0" aria-hidden="true"></i>'));
+                ? '<i class="fa-solid fa-arrow-down text-main-700 bg-main-100 p-2 rounded-xl shrink-0" aria-hidden="true"></i>'
+                : '<i class="fa-solid fa-arrow-up text-accent-700 bg-accent-100 p-2 rounded-xl shrink-0" aria-hidden="true"></i>'));
           const color = isAdj ? 'text-amber-700' : (isTrf ? 'text-purple-700' : (isMasuk ? 'text-main-700' : 'text-accent-700'));
-          const badgeMetode = d.metode ? `<span class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded text-[10px] font-bold ml-1">${escapeHtml(d.metode)}</span>` : '';
+          const badgeMetode = d.metode ? `<span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md text-xs font-semibold ml-1">${escapeHtml(d.metode)}</span>` : '';
           const nominalLabel = isAdj && Number(d.nominal) > 0 ? `+${formatRp(d.nominal)}` : formatRp(d.nominal);
 
-          return `
-            <div class="flex justify-between items-center gap-3 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
-              <div class="flex items-center gap-3 min-w-0 flex-1">
-                ${icon}
-                <div class="min-w-0 flex-1">
-                  <p class="font-bold text-xs text-gray-800 truncate">${escapeHtml(d.kategori)} ${badgeMetode}</p>
-                  <p class="text-[11px] text-gray-600 truncate">${escapeHtml(d.tanggal)} &bull; ${escapeHtml(d.oleh)}</p>
-                </div>
+          const innerContent = `
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              ${icon}
+              <div class="min-w-0 flex-1 text-left">
+                <p class="font-bold text-xs text-slate-900 truncate">${escapeHtml(d.kategori)} ${badgeMetode}</p>
+                <p class="text-xs text-slate-500 truncate mt-0.5">${escapeHtml(d.tanggal)} &bull; ${escapeHtml(d.oleh)}</p>
               </div>
-              <div class="font-bold text-xs shrink-0 ${color}">${nominalLabel}</div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="num font-bold text-xs ${color}">${nominalLabel}</span>
+              ${isOwner ? '<i class="fa-solid fa-pen text-slate-300 text-xs" aria-hidden="true"></i>' : ''}
+            </div>
+          `;
+
+          if (isOwner) {
+            return `
+              <button type="button" data-id="${escapeHtml(d.id)}" onclick="bukaEditDariBeranda(this.dataset.id)" class="w-full flex justify-between items-center gap-3 bg-white hover:bg-slate-50 p-3.5 rounded-2xl shadow-sm border border-slate-200/70 transition active:scale-[0.99]" title="Ketuk untuk edit transaksi">
+                ${innerContent}
+              </button>
+            `;
+          }
+          return `
+            <div class="flex justify-between items-center gap-3 bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200/70">
+              ${innerContent}
             </div>
           `;
         }).join('');
       } else {
-        listTrx.innerHTML = '<p class="text-center text-gray-600 text-xs py-3">Belum ada transaksi. Mulai catat lewat menu Catat.</p>';
-      }
-
-      latestChartStats = { myStats, partnerStats };
-      if (activeTab === 'dashboard') {
-        renderDashboardCharts();
-      } else {
-        chartsPendingRender = true;
+        listTrx.innerHTML = '<p class="text-center text-slate-600 text-xs py-3">Belum ada transaksi. Mulai catat lewat menu Catat.</p>';
       }
     }
 
-    function renderDashboardCharts() {
-      if (!latestChartStats) return;
-      if (typeof Chart === 'undefined') {
-        setTimeout(renderDashboardCharts, 150);
-        return;
-      }
-      chartsPendingRender = false;
-      const { myStats, partnerStats } = latestChartStats;
-      const chartOptions = { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false } } };
+    function switchKategoriScope(scope) {
+      activeKategoriScope = scope === 'all' ? 'all' : 'me';
+      document.getElementById('btnKatAku').className = activeKategoriScope === 'me'
+        ? 'px-2.5 py-1.5 rounded-md font-bold bg-white text-main-700 shadow-xs transition'
+        : 'px-2.5 py-1.5 rounded-md font-bold text-slate-600 transition';
+      document.getElementById('btnKatSemua').className = activeKategoriScope === 'all'
+        ? 'px-2.5 py-1.5 rounded-md font-bold bg-white text-main-700 shadow-xs transition'
+        : 'px-2.5 py-1.5 rounded-md font-bold text-slate-600 transition';
+      renderKategoriDanBudget();
+    }
 
-      const ctxAku = document.getElementById('pieChartAku').getContext('2d');
-      if (pieChartAkuInstance) pieChartAkuInstance.destroy();
-      const isEmptyAku = myStats.masuk === 0 && myStats.keluar === 0;
-      pieChartAkuInstance = new Chart(ctxAku, {
-        type: 'doughnut',
-        data: {
-          labels: ['Pemasukan', 'Pengeluaran'],
-          datasets: [{ data: isEmptyAku ? [1] : [myStats.masuk, myStats.keluar], backgroundColor: isEmptyAku ? ['#e5e7eb'] : ['#2563eb', '#db2777'], borderWidth: 0 }]
-        },
-        options: chartOptions
+    function renderKategoriDanBudget() {
+      const container = document.getElementById('listKategoriPengeluaran');
+      if (!container) return;
+
+      const isMe = activeKategoriScope === 'me';
+      const rawSpendMap = isMe
+        ? (latestBulananPerUser?.[activeUser]?.katMap || {})
+        : (latestPengeluaranKategori || {});
+
+      // Gabungkan pengeluaran tunai & paylater dalam kategori dasar yang sama
+      const spendByNorm = new Map();
+      Object.entries(rawSpendMap).forEach(([rawKat, val]) => {
+        const baseKat = String(rawKat || '').replace(/\s*\(via\s+[^)]+\)\s*$/i, '').trim() || rawKat;
+        const norm = cleanPosName(baseKat).toLowerCase();
+        const prev = spendByNorm.get(norm);
+        const amt = Number(val) || 0;
+        if (prev) prev.spent += amt;
+        else spendByNorm.set(norm, { kategori: baseKat, spent: amt, budget: 0 });
       });
 
-      const ctxPasangan = document.getElementById('pieChartPasangan').getContext('2d');
-      if (pieChartPasanganInstance) pieChartPasanganInstance.destroy();
-      const isEmptyPasangan = partnerStats.masuk === 0 && partnerStats.keluar === 0;
-      pieChartPasanganInstance = new Chart(ctxPasangan, {
-        type: 'doughnut',
-        data: {
-          labels: ['Pemasukan', 'Pengeluaran'],
-          datasets: [{ data: isEmptyPasangan ? [1] : [partnerStats.masuk, partnerStats.keluar], backgroundColor: isEmptyPasangan ? ['#e5e7eb'] : ['#3b82f6', '#ec4899'], borderWidth: 0 }]
-        },
-        options: chartOptions
+      // Gabungkan budget aktif (untuk Aku = budget sendiri, untuk Berdua = jumlah budget pasangan)
+      const budgetSources = isMe
+        ? [getMyBudgets()]
+        : Object.values(latestBudgetPerUser || {});
+      budgetSources.forEach(bMap => {
+        Object.entries(bMap || {}).forEach(([kat, lim]) => {
+          const limitNum = Number(lim) || 0;
+          if (limitNum <= 0) return;
+          const norm = cleanPosName(kat).toLowerCase();
+          const prev = spendByNorm.get(norm);
+          if (prev) {
+            prev.budget += limitNum;
+          } else {
+            spendByNorm.set(norm, { kategori: kat, spent: 0, budget: limitNum });
+          }
+        });
+      });
+
+      const items = [...spendByNorm.values()]
+        .filter(x => x.spent > 0 || x.budget > 0)
+        .sort((a, b) => {
+          // Prioritaskan kategori yang over-budget, lalu nominal pengeluaran terbesar
+          const aOver = a.budget > 0 && a.spent >= a.budget ? 1 : 0;
+          const bOver = b.budget > 0 && b.spent >= b.budget ? 1 : 0;
+          if (aOver !== bOver) return bOver - aOver;
+          return (b.spent - a.spent) || (b.budget - a.budget);
+        });
+
+      const totalSpent = items.reduce((acc, x) => acc + x.spent, 0);
+
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-4 text-xs text-slate-500">
+            <p>Belum ada pengeluaran ${isMe ? 'pribadimu' : 'bersama'} bulan ini.</p>
+            <button type="button" onclick="openBudgetModal()" class="mt-2 inline-flex items-center gap-1.5 text-main-700 font-bold hover:underline">
+              <i class="fa-solid fa-plus" aria-hidden="true"></i>Atur Budget Bulanan
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      const shown = items.slice(0, 6);
+      container.innerHTML = shown.map(item => {
+        const hasBudget = item.budget > 0;
+        const pct = hasBudget
+          ? Math.round((item.spent / item.budget) * 100)
+          : (totalSpent > 0 ? Math.round((item.spent / totalSpent) * 100) : 0);
+        const barWidth = Math.min(100, Math.max(pct > 0 ? 4 : 0, pct));
+
+        let barColor = 'bg-main-600';
+        let statusHtml = `<span class="text-xs font-semibold text-slate-500">${pct}% dari total</span>`;
+
+        if (hasBudget) {
+          if (pct >= 100) {
+            barColor = 'bg-rose-600';
+            statusHtml = `<span class="inline-flex items-center gap-1 text-xs font-bold text-rose-700"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>Melebihi (${pct}%)</span>`;
+          } else if (pct >= 80) {
+            barColor = 'bg-amber-500';
+            statusHtml = `<span class="inline-flex items-center gap-1 text-xs font-bold text-amber-700"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>Hampir penuh (${pct}%)</span>`;
+          } else {
+            barColor = 'bg-emerald-600';
+            statusHtml = `<span class="inline-flex items-center gap-1 text-xs font-bold text-emerald-700"><i class="fa-solid fa-circle-check" aria-hidden="true"></i>Aman (${pct}%)</span>`;
+          }
+        }
+
+        const rightAmount = hasBudget
+          ? `<span class="num font-bold text-slate-900">${formatRp(item.spent)}</span> <span class="num text-slate-500 font-medium">/ ${formatRp(item.budget)}</span>`
+          : `<span class="num font-bold text-slate-900">${formatRp(item.spent)}</span>`;
+
+        return `
+          <button type="button" data-kat="${escapeHtml(item.kategori)}" onclick="openBudgetModal(this.dataset.kat)" class="w-full text-left group rounded-xl p-2 -mx-2 hover:bg-slate-50 transition">
+            <div class="flex justify-between items-baseline gap-2 mb-1">
+              <span class="text-xs font-bold text-slate-800 truncate">${escapeHtml(item.kategori)}</span>
+              <span class="text-xs shrink-0">${rightAmount}</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+              <div class="${barColor} h-2 rounded-full transition-all duration-500" style="width: ${barWidth}%"></div>
+            </div>
+            <div class="flex justify-between items-center mt-1">
+              ${statusHtml}
+              <span class="text-xs text-main-600 font-semibold opacity-80 group-hover:opacity-100">${hasBudget ? 'Ubah budget' : 'Set budget'}</span>
+            </div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function parseDueDateDaysRemaining(rawTempo) {
+      const s = String(rawTempo || '').trim();
+      if (!s || s === '-') return null;
+      const now = new Date();
+      const todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      // Format "1 Des 2026" atau "15 Jan 2027"
+      const mFull = s.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/);
+      if (mFull) {
+        const day = Number(mFull[1]);
+        const monIdx = BULAN_INDO.findIndex(b => b.toLowerCase() === mFull[2].slice(0, 3).toLowerCase());
+        const year = Number(mFull[3]);
+        if (monIdx >= 0 && day >= 1 && day <= 31) {
+          const target = new Date(year, monIdx, day);
+          return Math.round((target - todayMid) / 86400000);
+        }
+      }
+      // Format tanggal bulanan "15" atau "Tgl 15"
+      const mDay = s.match(/^(?:tgl\.?\s*)?(\d{1,2})$/i);
+      if (mDay) {
+        const day = Math.min(28, Math.max(1, Number(mDay[1])));
+        let target = new Date(now.getFullYear(), now.getMonth(), day);
+        if (target < todayMid) target = new Date(now.getFullYear(), now.getMonth() + 1, day);
+        return Math.round((target - todayMid) / 86400000);
+      }
+      // Format "Akhir Bulan"
+      if (/akhir\s*bulan/i.test(s)) {
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        return Math.round((lastDay - todayMid) / 86400000);
+      }
+      return null;
+    }
+
+    function renderDueSoonBanner() {
+      const banner = document.getElementById('dueSoonBanner');
+      if (!banner) return;
+      const myDebts = (latestDaftarHutang || []).filter(h => h.status === 'Aktif' && String(h.oleh).trim() === activeUser);
+      const urgent = [];
+      myDebts.forEach(h => {
+        const days = parseDueDateDaysRemaining(h.tglJatuhTempo);
+        if (days !== null && days <= 5) {
+          urgent.push({ nama: h.namaHutang, sisa: h.sisaHutang, days, tempo: h.tglJatuhTempo });
+        }
+      });
+      if (urgent.length === 0) {
+        banner.classList.add('hide');
+        return;
+      }
+      urgent.sort((a, b) => a.days - b.days);
+      const top = urgent[0];
+      const statusHari = top.days < 0
+        ? `terlambat ${Math.abs(top.days)} hari`
+        : (top.days === 0 ? 'jatuh tempo HARI INI' : `jatuh tempo ${top.days} hari lagi`);
+      document.getElementById('dueSoonTitle').innerText = urgent.length === 1
+        ? `Tagihan ${statusHari}`
+        : `${urgent.length} tagihan mendekati jatuh tempo`;
+      document.getElementById('dueSoonText').innerText = urgent.length === 1
+        ? `${top.nama} (sisa ${formatRp(top.sisa)})`
+        : `${top.nama} (${statusHari}, sisa ${formatRp(top.sisa)}) dan ${urgent.length - 1} lainnya.`;
+      banner.classList.remove('hide');
+    }
+
+    function bukaEditDariBeranda(idTrx) {
+      const item = latestRiwayatTrx.find(t => String(t.id) === String(idTrx));
+      if (!item) return showToast('Transaksi tidak ditemukan. Coba edit lewat tab Rekap.', 'info');
+      bukaEditTransaksiObj({
+        id: item.id,
+        isoDate: item.isoDate || todayIso(),
+        Tanggal: item.tanggal,
+        Oleh: item.oleh,
+        Tipe: item.tipe,
+        Kategori: item.kategori,
+        Metode: item.metode,
+        Nominal: item.nominal,
+        Catatan: item.catatan,
+        rawCatatan: item.rawCatatan !== undefined ? item.rawCatatan : item.catatan,
+        isPayHutang: Boolean(item.isPayHutang)
       });
     }
 
@@ -3553,14 +4223,14 @@
       activeSaldoOwner = ownerType;
       const isMe = ownerType === 'me';
       document.getElementById('btnViewSaldoku').className = isMe
-        ? "flex-1 py-2.5 rounded-xl text-xs font-bold bg-main-600 text-white shadow transition"
-        : "flex-1 py-2.5 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-50 transition";
+        ? "flex-1 py-2.5 rounded-xl text-xs font-bold bg-slate-900 text-white shadow transition"
+        : "flex-1 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition";
       document.getElementById('btnViewSaldoPasangan').className = !isMe
         ? "flex-1 py-2.5 rounded-xl text-xs font-bold bg-accent-600 text-white shadow transition"
-        : "flex-1 py-2.5 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-50 transition";
+        : "flex-1 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition";
       document.getElementById('kartuHeaderSaldo').className = isMe
-        ? "bg-gradient-to-r from-main-700 to-main-600 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden transition-all"
-        : "bg-gradient-to-r from-accent-700 to-accent-600 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden transition-all";
+        ? "bg-gradient-to-br from-slate-900 to-main-800 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden transition-all"
+        : "bg-gradient-to-br from-slate-900 to-accent-700 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden transition-all";
 
       document.getElementById('aksiSaldokuBox').classList.toggle('hide', !isMe);
       document.getElementById('infoReadOnlySaldoBox').classList.toggle('hide', isMe);
@@ -3617,7 +4287,7 @@
       if (minusItems.length > 0) {
         const daftarMinus = minusItems.map(i => `${i.nama} (${formatRp(i.nominal)})`).join(', ');
         document.getElementById('saldoMinusWarningText').innerText = isMe
-          ? `Dompet minus: ${daftarMinus}. Saldo tidak boleh minus; klik ikon pensil untuk menyesuaikan ke saldo sebenarnya (minimal Rp 0) atau gunakan tombol Reset di pojok atas.`
+          ? `Dompet minus: ${daftarMinus}. Saldo tidak boleh minus; klik ikon pensil untuk menyesuaikan ke saldo sebenarnya (minimal Rp 0) atau gunakan menu Reset di Pengaturan.`
           : `Dompet minus milik ${partnerFullName.split(' ')[0]}: ${daftarMinus}.`;
         warnBox.classList.remove('hide');
       } else {
@@ -3627,20 +4297,20 @@
       const buatKartu = (item, warnaBorder, warnaTeks, ikon) => {
         const isMinus = item.nominal < 0;
         const cardBorder = isMinus ? 'border-red-300 bg-red-50/50' : `bg-white ${warnaBorder}`;
-        const nominalCls = isMinus ? 'text-red-700' : 'text-gray-800';
+        const nominalCls = isMinus ? 'text-red-700' : 'text-slate-900';
         const minusBadge = isMinus
-          ? '<span class="inline-flex items-center gap-1 text-[10px] font-bold text-red-700 bg-red-100 px-1.5 py-0.5 rounded-full mt-1"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>Minus</span>'
+          ? '<span class="inline-flex items-center gap-1 text-xs font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-full mt-1"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>Minus</span>'
           : '';
         return `
           <div class="rounded-2xl p-3.5 shadow-sm border ${cardBorder} flex flex-col justify-between">
             <div class="flex justify-between items-center gap-1 mb-1">
               <span class="text-xs font-bold ${isMinus ? 'text-red-700' : warnaTeks} truncate"><i class="${ikon} mr-1" aria-hidden="true"></i>${escapeHtml(item.nama)}</span>
               ${isMe
-                ? `<button type="button" data-dompet="${escapeHtml(item.nama)}" data-nominal="${item.nominal}" onclick="openSesuaikanSaldoFromBtn(this)" class="h-7 w-7 rounded-lg flex items-center justify-center text-gray-500 hover:bg-main-50 hover:text-main-700 transition shrink-0" aria-label="Sesuaikan saldo ${escapeHtml(item.nama)}" title="Sesuaikan Saldo"><i class="fa-solid fa-pen text-[11px]" aria-hidden="true"></i></button>`
-                : `<i class="fa-solid fa-lock text-xs text-gray-400 shrink-0" aria-hidden="true" title="Hanya Lihat"></i>`}
+                ? `<button type="button" data-dompet="${escapeHtml(item.nama)}" data-nominal="${item.nominal}" onclick="openSesuaikanSaldoFromBtn(this)" class="h-10 w-10 -mr-1.5 -mt-1 rounded-xl flex items-center justify-center text-slate-500 hover:bg-main-50 hover:text-main-700 transition shrink-0" aria-label="Sesuaikan saldo ${escapeHtml(item.nama)}" title="Sesuaikan Saldo"><i class="fa-solid fa-pen text-xs" aria-hidden="true"></i></button>`
+                : `<i class="fa-solid fa-lock text-xs text-slate-400 shrink-0" aria-hidden="true" title="Hanya Lihat"></i>`}
             </div>
             <div>
-              <p class="font-bold ${nominalCls} text-sm truncate">${formatRp(item.nominal)}</p>
+              <p class="num font-bold ${nominalCls} text-sm truncate">${formatRp(item.nominal)}</p>
               ${minusBadge}
             </div>
           </div>
@@ -3654,7 +4324,7 @@
       document.getElementById('listSaldoEwallet').innerHTML = ewallets.map(e => buatKartu(e, 'border-accent-100', 'text-accent-700', 'fa-solid fa-wallet')).join('');
 
       document.getElementById('wrapSaldoLainnya').classList.toggle('hide', others.length === 0);
-      document.getElementById('listSaldoLainnya').innerHTML = others.map(k => buatKartu(k, 'border-green-100', 'text-green-700', 'fa-solid fa-money-bill-wave')).join('');
+      document.getElementById('listSaldoLainnya').innerHTML = others.map(k => buatKartu(k, 'border-emerald-100', 'text-emerald-700', 'fa-solid fa-money-bill-wave')).join('');
 
       const allEmpty = banks.length === 0 && ewallets.length === 0 && others.length === 0;
       const emptyBox = document.getElementById('saldoEmptyBox');
@@ -3672,14 +4342,14 @@
       const nominal = Number(btn.dataset.nominal) || 0;
       selectedSaldoToAdjust = { nama, nominal };
       document.getElementById('adjDompetInfo').innerText = `Dompet: ${nama} (Tercatat saat ini: ${formatRp(nominal)})`;
-      document.getElementById('adjSaldoBaru').value = Math.max(0, nominal);
+      setRupiahInputValue('adjSaldoBaru', Math.max(0, nominal));
       updatePreviewSelisihSaldo();
       document.getElementById('sesuaikanSaldoModal').classList.remove('hide');
       document.getElementById('adjSaldoBaru').focus();
     }
 
     function updatePreviewSelisihSaldo() {
-      const val = Number(document.getElementById('adjSaldoBaru').value);
+      const val = parseRupiahInput(document.getElementById('adjSaldoBaru').value);
       const preview = document.getElementById('adjPreviewSelisih');
       if (!Number.isFinite(val)) {
         preview.innerText = '';
@@ -3700,7 +4370,7 @@
 
     async function simpanSesuaikanSaldo(event) {
       event.preventDefault();
-      const saldoBaru = Number(document.getElementById('adjSaldoBaru').value);
+      const saldoBaru = parseRupiahInput(document.getElementById('adjSaldoBaru').value);
       if (!Number.isFinite(saldoBaru)) return showToast('Masukkan angka saldo yang valid.', 'error');
       if (saldoBaru < 0) return showToast('Saldo dompet tidak boleh minus (minimal Rp 0).', 'error');
 
@@ -3863,9 +4533,8 @@
     function cekInfoAdminTransfer() {
       const dari = String(document.getElementById('trfDari').value || '').toLowerCase();
       const ke = String(document.getElementById('trfKe').value || '').toLowerCase();
-      const adminInput = document.getElementById('trfAdmin');
       const isTopupEwallet = (ke === 'gopay' || ke === 'spay') && dari !== 'uang cash';
-      adminInput.value = isTopupEwallet ? 1250 : 0;
+      setRupiahInputValue('trfAdmin', isTopupEwallet ? 1250 : 0);
       document.getElementById('infoAdminTrf').innerText = isTopupEwallet
         ? 'Default biaya admin top up GoPay/Spay Rp 1.250 (bisa diubah ke 0 jika bebas admin).'
         : 'Isi 0 jika bebas biaya admin (dipotong dari saldo pengirim).';
@@ -3875,8 +4544,9 @@
       event.preventDefault();
       const dari = document.getElementById('trfDari').value;
       const ke = document.getElementById('trfKe').value;
-      const nominal = Number(document.getElementById('trfNominal').value);
-      const biayaAdmin = Number(document.getElementById('trfAdmin').value) || 0;
+      const nominal = parseRupiahInput(document.getElementById('trfNominal').value);
+      const biayaAdminRaw = parseRupiahInput(document.getElementById('trfAdmin').value);
+      const biayaAdmin = Number.isFinite(biayaAdminRaw) ? biayaAdminRaw : 0;
       const catatan = document.getElementById('trfCatatan').value.trim();
 
       if (!dari || !ke || dari.toLowerCase() === ke.toLowerCase()) {
@@ -3919,7 +4589,7 @@
       const sel = document.getElementById('targetPosSelect');
       sel.innerHTML = opsiPos.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
       sel.value = opsiPos.includes(latestTargetTabungan.pos) ? latestTargetTabungan.pos : "Semua";
-      document.getElementById('targetNominalInput').value = latestTargetTabungan.nominal || '';
+      setRupiahInputValue('targetNominalInput', latestTargetTabungan.nominal || '');
       document.getElementById('targetModal').classList.remove('hide');
       document.getElementById('targetNominalInput').focus();
     }
@@ -3931,7 +4601,7 @@
     async function simpanTargetBaru(event) {
       event.preventDefault();
       const pos = document.getElementById('targetPosSelect').value;
-      const nominal = Number(document.getElementById('targetNominalInput').value);
+      const nominal = parseRupiahInput(document.getElementById('targetNominalInput').value);
       if (!Number.isFinite(nominal) || nominal <= 0) {
         return showToast('Nominal target harus lebih dari 0.', 'error');
       }
@@ -3993,32 +4663,32 @@
 
         const kontrolOwner = isMe
           ? `
-            <div class="flex items-center gap-2 shrink-0">
-              <button type="button" data-id="${safeId}" onclick="openEditHutangModal(this.dataset.id)" class="text-main-700 text-xs font-bold hover:underline px-1.5 py-1">
-                <i class="fa-solid fa-pen-to-square mr-0.5" aria-hidden="true"></i>Edit
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button type="button" data-id="${safeId}" onclick="openEditHutangModal(this.dataset.id)" class="min-h-[38px] text-main-700 bg-white border border-main-200 text-xs font-bold hover:bg-main-50 px-2.5 py-1.5 rounded-lg transition">
+                <i class="fa-solid fa-pen-to-square mr-1" aria-hidden="true"></i>Edit
               </button>
-              <button type="button" data-id="${safeId}" onclick="konfirmasiHapusCatatan(this.dataset.id)" aria-label="Hapus hutang ${escapeHtml(h.namaHutang)}" class="text-red-600 hover:text-red-800 text-xs font-bold px-1.5 py-1">
+              <button type="button" data-id="${safeId}" onclick="konfirmasiHapusCatatan(this.dataset.id)" aria-label="Hapus hutang ${escapeHtml(h.namaHutang)}" class="h-[38px] w-[38px] rounded-lg flex items-center justify-center text-red-600 bg-white border border-red-200 hover:bg-red-50 text-xs font-bold transition">
                 <i class="fa-solid fa-trash" aria-hidden="true"></i>
               </button>
             </div>
           `
-          : `<span class="text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-bold shrink-0"><i class="fa-solid fa-lock mr-1" aria-hidden="true"></i>Hanya Lihat</span>`;
+          : `<span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-bold shrink-0"><i class="fa-solid fa-lock mr-1" aria-hidden="true"></i>Hanya Lihat</span>`;
 
         const tombolBayar = isMe
-          ? `<button type="button" data-id="${safeId}" onclick="bukaModalBayarHutang(this.dataset.id)" class="w-full bg-main-100 text-main-700 py-2.5 rounded-lg text-xs font-bold hover:bg-main-200 transition active:scale-[0.99]">Bayar Tagihan / Cicilan</button>`
-          : `<div class="w-full bg-gray-50 text-gray-600 py-2 rounded-lg text-xs font-semibold text-center border border-gray-200"><i class="fa-solid fa-eye mr-1" aria-hidden="true"></i>Tagihan milik ${escapeHtml(h.oleh)}</div>`;
+          ? `<button type="button" data-id="${safeId}" onclick="bukaModalBayarHutang(this.dataset.id)" class="w-full min-h-[44px] bg-main-600 text-white py-2.5 rounded-xl text-xs font-bold hover:bg-main-700 transition active:scale-[0.99]">Bayar Tagihan / Cicilan</button>`
+          : `<div class="w-full bg-slate-50 text-slate-600 py-2.5 rounded-xl text-xs font-semibold text-center border border-slate-200"><i class="fa-solid fa-eye mr-1" aria-hidden="true"></i>Tagihan milik ${escapeHtml(h.oleh)}</div>`;
 
         return `
-          <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+          <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
             <div class="flex justify-between items-start gap-3 mb-2">
               <div class="min-w-0 flex-1">
-                <p class="font-bold text-gray-800 text-sm break-words">${escapeHtml(h.namaHutang)}</p>
-                <p class="text-[11px] text-gray-600">Total awal: ${formatRp(h.totalAwal)} &bull; Oleh: ${escapeHtml(h.oleh)}</p>
+                <p class="font-bold text-slate-900 text-sm break-words">${escapeHtml(h.namaHutang)}</p>
+                <p class="num text-xs text-slate-500 mt-0.5">Total awal: ${formatRp(h.totalAwal)} &bull; Oleh: ${escapeHtml(h.oleh)}</p>
               </div>
-              <p class="font-bold text-accent-700 text-sm shrink-0">${formatRp(h.sisaHutang)}</p>
+              <p class="num font-bold text-accent-700 text-sm shrink-0">${formatRp(h.sisaHutang)}</p>
             </div>
-            <div class="bg-main-50 p-2.5 rounded-lg flex justify-between items-center gap-2 mb-3">
-              <p class="text-[11px] text-gray-700">Jatuh Tempo: <strong class="text-main-700">${escapeHtml(labelJatuhTempo)}</strong><br>Cicilan: <strong class="text-main-700">${teksCicilan}</strong></p>
+            <div class="bg-slate-50 border border-slate-200/70 p-2.5 rounded-xl flex justify-between items-center gap-2 mb-3">
+              <p class="text-xs text-slate-700">Jatuh Tempo: <strong class="text-main-700">${escapeHtml(labelJatuhTempo)}</strong><br>Cicilan: <strong class="num text-main-700">${teksCicilan}</strong></p>
               ${kontrolOwner}
             </div>
             ${tombolBayar}
@@ -4032,9 +4702,9 @@
       if (!h) return showToast('Data hutang tidak ditemukan.', 'error');
       selectedHutangToEdit = h;
       document.getElementById('editHutangNama').value = h.namaHutang || '';
-      document.getElementById('editHutangSisa').value = Number(h.sisaHutang) || 0;
+      setRupiahInputValue('editHutangSisa', Number(h.sisaHutang) || 0);
       document.getElementById('editHutangTempo').value = (h.tglJatuhTempo && h.tglJatuhTempo !== '-') ? h.tglJatuhTempo : '';
-      document.getElementById('editHutangCicilan').value = Number(h.cicilanRutin) || 0;
+      setRupiahInputValue('editHutangCicilan', Number(h.cicilanRutin) || 0);
       document.getElementById('editHutangModal').classList.remove('hide');
       document.getElementById('editHutangNama').focus();
     }
@@ -4048,9 +4718,10 @@
       event.preventDefault();
       if (!selectedHutangToEdit) return;
       const namaHutang = document.getElementById('editHutangNama').value.trim();
-      const sisaHutang = Number(document.getElementById('editHutangSisa').value);
+      const sisaHutang = parseRupiahInput(document.getElementById('editHutangSisa').value);
       const tgl = document.getElementById('editHutangTempo').value.trim();
-      const cicilan = Number(document.getElementById('editHutangCicilan').value) || 0;
+      const cicilanRaw = parseRupiahInput(document.getElementById('editHutangCicilan').value);
+      const cicilan = Number.isFinite(cicilanRaw) ? cicilanRaw : 0;
 
       if (!namaHutang) return showToast('Nama hutang wajib diisi.', 'error');
       if (!Number.isFinite(sisaHutang) || sisaHutang < 0) return showToast('Sisa hutang harus angka 0 atau lebih.', 'error');
@@ -4083,7 +4754,7 @@
     async function simpanHutangBaru(event) {
       event.preventDefault();
       const nama = document.getElementById('inputNamaHutang').value.trim();
-      const nominal = Number(document.getElementById('inputNominalHutang').value);
+      const nominal = parseRupiahInput(document.getElementById('inputNominalHutang').value);
       if (!nama || !Number.isFinite(nominal) || nominal <= 0) {
         return showToast('Nama dan Total Hutang (> 0) wajib diisi.', 'error');
       }
@@ -4116,8 +4787,7 @@
       selectedHutangToPay = { id: h.id, sisa: Number(h.sisaHutang) || 0, nama: h.namaHutang };
       document.getElementById('labelNamaHutangBayar').innerText = `${h.namaHutang} (Sisa: ${formatRp(h.sisaHutang)})`;
       const nominalInput = document.getElementById('bayarHutangNominal');
-      nominalInput.value = h.sisaHutang;
-      nominalInput.max = h.sisaHutang;
+      setRupiahInputValue('bayarHutangNominal', h.sisaHutang);
 
       const myWallets = latestDompetPerUser?.[activeUser] || {};
       const dompetList = listKategori.dompet?.length > 0 ? listKategori.dompet : ["Uang Cash", "BNI", "BRI", "BCA", "Mandiri", "GoPay", "Spay", "Dana", "Tapcash"];
@@ -4137,7 +4807,7 @@
 
     async function konfirmasiBayarHutang(event) {
       event.preventDefault();
-      const nominalBayar = Number(document.getElementById('bayarHutangNominal').value);
+      const nominalBayar = parseRupiahInput(document.getElementById('bayarHutangNominal').value);
       const metode = document.getElementById('bayarHutangMetode').value;
 
       if (!Number.isFinite(nominalBayar) || nominalBayar <= 0) {
@@ -4372,7 +5042,7 @@
     function terapkanHasilStrukKeForm(hasil) {
       setTipe('Pengeluaran');
       document.getElementById('inputTanggal').value = hasil.tanggal || todayIso();
-      if (Number(hasil.nominal) > 0) document.getElementById('inputNominal').value = hasil.nominal;
+      if (Number(hasil.nominal) > 0) setRupiahInputValue('inputNominal', hasil.nominal);
       document.getElementById('inputCatatan').value = hasil.catatan || '';
 
       const selKat = document.getElementById('inputKategori');
@@ -4454,7 +5124,7 @@
 
     async function simpanTransaksi(event) {
       event.preventDefault();
-      const nominalNum = Number(document.getElementById('inputNominal').value);
+      const nominalNum = parseRupiahInput(document.getElementById('inputNominal').value);
       const form = {
         tanggal: document.getElementById('inputTanggal').value,
         tipe: tipeAktif,
@@ -4516,14 +5186,10 @@
         const isCurrent = id === tabId;
         navBtn.className = isCurrent
           ? "flex flex-col items-center justify-center min-h-[48px] w-16 text-main-600 font-bold"
-          : "flex flex-col items-center justify-center min-h-[48px] w-16 text-gray-500 hover:text-main-600 transition font-semibold";
+          : "flex flex-col items-center justify-center min-h-[48px] w-16 text-slate-500 hover:text-main-600 transition font-semibold";
         if (isCurrent) navBtn.setAttribute('aria-current', 'page');
         else navBtn.removeAttribute('aria-current');
       });
-
-      if (tabId === 'dashboard' && chartsPendingRender) {
-        requestAnimationFrame(() => renderDashboardCharts());
-      }
 
       // Jika user menekan tab tempat Neko bersembunyi, ia langsung merunduk & pindah mengintip di balik tab lain!
       if (nekoFloatState.loggedIn && nekoFloatState.minimized && nekoFloatState.peekTabId === `nav-${tabId}`) {
@@ -4550,14 +5216,26 @@
     // ================= TAB REKAP BULANAN =================
     function switchOwnerRekap(ownerType) {
       activeRekapOwner = ownerType;
-      currentPageRekap = 1;
+      rekapVisibleCount = REKAP_BATCH_SIZE;
       const isMe = ownerType === 'me';
       document.getElementById('btnRekapAku').className = isMe
-        ? "flex-1 py-2 rounded-lg text-xs font-bold bg-white text-main-700 shadow transition"
-        : "flex-1 py-2 rounded-lg text-xs font-bold text-gray-600 transition";
+        ? "flex-1 min-h-[40px] py-2 rounded-lg text-xs font-bold bg-white text-main-700 shadow transition"
+        : "flex-1 min-h-[40px] py-2 rounded-lg text-xs font-bold text-slate-600 transition";
       document.getElementById('btnRekapPasangan').className = !isMe
-        ? "flex-1 py-2 rounded-lg text-xs font-bold bg-white text-accent-700 shadow transition"
-        : "flex-1 py-2 rounded-lg text-xs font-bold text-gray-600 transition";
+        ? "flex-1 min-h-[40px] py-2 rounded-lg text-xs font-bold bg-white text-accent-700 shadow transition"
+        : "flex-1 min-h-[40px] py-2 rounded-lg text-xs font-bold text-slate-600 transition";
+      renderListRekap();
+    }
+
+    function ubahFilterRekap() {
+      rekapSearchQuery = String(document.getElementById('inputCariRekap').value || '').trim().toLowerCase();
+      rekapFilterTipe = document.getElementById('filterRekapTipe').value || 'all';
+      rekapVisibleCount = REKAP_BATCH_SIZE;
+      renderListRekap();
+    }
+
+    function muatLebihBanyakRekap() {
+      rekapVisibleCount += REKAP_BATCH_SIZE;
       renderListRekap();
     }
 
@@ -4566,9 +5244,9 @@
       const bln = document.getElementById('inputBulan').value;
       if (!bln) return;
       const listUi = document.getElementById('listRekap');
-      document.getElementById('paginationRekap').classList.add('hide');
+      document.getElementById('loadMoreRekapBox').classList.add('hide');
       document.getElementById('infoTotalRekap').innerText = '';
-      listUi.innerHTML = '<p class="text-center text-gray-600 text-sm py-6"><i class="fa-solid fa-spinner fa-spin text-main-600 text-2xl mb-2" aria-hidden="true"></i><br>Memuat catatan bulan ini...</p>';
+      listUi.innerHTML = '<p class="text-center text-slate-600 text-sm py-6"><i class="fa-solid fa-spinner fa-spin text-main-600 text-2xl mb-2" aria-hidden="true"></i><br>Memuat catatan bulan ini...</p>';
 
       const res = await callAPI('getRekap', { bulanTahun: bln });
       if (res?.sukses && Array.isArray(res.detail)) {
@@ -4610,7 +5288,7 @@
         document.getElementById('rekapKeluarAku').innerText = formatRp(keluarAku);
         document.getElementById('rekapKeluarPasangan').innerText = formatRp(keluarPasangan);
 
-        currentPageRekap = 1;
+        rekapVisibleCount = REKAP_BATCH_SIZE;
         renderListRekap();
       } else if (!res?.authError) {
         dataRekapBulanIni = [];
@@ -4626,7 +5304,8 @@
 
     function renderListRekap() {
       const listUi = document.getElementById('listRekap');
-      const paginationUi = document.getElementById('paginationRekap');
+      const loadMoreBox = document.getElementById('loadMoreRekapBox');
+      const btnLoadMore = document.getElementById('btnLoadMoreRekap');
       const infoTotal = document.getElementById('infoTotalRekap');
 
       const listAku = dataRekapBulanIni.filter(d => String(d.Oleh).trim() === activeUser);
@@ -4635,107 +5314,113 @@
       document.getElementById('countRekapPasangan').innerText = listPasangan.length;
 
       const isMeTab = activeRekapOwner === 'me';
-      const filteredList = isMeTab ? listAku : listPasangan;
+      const baseList = isMeTab ? listAku : listPasangan;
+      const filteredList = baseList.filter(d => {
+        if (rekapFilterTipe !== 'all' && d.Tipe !== rekapFilterTipe) return false;
+        if (rekapSearchQuery) {
+          const hay = `${d.Kategori || ''} ${d.Catatan || ''} ${d.Metode || ''} ${d.Tanggal || ''} ${d.Nominal || ''}`.toLowerCase();
+          if (!hay.includes(rekapSearchQuery)) return false;
+        }
+        return true;
+      });
       const partnerShort = (partnerFullName || 'Pasangan').split(' ')[0];
 
-      infoTotal.innerText = `Total ${dataRekapBulanIni.length} Trx`;
+      const hasFilter = rekapFilterTipe !== 'all' || Boolean(rekapSearchQuery);
+      infoTotal.innerText = hasFilter
+        ? `${filteredList.length} dari ${baseList.length} Trx`
+        : `Total ${dataRekapBulanIni.length} Trx`;
 
       if (filteredList.length === 0) {
-        listUi.innerHTML = `<p class="text-center text-gray-600 text-sm py-6">${isMeTab ? 'Belum ada transaksi milikmu di bulan ini.' : `Belum ada transaksi milik ${escapeHtml(partnerShort)} di bulan ini.`}</p>`;
-        paginationUi.classList.add('hide');
+        const emptyMsg = hasFilter
+          ? 'Tidak ada transaksi yang cocok dengan filter atau pencarianmu.'
+          : (isMeTab ? 'Belum ada transaksi milikmu di bulan ini.' : `Belum ada transaksi milik ${escapeHtml(partnerShort)} di bulan ini.`);
+        listUi.innerHTML = `<p class="text-center text-slate-600 text-sm py-6">${emptyMsg}</p>`;
+        loadMoreBox.classList.add('hide');
         return;
       }
 
-      const totalPages = Math.ceil(filteredList.length / ITEMS_PER_PAGE_REKAP);
-      currentPageRekap = Math.max(1, Math.min(currentPageRekap, totalPages));
+      const itemsDitampilkan = filteredList.slice(0, rekapVisibleCount);
+      const sisaCount = filteredList.length - itemsDitampilkan.length;
 
-      const startIdx = (currentPageRekap - 1) * ITEMS_PER_PAGE_REKAP;
-      const itemsHalamanIni = filteredList.slice(startIdx, startIdx + ITEMS_PER_PAGE_REKAP);
-
-      listUi.innerHTML = itemsHalamanIni.map(d => {
+      listUi.innerHTML = itemsDitampilkan.map(d => {
         const isOwner = String(d.Oleh).trim() === activeUser;
         const isTrf = d.Tipe === 'Transfer';
         const isAdj = d.Tipe === 'Penyesuaian';
         const isMasuk = d.Tipe === 'Pemasukan' || (d.Tipe === 'Tabungan' && (d.jenisTabungan === 'Setor' || String(d.Catatan).startsWith('Setor')));
 
         const icon = isAdj
-          ? '<i class="fa-solid fa-sliders text-amber-700 bg-amber-100 p-2 rounded-lg shrink-0" aria-hidden="true"></i>'
+          ? '<i class="fa-solid fa-sliders text-amber-700 bg-amber-100 p-2 rounded-xl shrink-0" aria-hidden="true"></i>'
           : (isTrf
-            ? '<i class="fa-solid fa-right-left text-purple-700 bg-purple-100 p-2 rounded-lg shrink-0" aria-hidden="true"></i>'
+            ? '<i class="fa-solid fa-right-left text-purple-700 bg-purple-100 p-2 rounded-xl shrink-0" aria-hidden="true"></i>'
             : (isMasuk
-              ? '<i class="fa-solid fa-arrow-down text-main-700 bg-main-100 p-2 rounded-lg shrink-0" aria-hidden="true"></i>'
-              : '<i class="fa-solid fa-arrow-up text-accent-700 bg-accent-100 p-2 rounded-lg shrink-0" aria-hidden="true"></i>'));
+              ? '<i class="fa-solid fa-arrow-down text-main-700 bg-main-100 p-2 rounded-xl shrink-0" aria-hidden="true"></i>'
+              : '<i class="fa-solid fa-arrow-up text-accent-700 bg-accent-100 p-2 rounded-xl shrink-0" aria-hidden="true"></i>'));
 
         const color = isAdj ? 'text-amber-700' : (isTrf ? 'text-purple-700' : (isMasuk ? 'text-main-700' : 'text-accent-700'));
-        const badgeMetode = d.Metode ? `<span class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded text-[10px] font-bold">${escapeHtml(d.Metode)}</span>` : '';
+        const badgeMetode = d.Metode ? `<span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md text-xs font-semibold">${escapeHtml(d.Metode)}</span>` : '';
         const nominalText = isAdj && Number(d.Nominal) > 0 ? `+${formatRp(d.Nominal)}` : formatRp(d.Nominal);
 
         const aksiHtml = isOwner
           ? `
-            <div class="flex items-center gap-1.5">
-              <button type="button" data-id="${escapeHtml(d.id)}" onclick="bukaEditTransaksiById(this.dataset.id)" aria-label="Edit catatan ${escapeHtml(d.Kategori)}" class="h-7 w-7 rounded-lg flex items-center justify-center text-main-700 hover:bg-main-50 transition" title="Edit Catatanku">
+            <div class="flex items-center gap-1">
+              <button type="button" data-id="${escapeHtml(d.id)}" onclick="bukaEditTransaksiById(this.dataset.id)" aria-label="Edit catatan ${escapeHtml(d.Kategori)}" class="h-10 w-10 rounded-xl flex items-center justify-center text-main-700 hover:bg-main-50 transition" title="Edit Catatanku">
                 <i class="fa-solid fa-pen text-xs" aria-hidden="true"></i>
               </button>
-              <button type="button" data-id="${escapeHtml(d.id)}" onclick="konfirmasiHapusCatatan(this.dataset.id)" aria-label="Hapus catatan ${escapeHtml(d.Kategori)}" class="h-7 w-7 rounded-lg flex items-center justify-center text-red-600 hover:bg-red-50 transition" title="Hapus Catatanku">
+              <button type="button" data-id="${escapeHtml(d.id)}" onclick="konfirmasiHapusCatatan(this.dataset.id)" aria-label="Hapus catatan ${escapeHtml(d.Kategori)}" class="h-10 w-10 rounded-xl flex items-center justify-center text-red-600 hover:bg-red-50 transition" title="Hapus Catatanku">
                 <i class="fa-solid fa-trash text-xs" aria-hidden="true"></i>
               </button>
             </div>
           `
-          : `<span class="text-gray-500 text-xs" title="Milik ${escapeHtml(d.Oleh)} (Hanya Lihat)"><i class="fa-solid fa-lock" aria-hidden="true"></i></span>`;
+          : `<span class="text-slate-400 text-xs p-2" title="Milik ${escapeHtml(d.Oleh)} (Hanya Lihat)"><i class="fa-solid fa-lock" aria-hidden="true"></i></span>`;
 
         return `
-          <div class="flex justify-between items-start gap-3 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
+          <div class="flex justify-between items-start gap-3 bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200/70">
             <div class="flex items-start gap-2.5 min-w-0 flex-1">
               ${icon}
               <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-1.5">
-                  <p class="font-bold text-sm text-gray-800 break-words">${escapeHtml(d.Kategori)}</p>
+                  <p class="font-bold text-sm text-slate-900 break-words">${escapeHtml(d.Kategori)}</p>
                   ${badgeMetode}
                 </div>
-                <p class="text-[11px] text-gray-600 mt-0.5">
+                <p class="text-xs text-slate-500 mt-0.5">
                   ${escapeHtml(d.Tanggal)} &bull; <strong class="${isOwner ? 'text-main-700' : 'text-accent-700'}">${escapeHtml(d.Oleh)}</strong>
                 </p>
-                ${d.Catatan ? `<p class="text-[11px] text-gray-600 italic truncate mt-0.5">${escapeHtml(d.Catatan)}</p>` : ''}
+                ${d.Catatan ? `<p class="text-xs text-slate-600 italic truncate mt-0.5">${escapeHtml(d.Catatan)}</p>` : ''}
               </div>
             </div>
-            <div class="shrink-0 flex flex-col items-end gap-1.5 text-right">
-              <div class="font-bold text-sm whitespace-nowrap ${color}">${nominalText}</div>
+            <div class="shrink-0 flex flex-col items-end gap-1 text-right">
+              <div class="num font-bold text-sm whitespace-nowrap ${color}">${nominalText}</div>
               ${aksiHtml}
             </div>
           </div>
         `;
       }).join('');
 
-      listUi.scrollTop = 0;
-      paginationUi.classList.toggle('hide', totalPages <= 1);
-      if (totalPages > 1) {
-        document.getElementById('pageIndicatorRekap').innerText = `Hal ${currentPageRekap} / ${totalPages}`;
-        document.getElementById('btnPrevRekap').disabled = currentPageRekap === 1;
-        document.getElementById('btnNextRekap').disabled = currentPageRekap === totalPages;
+      loadMoreBox.classList.toggle('hide', sisaCount <= 0);
+      if (sisaCount > 0) {
+        btnLoadMore.innerText = `Tampilkan Lebih Banyak (${sisaCount} lagi)`;
       }
-    }
-
-    function gantiHalamanRekap(arah) {
-      currentPageRekap += arah;
-      renderListRekap();
     }
 
     // ================= EDIT & HAPUS TRANSAKSI =================
     function bukaEditTransaksiById(idTrx) {
-      const idx = dataRekapBulanIni.findIndex(item => String(item.id) === String(idTrx));
-      if (idx === -1) return showToast("Catatan tidak ditemukan.", 'error');
-      bukaEditTransaksi(idx);
+      const item = dataRekapBulanIni.find(it => String(it.id) === String(idTrx));
+      if (!item) return showToast("Catatan tidak ditemukan.", 'error');
+      bukaEditTransaksiObj(item);
     }
 
-    function bukaEditTransaksi(idx) {
-      const item = dataRekapBulanIni[idx];
+    function bukaEditTransaksiObj(item) {
       if (!item || String(item.Oleh).trim() !== activeUser) {
         return showToast("Kamu hanya bisa mengedit catatan milikmu sendiri.", 'error');
       }
 
       selectedTrxToEdit = item;
+      const isTab = item.Tipe === 'Tabungan';
+      const isTrf = item.Tipe === 'Transfer';
+      const isAdj = item.Tipe === 'Penyesuaian';
+
       document.getElementById('editTrxTanggal').value = item.isoDate || todayIso();
-      document.getElementById('editTrxNominal').value = item.Nominal || 0;
+      setRupiahInputValue('editTrxNominal', item.Nominal || 0, isAdj);
       document.getElementById('editTrxCatatan').value = (item.rawCatatan !== undefined ? item.rawCatatan : item.Catatan) || '';
 
       const jenisTabBox = document.getElementById('editTrxJenisTabBox');
@@ -4745,15 +5430,9 @@
       const metodeSel = document.getElementById('editTrxMetode');
       const labelMetode = document.getElementById('labelEditTrxMetode');
       const nominalHint = document.getElementById('editTrxNominalHint');
-      const nominalInput = document.getElementById('editTrxNominal');
-
-      const isTab = item.Tipe === 'Tabungan';
-      const isTrf = item.Tipe === 'Transfer';
-      const isAdj = item.Tipe === 'Penyesuaian';
 
       jenisTabBox.classList.toggle('hide', !isTab);
       nominalHint.classList.toggle('hide', !isAdj);
-      nominalInput.min = isAdj ? '' : '1';
 
       // Isi dropdown kategori sesuai tipe (mencegah typo / kantong tabungan duplikat)
       let katOptions = [];
@@ -4836,7 +5515,7 @@
       const tanggal = document.getElementById('editTrxTanggal').value;
       const kategori = document.getElementById('editTrxKategori').value;
       const metode = document.getElementById('editTrxMetode').value;
-      const nominal = Number(document.getElementById('editTrxNominal').value);
+      const nominal = parseRupiahInput(document.getElementById('editTrxNominal').value, isAdj);
       const catatan = document.getElementById('editTrxCatatan').value.trim();
 
       if (!tanggal || !kategori) return showToast('Tanggal dan Kategori wajib diisi.', 'error');
@@ -4868,7 +5547,7 @@
       if (res?.sukses) {
         showToast(res.pesan || 'Transaksi berhasil diperbarui.', 'success');
         closeEditTrxModal();
-        loadRekap();
+        if (activeTab === 'rekap') loadRekap();
         loadDataDashboard(true);
       } else if (!res?.authError) {
         showToast(res?.pesan || "Gagal memperbarui transaksi.", 'error');
