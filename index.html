@@ -312,6 +312,9 @@
           <button type="button" id="btnManualRefresh" onclick="refreshSemuaData()" class="h-11 w-11 bg-main-50 text-main-700 rounded-full flex items-center justify-center hover:bg-main-100 border border-main-200 transition" aria-label="Muat ulang data" title="Muat ulang data">
             <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
           </button>
+          <button type="button" onclick="openResetUserModal()" class="h-11 w-11 bg-amber-50 text-amber-700 rounded-full flex items-center justify-center hover:bg-amber-100 border border-amber-200 transition" aria-label="Reset catatanku dari awal" title="Reset Catatanku">
+            <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+          </button>
           <button type="button" onclick="prosesLogout(false)" class="h-11 w-11 bg-accent-50 text-accent-700 rounded-full flex items-center justify-center hover:bg-accent-100 border border-accent-200 transition" aria-label="Keluar dari akun" title="Keluar">
             <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>
           </button>
@@ -472,30 +475,40 @@
             </div>
           </div>
 
-          <div>
+          <!-- Peringatan jika masih ada saldo lama yang minus -->
+          <div id="saldoMinusWarning" class="hide bg-red-50 border border-red-200 text-red-800 rounded-2xl p-3.5 text-xs flex items-start gap-2.5" role="alert">
+            <i class="fa-solid fa-triangle-exclamation text-red-600 mt-0.5 shrink-0" aria-hidden="true"></i>
+            <div class="min-w-0 flex-1 leading-relaxed">
+              <p class="font-bold text-red-800">Peringatan: Ada saldo tercatat minus!</p>
+              <p id="saldoMinusWarningText" class="text-[11px] text-red-700 mt-0.5"></p>
+            </div>
+          </div>
+
+          <div id="wrapSaldoBank">
             <h3 class="font-bold text-gray-800 text-xs mb-2 flex items-center gap-1.5">
               <i class="fa-solid fa-building-columns text-main-600" aria-hidden="true"></i>Rekening Bank
             </h3>
             <div id="listSaldoBank" class="grid grid-cols-2 gap-2.5"></div>
           </div>
 
-          <div>
+          <div id="wrapSaldoEwallet">
             <h3 class="font-bold text-gray-800 text-xs mb-2 mt-3 flex items-center gap-1.5">
               <i class="fa-solid fa-mobile-screen-button text-accent-600" aria-hidden="true"></i>E-Wallet &amp; Kartu
             </h3>
             <div id="listSaldoEwallet" class="grid grid-cols-2 gap-2.5"></div>
           </div>
 
-          <div>
+          <div id="wrapSaldoLainnya">
             <h3 class="font-bold text-gray-800 text-xs mb-2 mt-3 flex items-center gap-1.5">
               <i class="fa-solid fa-money-bill-wave text-green-700" aria-hidden="true"></i>Uang Cash &amp; Lainnya
             </h3>
             <div id="listSaldoLainnya" class="grid grid-cols-2 gap-2.5"></div>
           </div>
 
-          <p id="hintEditSaldo" class="text-xs text-gray-600 text-center pt-2">
-            Klik ikon pensil pada kartu dompet untuk menyesuaikan nominal saldomu. Penyesuaian saldo tidak mempengaruhi total pemasukan/pengeluaran bulanan.
-          </p>
+          <div id="saldoEmptyBox" class="hide bg-white rounded-2xl p-5 border border-gray-100 text-center text-xs text-gray-600">
+            <i class="fa-solid fa-wallet text-main-400 text-2xl mb-2 block" aria-hidden="true"></i>
+            <span id="saldoEmptyText">Belum ada dompet yang dipakai. Catat pemasukan atau klik + Dompet untuk menambahkan.</span>
+          </div>
         </section>
 
         <!-- ================= TAB: CATAT TRANSAKSI ================= -->
@@ -508,7 +521,7 @@
             <div class="mb-5">
               <input type="file" id="fotoStruk" accept="image/*" capture="environment" class="sr-only" onchange="prosesScanAI()">
               <label for="fotoStruk" id="btnScanUi" class="w-full bg-gray-800 hover:bg-gray-900 text-white rounded-xl p-3.5 flex justify-center items-center gap-2 font-bold shadow cursor-pointer transition active:scale-[0.99]">
-                <i class="fa-solid fa-camera" aria-hidden="true"></i>Foto Struk (Scan AI)
+                <i class="fa-solid fa-camera" aria-hidden="true"></i>Foto Struk
               </label>
             </div>
 
@@ -619,12 +632,32 @@
 
             <div class="grid grid-cols-2 gap-3 mb-4 shrink-0">
               <div class="bg-main-50 rounded-2xl p-3.5 border border-main-100">
-                <p class="text-xs text-gray-600 font-semibold mb-1">Pemasukan</p>
-                <p class="font-bold text-main-700 truncate" id="rekapMasuk">Rp 0</p>
+                <p class="text-[11px] text-gray-600 font-semibold">Total Pemasukan</p>
+                <p class="font-bold text-main-700 text-base truncate mt-0.5" id="rekapMasuk">Rp 0</p>
+                <div class="mt-2 pt-2 border-t border-main-200/70 space-y-1 text-[11px]">
+                  <div class="flex justify-between items-center gap-1">
+                    <span class="text-gray-600 truncate" id="rekapMasukAkuLabel">Aku</span>
+                    <span class="font-bold text-main-700 shrink-0" id="rekapMasukAku">Rp 0</span>
+                  </div>
+                  <div class="flex justify-between items-center gap-1">
+                    <span class="text-gray-600 truncate" id="rekapMasukPasanganLabel">Pasangan</span>
+                    <span class="font-bold text-main-700 shrink-0" id="rekapMasukPasangan">Rp 0</span>
+                  </div>
+                </div>
               </div>
               <div class="bg-accent-50 rounded-2xl p-3.5 border border-accent-100">
-                <p class="text-xs text-gray-600 font-semibold mb-1">Pengeluaran Kas</p>
-                <p class="font-bold text-accent-700 truncate" id="rekapKeluar">Rp 0</p>
+                <p class="text-[11px] text-gray-600 font-semibold">Total Pengeluaran Kas</p>
+                <p class="font-bold text-accent-700 text-base truncate mt-0.5" id="rekapKeluar">Rp 0</p>
+                <div class="mt-2 pt-2 border-t border-accent-200/70 space-y-1 text-[11px]">
+                  <div class="flex justify-between items-center gap-1">
+                    <span class="text-gray-600 truncate" id="rekapKeluarAkuLabel">Aku</span>
+                    <span class="font-bold text-accent-700 shrink-0" id="rekapKeluarAku">Rp 0</span>
+                  </div>
+                  <div class="flex justify-between items-center gap-1">
+                    <span class="text-gray-600 truncate" id="rekapKeluarPasanganLabel">Pasangan</span>
+                    <span class="font-bold text-accent-700 shrink-0" id="rekapKeluarPasangan">Rp 0</span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -632,9 +665,18 @@
               <i class="fa-solid fa-file-excel" aria-hidden="true"></i>Download Excel (.xlsx)
             </button>
 
-            <div class="flex justify-between items-center mb-3 shrink-0">
+            <div class="flex justify-between items-center mb-2.5 shrink-0">
               <h4 class="font-bold text-gray-800 text-sm">Rincian Transaksi</h4>
               <span id="infoTotalRekap" class="text-xs font-bold text-gray-600"></span>
+            </div>
+
+            <div class="flex gap-1 bg-gray-100 p-1 rounded-xl mb-3 shrink-0">
+              <button type="button" id="btnRekapAku" onclick="switchOwnerRekap('me')" class="flex-1 py-2 rounded-lg text-xs font-bold bg-white text-main-700 shadow transition">
+                <span id="rekapTabNamaAku">Transaksiku</span> (<span id="countRekapAku">0</span>)
+              </button>
+              <button type="button" id="btnRekapPasangan" onclick="switchOwnerRekap('partner')" class="flex-1 py-2 rounded-lg text-xs font-bold text-gray-600 transition">
+                <span id="rekapTabNamaPasangan">Pasangan</span> (<span id="countRekapPasangan">0</span>)
+              </button>
             </div>
 
             <div id="listRekap" class="space-y-2.5 flex-1 overflow-y-auto pr-0.5">
@@ -873,11 +915,11 @@
       <div class="space-y-3">
         <div>
           <label for="adjSaldoBaru" class="text-xs font-bold text-gray-600 block mb-1">Saldo Sebenarnya Saat Ini (Rp)</label>
-          <input type="number" id="adjSaldoBaru" step="1" inputmode="numeric" required oninput="updatePreviewSelisihSaldo()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-bold text-sm text-gray-800">
+          <input type="number" id="adjSaldoBaru" min="0" step="1" inputmode="numeric" required oninput="updatePreviewSelisihSaldo()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-bold text-sm text-gray-800">
           <p id="adjPreviewSelisih" class="text-xs font-semibold text-main-700 mt-1.5"></p>
         </div>
         <p class="text-[11px] text-gray-600 bg-gray-50 border border-gray-200 rounded-xl p-2.5">
-          Dicatat sebagai penyesuaian saldo khusus sehingga tidak mengganggu laporan pemasukan atau pengeluaran bulanan.
+          Saldo minimal Rp 0 (tidak boleh minus). Dicatat sebagai penyesuaian saldo khusus agar tidak mengganggu pemasukan/pengeluaran bulanan.
         </p>
         <button type="submit" id="btnSimpanAdjSaldo" class="w-full bg-main-600 text-white font-bold py-3 rounded-xl shadow hover:bg-main-700 transition active:scale-[0.99]">
           Simpan Saldo Aktual
@@ -899,11 +941,45 @@
         <div>
           <label for="addMasterInput" id="addMasterLabel" class="text-xs font-bold text-gray-600 block mb-1">Nama</label>
           <input type="text" id="addMasterInput" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-semibold text-sm text-gray-800">
-          <p id="addMasterHint" class="text-[11px] text-gray-600 mt-1"></p>
+          <div id="addMasterQuickBox" class="hide mt-2.5">
+            <p class="text-[11px] font-bold text-gray-600 mb-1.5">Atau pilih dompet yang sudah tersedia:</p>
+            <div id="addMasterQuickChips" class="flex flex-wrap gap-1.5"></div>
+          </div>
+          <p id="addMasterHint" class="text-[11px] text-gray-600 mt-1.5"></p>
         </div>
         <button type="submit" id="btnSimpanAddMaster" class="w-full bg-main-600 text-white font-bold py-3 rounded-xl shadow hover:bg-main-700 transition active:scale-[0.99]">
           Tambahkan
         </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ================= MODAL RESET CATATAN PER USER ================= -->
+  <div id="resetUserModal" role="dialog" aria-modal="true" aria-labelledby="resetUserTitle" onclick="handleBackdropClose(event, closeResetUserModal)" class="hide fixed inset-0 z-[105] bg-gray-900/60 flex items-center justify-center p-5 backdrop-blur-sm">
+    <form onsubmit="konfirmasiResetUser(event)" class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
+      <div class="flex justify-between items-center mb-3">
+        <h3 id="resetUserTitle" class="text-lg font-bold text-red-700">
+          <i class="fa-solid fa-triangle-exclamation mr-1.5" aria-hidden="true"></i>Reset Catatanku
+        </h3>
+        <button type="button" onclick="closeResetUserModal()" aria-label="Tutup dialog" class="h-9 w-9 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-800">
+          <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="bg-red-50 border border-red-200 rounded-2xl p-3.5 text-xs text-red-800 leading-relaxed mb-3">
+        Semua <strong>Transaksi, Tabungan, dan Hutang</strong> milik <strong id="resetUserNamaText">kamu</strong> akan dihapus permanen untuk memulai dari awal.
+        <span class="block mt-1.5 text-emerald-800 font-bold">
+          <i class="fa-solid fa-shield-heart mr-1" aria-hidden="true"></i>Catatan keuangan milik <span id="resetPartnerNamaText">pasanganmu</span> tetap aman dan tidak akan berubah.
+        </span>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label for="inputKonfirmasiReset" class="text-xs font-bold text-gray-700 block mb-1">Ketik <span class="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-red-700">RESET</span> untuk melanjutkan</label>
+          <input type="text" id="inputKonfirmasiReset" autocomplete="off" oninput="cekInputKonfirmasiReset()" placeholder="Ketik RESET" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 font-bold text-sm text-gray-800 uppercase">
+        </div>
+        <div class="flex gap-2">
+          <button type="button" onclick="closeResetUserModal()" class="flex-1 bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition text-sm">Batal</button>
+          <button type="submit" id="btnKonfirmasiResetUser" disabled class="flex-1 bg-red-600 text-white font-bold py-2.5 rounded-xl hover:bg-red-700 transition text-sm">Reset Sekarang</button>
+        </div>
       </div>
     </form>
   </div>
@@ -1028,7 +1104,9 @@
 
     let activeSaldoOwner = "me";
     let activeHutangOwner = "me";
+    let activeRekapOwner = "me";
     let dataRekapBulanIni = [];
+    let rekapPerUserBulanIni = {};
     let currentPageRekap = 1;
     let selectedHutangToPay = { id: "", sisa: 0, nama: "" };
     let selectedHutangToEdit = null;
@@ -1112,6 +1190,7 @@
 
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape') return;
+      if (!document.getElementById('resetUserModal').classList.contains('hide')) return closeResetUserModal();
       if (!document.getElementById('confirmModal').classList.contains('hide')) return closeConfirmModal();
       if (!document.getElementById('nekoModal').classList.contains('hide')) return closeNekoModal();
       if (!document.getElementById('editTrxModal').classList.contains('hide')) return closeEditTrxModal();
@@ -1295,6 +1374,8 @@
       latestChartStats = null;
       chartsPendingRender = false;
       dataRekapBulanIni = [];
+      rekapPerUserBulanIni = {};
+      activeRekapOwner = "me";
       currentPageRekap = 1;
       currentFinanceSignature = "";
       lastDashboardFetchAt = 0;
@@ -1334,6 +1415,58 @@
       btn.disabled = false;
       icon.classList.remove('fa-spin');
       if (ok) showToast('Data berhasil diperbarui.', 'success');
+    }
+
+    // ================= RESET CATATAN KEUANGAN PER USER =================
+    function openResetUserModal() {
+      if (!activeUser || !activeToken) return;
+      const myShort = activeUser.split(' ')[0];
+      const partnerShort = (partnerFullName || 'Pasangan').split(' ')[0];
+      document.getElementById('resetUserNamaText').innerText = activeUser;
+      document.getElementById('resetPartnerNamaText').innerText = partnerShort === 'Pasangan' ? 'pasanganmu' : partnerFullName;
+      const inp = document.getElementById('inputKonfirmasiReset');
+      inp.value = '';
+      document.getElementById('btnKonfirmasiResetUser').disabled = true;
+      document.getElementById('resetUserModal').classList.remove('hide');
+      inp.focus();
+    }
+
+    function closeResetUserModal() {
+      document.getElementById('resetUserModal').classList.add('hide');
+    }
+
+    function cekInputKonfirmasiReset() {
+      const val = String(document.getElementById('inputKonfirmasiReset').value || '').trim().toUpperCase();
+      document.getElementById('btnKonfirmasiResetUser').disabled = (val !== 'RESET');
+    }
+
+    async function konfirmasiResetUser(event) {
+      event.preventDefault();
+      const val = String(document.getElementById('inputKonfirmasiReset').value || '').trim().toUpperCase();
+      if (val !== 'RESET') return showToast('Ketik RESET untuk konfirmasi.', 'error');
+
+      const btn = document.getElementById('btnKonfirmasiResetUser');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Mereset...';
+
+      const res = await callAPI('resetDataUser', {});
+
+      btn.innerHTML = 'Reset Sekarang';
+      btn.disabled = false;
+
+      if (res?.sukses) {
+        closeResetUserModal();
+        stopNekoSpeech();
+        localStorage.removeItem(`pawketNekoSig_${activeUser}`);
+        localStorage.removeItem(`pawketNekoData_${activeUser}`);
+        localStorage.removeItem(`pawketPinnedWallets_${activeUser}`);
+        isNekoCalled = false;
+        showToast(res.pesan || 'Catatan keuanganmu berhasil direset dari awal.', 'success');
+        await loadDataDashboard(true);
+        if (activeTab === 'rekap') await loadRekap();
+      } else if (!res?.authError) {
+        showToast(res?.pesan || 'Gagal mereset catatan keuangan.', 'error');
+      }
     }
 
     // ================= MASKOT 3D ANIME NEKO (GAYA CHI + TANGAN + 3 POSE) & SUARA NEKO =================
@@ -3088,22 +3221,11 @@
       const textContainer = document.getElementById('nekoModalText');
       const inlineWadah = document.getElementById('tempatWejangan');
       const isMe = wejanganState.mode === "me";
-      const myShortName = (activeUser || "Aku").split(" ")[0];
       const partnerShortName = (wejanganState.namaPasangan || partnerFullName || "Pasangan").split(" ")[0];
       const activeMood = getActiveNekoMood();
-      const moodMeta = NEKO_MOOD_META[activeMood] || NEKO_MOOD_META.santai;
 
       const rawText = isMe ? wejanganState.komentarKu : wejanganState.komentarPasangan;
       const formattedText = escapeHtml(rawText || "").replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-      const badgeClass = isMe
-        ? "bg-main-50 text-main-700 border-main-200"
-        : "bg-accent-50 text-accent-700 border-accent-200";
-      const badgeLabel = isMe
-        ? `<i class="fa-solid fa-user-check mr-1" aria-hidden="true"></i>Analisa Keuanganku (${escapeHtml(myShortName)})`
-        : `<i class="fa-solid fa-heart mr-1" aria-hidden="true"></i>Analisa Keuangan ${escapeHtml(partnerShortName)}`;
-
-      const moodBadgeHtml = `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${moodMeta.badge}"><i class="fa-solid ${moodMeta.icon} mr-1" aria-hidden="true"></i>${escapeHtml(moodMeta.label)}</span>`;
 
       const btnClass = isMe
         ? "bg-accent-50 text-accent-700 hover:bg-accent-100 border-accent-200"
@@ -3125,10 +3247,6 @@
 
       textContainer.innerHTML = `
         <div class="w-full flex flex-col items-center">
-          <div class="flex flex-wrap items-center justify-center gap-1.5 mb-2.5">
-            <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${badgeClass}">${badgeLabel}</span>
-            ${moodBadgeHtml}
-          </div>
           <p class="text-gray-700 font-medium leading-relaxed text-sm">"${formattedText}"</p>
           ${voiceControlsHtml}
           ${debugBoxHtml}
@@ -3140,17 +3258,12 @@
 
       inlineWadah.innerHTML = `
         <div class="w-full flex flex-col items-start">
-          <div class="flex items-center gap-3 w-full mb-2">
-            <button type="button" onclick="showNekoModal(false)" aria-label="Buka popup Neko AI" title="Buka popup Neko" class="w-20 h-20 shrink-0 rounded-2xl bg-gradient-to-b from-main-50 to-accent-50 border border-main-100 p-1 flex items-center justify-center hover:scale-105 transition">
+          <div class="flex items-start gap-3 w-full mb-1.5">
+            <button type="button" onclick="showNekoModal(false)" aria-label="Buka popup Neko AI" title="Buka popup Neko" class="w-16 h-16 shrink-0 rounded-2xl bg-gradient-to-b from-main-50 to-accent-50 border border-main-100 p-1 flex items-center justify-center hover:scale-105 transition">
               ${buildNekoMascotSvg('inline', activeMood, nekoSpeechState === 'speaking')}
             </button>
-            <div class="flex flex-col items-start gap-1.5 min-w-0 flex-1">
-              <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${badgeClass} max-w-full truncate">${badgeLabel}</span>
-              ${moodBadgeHtml}
-              <span class="text-[11px] text-gray-600 font-semibold">Klik Neko atau tombol suara di bawah</span>
-            </div>
+            <p class="flex-1 min-w-0 text-gray-700 leading-relaxed font-medium text-xs">"${formattedText}"</p>
           </div>
-          <p class="w-full text-gray-700 leading-relaxed font-medium mb-1">"${formattedText}"</p>
           ${voiceControlsHtml}
           ${debugBoxHtml}
           <button type="button" onclick="toggleWejanganPasangan()" class="mt-2.5 px-3 py-2 rounded-xl text-xs font-bold border transition active:scale-[0.99] flex items-center justify-center gap-1.5 w-full ${btnClass}">
@@ -3269,10 +3382,17 @@
       const partnerShortName = partnerFullName.split(' ')[0];
       const partnerStats = uStats[partnerFullName] || { masuk: 0, keluar: 0 };
 
+      const myShortName = (activeUser || 'Aku').split(' ')[0];
       document.getElementById('namaPasanganText').innerText = partnerShortName;
       document.getElementById('namaPasanganDompet').innerText = partnerShortName;
       document.getElementById('tabNamaPasanganSaldo').innerText = partnerShortName;
       document.getElementById('tabNamaPasanganHutang').innerText = partnerShortName;
+      document.getElementById('rekapMasukAkuLabel').innerText = myShortName;
+      document.getElementById('rekapMasukPasanganLabel').innerText = partnerShortName;
+      document.getElementById('rekapKeluarAkuLabel').innerText = myShortName;
+      document.getElementById('rekapKeluarPasanganLabel').innerText = partnerShortName;
+      document.getElementById('rekapTabNamaAku').innerText = myShortName;
+      document.getElementById('rekapTabNamaPasangan').innerText = partnerShortName;
 
       const saldoPerUser = res.saldoPerUser || {};
       const saldoAkuRiil = saldoPerUser[activeUser] ?? (myStats.masuk - myStats.keluar);
@@ -3282,6 +3402,7 @@
 
       latestDompetPerUser = res.dompetPerUser || {};
       renderMenuSaldo();
+      renderMetodePembayaran();
 
       const tabObj = res.tabungan || {};
       const labelTabObj = res.labelTabungan || {};
@@ -3398,6 +3519,36 @@
     }
 
     // ================= TAB SALDO =================
+    function getPinnedWalletsForUser(user) {
+      if (!user) return [];
+      try {
+        const parsed = JSON.parse(localStorage.getItem(`pawketPinnedWallets_${user}`) || '[]');
+        return Array.isArray(parsed) ? parsed.map(cleanPosName).filter(Boolean) : [];
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function pinWalletForUser(user, walletName) {
+      const clean = cleanPosName(walletName);
+      if (!user || !clean) return;
+      const list = getPinnedWalletsForUser(user);
+      if (!list.some(w => w.toLowerCase() === clean.toLowerCase())) {
+        list.push(clean);
+        localStorage.setItem(`pawketPinnedWallets_${user}`, JSON.stringify(list));
+      }
+    }
+
+    function getMyWalletBalance(dompetName) {
+      const target = cleanPosName(dompetName).toLowerCase();
+      const myWallets = latestDompetPerUser?.[activeUser] || {};
+      let found = 0;
+      Object.entries(myWallets).forEach(([k, v]) => {
+        if (cleanPosName(k).toLowerCase() === target) found += Number(v) || 0;
+      });
+      return found;
+    }
+
     function switchOwnerSaldo(ownerType) {
       activeSaldoOwner = ownerType;
       const isMe = ownerType === 'me';
@@ -3413,7 +3564,6 @@
 
       document.getElementById('aksiSaldokuBox').classList.toggle('hide', !isMe);
       document.getElementById('infoReadOnlySaldoBox').classList.toggle('hide', isMe);
-      document.getElementById('hintEditSaldo').classList.toggle('hide', !isMe);
       renderMenuSaldo();
     }
 
@@ -3435,53 +3585,85 @@
         : `Total Saldo ${partnerFullName.split(' ')[0]} (Hanya Lihat)`;
       document.getElementById('totalSemuaSaldo').innerText = formatRp(totalUserSaldo);
 
-      // Gabungkan daftar dompet tanpa duplikat case-insensitive
-      const dompetMaster = (listKategori.dompet || []).map(cleanPosName).filter(Boolean);
+      // Hanya tampilkan dompet yang benar-benar dipakai user (+ yang baru diaktifkan lewat + Dompet)
+      const pinned = isMe ? getPinnedWalletsForUser(activeUser) : [];
       const seenLower = new Map();
-      ["Uang Cash", ...dompetMaster, ...Object.keys(saldoObj)].forEach(rawKey => {
+      [...Object.keys(saldoObj), ...pinned].forEach(rawKey => {
         const key = cleanPosName(rawKey);
         if (!key) return;
         const lower = key.toLowerCase();
+        const val = saldoObj[rawKey] !== undefined ? (Number(saldoObj[rawKey]) || 0) : 0;
         if (!seenLower.has(lower)) {
-          seenLower.set(lower, { nama: key, nominal: Number(saldoObj[key]) || 0 });
+          seenLower.set(lower, { nama: key, nominal: val });
         } else if (saldoObj[rawKey] !== undefined && rawKey !== seenLower.get(lower).nama) {
-          seenLower.get(lower).nominal += Number(saldoObj[rawKey]) || 0;
+          seenLower.get(lower).nominal += val;
         }
       });
 
       const banks = [];
       const ewallets = [];
       const others = [];
+      const minusItems = [];
       seenLower.forEach(item => {
+        if (item.nominal < 0) minusItems.push(item);
         const jenis = klasifikasiDompet(item.nama);
         if (jenis === 'bank') banks.push(item);
         else if (jenis === 'ewallet') ewallets.push(item);
         else others.push(item);
       });
 
-      const buatKartu = (item, warnaBorder, warnaTeks, ikon) => `
-        <div class="bg-white rounded-2xl p-3.5 shadow-sm border ${warnaBorder} flex flex-col justify-between">
-          <div class="flex justify-between items-center gap-1 mb-1">
-            <span class="text-xs font-bold ${warnaTeks} truncate"><i class="${ikon} mr-1" aria-hidden="true"></i>${escapeHtml(item.nama)}</span>
-            ${isMe
-              ? `<button type="button" data-dompet="${escapeHtml(item.nama)}" data-nominal="${item.nominal}" onclick="openSesuaikanSaldoFromBtn(this)" class="h-7 w-7 rounded-lg flex items-center justify-center text-gray-500 hover:bg-main-50 hover:text-main-700 transition shrink-0" aria-label="Sesuaikan saldo ${escapeHtml(item.nama)}" title="Sesuaikan Saldo"><i class="fa-solid fa-pen text-[11px]" aria-hidden="true"></i></button>`
-              : `<i class="fa-solid fa-lock text-xs text-gray-400 shrink-0" aria-hidden="true" title="Hanya Lihat"></i>`}
+      // Peringatan jika masih ada dompet yang tercatat minus dari catatan sebelumnya
+      const warnBox = document.getElementById('saldoMinusWarning');
+      if (minusItems.length > 0) {
+        const daftarMinus = minusItems.map(i => `${i.nama} (${formatRp(i.nominal)})`).join(', ');
+        document.getElementById('saldoMinusWarningText').innerText = isMe
+          ? `Dompet minus: ${daftarMinus}. Saldo tidak boleh minus; klik ikon pensil untuk menyesuaikan ke saldo sebenarnya (minimal Rp 0) atau gunakan tombol Reset di pojok atas.`
+          : `Dompet minus milik ${partnerFullName.split(' ')[0]}: ${daftarMinus}.`;
+        warnBox.classList.remove('hide');
+      } else {
+        warnBox.classList.add('hide');
+      }
+
+      const buatKartu = (item, warnaBorder, warnaTeks, ikon) => {
+        const isMinus = item.nominal < 0;
+        const cardBorder = isMinus ? 'border-red-300 bg-red-50/50' : `bg-white ${warnaBorder}`;
+        const nominalCls = isMinus ? 'text-red-700' : 'text-gray-800';
+        const minusBadge = isMinus
+          ? '<span class="inline-flex items-center gap-1 text-[10px] font-bold text-red-700 bg-red-100 px-1.5 py-0.5 rounded-full mt-1"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>Minus</span>'
+          : '';
+        return `
+          <div class="rounded-2xl p-3.5 shadow-sm border ${cardBorder} flex flex-col justify-between">
+            <div class="flex justify-between items-center gap-1 mb-1">
+              <span class="text-xs font-bold ${isMinus ? 'text-red-700' : warnaTeks} truncate"><i class="${ikon} mr-1" aria-hidden="true"></i>${escapeHtml(item.nama)}</span>
+              ${isMe
+                ? `<button type="button" data-dompet="${escapeHtml(item.nama)}" data-nominal="${item.nominal}" onclick="openSesuaikanSaldoFromBtn(this)" class="h-7 w-7 rounded-lg flex items-center justify-center text-gray-500 hover:bg-main-50 hover:text-main-700 transition shrink-0" aria-label="Sesuaikan saldo ${escapeHtml(item.nama)}" title="Sesuaikan Saldo"><i class="fa-solid fa-pen text-[11px]" aria-hidden="true"></i></button>`
+                : `<i class="fa-solid fa-lock text-xs text-gray-400 shrink-0" aria-hidden="true" title="Hanya Lihat"></i>`}
+            </div>
+            <div>
+              <p class="font-bold ${nominalCls} text-sm truncate">${formatRp(item.nominal)}</p>
+              ${minusBadge}
+            </div>
           </div>
-          <p class="font-bold text-gray-800 text-sm truncate">${formatRp(item.nominal)}</p>
-        </div>
-      `;
+        `;
+      };
 
-      document.getElementById('listSaldoBank').innerHTML = banks.length > 0
-        ? banks.map(b => buatKartu(b, 'border-main-100', 'text-main-700', 'fa-solid fa-building-columns')).join('')
-        : '<p class="col-span-2 text-xs text-gray-600">Belum ada rekening bank.</p>';
+      document.getElementById('wrapSaldoBank').classList.toggle('hide', banks.length === 0);
+      document.getElementById('listSaldoBank').innerHTML = banks.map(b => buatKartu(b, 'border-main-100', 'text-main-700', 'fa-solid fa-building-columns')).join('');
 
-      document.getElementById('listSaldoEwallet').innerHTML = ewallets.length > 0
-        ? ewallets.map(e => buatKartu(e, 'border-accent-100', 'text-accent-700', 'fa-solid fa-wallet')).join('')
-        : '<p class="col-span-2 text-xs text-gray-600">Belum ada e-wallet.</p>';
+      document.getElementById('wrapSaldoEwallet').classList.toggle('hide', ewallets.length === 0);
+      document.getElementById('listSaldoEwallet').innerHTML = ewallets.map(e => buatKartu(e, 'border-accent-100', 'text-accent-700', 'fa-solid fa-wallet')).join('');
 
-      document.getElementById('listSaldoLainnya').innerHTML = others.length > 0
-        ? others.map(k => buatKartu(k, 'border-green-100', 'text-green-700', 'fa-solid fa-money-bill-wave')).join('')
-        : '<p class="col-span-2 text-xs text-gray-600">Belum ada dompet lainnya.</p>';
+      document.getElementById('wrapSaldoLainnya').classList.toggle('hide', others.length === 0);
+      document.getElementById('listSaldoLainnya').innerHTML = others.map(k => buatKartu(k, 'border-green-100', 'text-green-700', 'fa-solid fa-money-bill-wave')).join('');
+
+      const allEmpty = banks.length === 0 && ewallets.length === 0 && others.length === 0;
+      const emptyBox = document.getElementById('saldoEmptyBox');
+      emptyBox.classList.toggle('hide', !allEmpty);
+      if (allEmpty) {
+        document.getElementById('saldoEmptyText').innerText = isMe
+          ? 'Belum ada dompet yang dipakai. Catat pemasukan atau klik + Dompet untuk mulai menambahkan.'
+          : `${partnerFullName.split(' ')[0]} belum memiliki catatan saldo dompet.`;
+      }
     }
 
     function openSesuaikanSaldoFromBtn(btn) {
@@ -3490,7 +3672,7 @@
       const nominal = Number(btn.dataset.nominal) || 0;
       selectedSaldoToAdjust = { nama, nominal };
       document.getElementById('adjDompetInfo').innerText = `Dompet: ${nama} (Tercatat saat ini: ${formatRp(nominal)})`;
-      document.getElementById('adjSaldoBaru').value = nominal;
+      document.getElementById('adjSaldoBaru').value = Math.max(0, nominal);
       updatePreviewSelisihSaldo();
       document.getElementById('sesuaikanSaldoModal').classList.remove('hide');
       document.getElementById('adjSaldoBaru').focus();
@@ -3501,6 +3683,10 @@
       const preview = document.getElementById('adjPreviewSelisih');
       if (!Number.isFinite(val)) {
         preview.innerText = '';
+        return;
+      }
+      if (val < 0) {
+        preview.innerText = 'Saldo tidak boleh minus (minimal Rp 0).';
         return;
       }
       const selisih = val - selectedSaldoToAdjust.nominal;
@@ -3516,6 +3702,7 @@
       event.preventDefault();
       const saldoBaru = Number(document.getElementById('adjSaldoBaru').value);
       if (!Number.isFinite(saldoBaru)) return showToast('Masukkan angka saldo yang valid.', 'error');
+      if (saldoBaru < 0) return showToast('Saldo dompet tidak boleh minus (minimal Rp 0).', 'error');
 
       const btn = document.getElementById('btnSimpanAdjSaldo');
       btn.disabled = true;
@@ -3529,6 +3716,7 @@
       btn.innerHTML = 'Simpan Saldo Aktual';
 
       if (res?.sukses) {
+        pinWalletForUser(activeUser, selectedSaldoToAdjust.nama);
         showToast(res.pesan || 'Saldo berhasil disesuaikan.', 'success');
         closeSesuaikanSaldoModal();
         loadDataDashboard(true);
@@ -3538,7 +3726,7 @@
     }
 
     // ================= MODAL TAMBAH MASTER (DOMPET / KATEGORI) =================
-    function openAddMasterModal({ tipe, title, label, placeholder, hint, onSuccess }) {
+    function openAddMasterModal({ tipe, title, label, placeholder, hint, onSuccess, quickOptions = [] }) {
       addMasterContext = { tipe, onSuccess };
       document.getElementById('addMasterTitle').innerText = title;
       document.getElementById('addMasterLabel').innerText = label;
@@ -3546,6 +3734,21 @@
       input.value = '';
       input.placeholder = placeholder || '';
       document.getElementById('addMasterHint').innerText = hint || '';
+
+      const quickBox = document.getElementById('addMasterQuickBox');
+      const quickChips = document.getElementById('addMasterQuickChips');
+      if (Array.isArray(quickOptions) && quickOptions.length > 0) {
+        quickChips.innerHTML = quickOptions.map(name => `
+          <button type="button" data-wallet="${escapeHtml(name)}" onclick="aktifkanDompetCepat(this.dataset.wallet)" class="px-2.5 py-1 rounded-full bg-main-50 hover:bg-main-100 text-main-700 border border-main-200 text-xs font-bold transition">
+            + ${escapeHtml(name)}
+          </button>
+        `).join('');
+        quickBox.classList.remove('hide');
+      } else {
+        quickChips.innerHTML = '';
+        quickBox.classList.add('hide');
+      }
+
       document.getElementById('addMasterModal').classList.remove('hide');
       input.focus();
     }
@@ -3554,13 +3757,34 @@
       document.getElementById('addMasterModal').classList.add('hide');
     }
 
+    function aktifkanDompetCepat(namaDompet) {
+      const clean = cleanPosName(namaDompet);
+      if (!clean) return;
+      pinWalletForUser(activeUser, clean);
+      closeAddMasterModal();
+      renderMenuSaldo();
+      showToast(`"${clean}" ditampilkan di Saldoku.`, 'success');
+      if (typeof addMasterContext.onSuccess === 'function') {
+        addMasterContext.onSuccess(clean);
+      }
+    }
+
     function openTambahDompetModal(onSuccessCallback = null) {
+      const usedKeys = new Set([
+        ...Object.keys(latestDompetPerUser?.[activeUser] || {}),
+        ...getPinnedWalletsForUser(activeUser)
+      ].map(k => cleanPosName(k).toLowerCase()));
+      const availableUnused = (listKategori.dompet || [])
+        .map(cleanPosName)
+        .filter(d => d && !usedKeys.has(d.toLowerCase()));
+
       openAddMasterModal({
         tipe: 'Dompet',
         title: 'Tambah Dompet / Rekening',
-        label: 'Nama Rekening atau E-Wallet',
+        label: 'Nama Rekening atau E-Wallet Baru',
         placeholder: 'Contoh: SeaBank, Jago, OVO, Flazz',
-        hint: 'Bank dan e-wallet umum akan otomatis dikelompokkan di tab Saldo.',
+        hint: 'Hanya dompet yang kamu pakai yang akan ditampilkan di halaman Saldo.',
+        quickOptions: availableUnused,
         onSuccess: onSuccessCallback
       });
     }
@@ -3571,6 +3795,16 @@
       if (!rawVal) return showToast('Nama tidak boleh kosong.', 'error');
 
       const namaKirim = addMasterContext.tipe === 'Dompet' ? cleanPosName(rawVal) : rawVal;
+
+      // Jika user mengetik dompet yang sebenarnya sudah ada di master Kategori, langsung aktifkan di Saldoku!
+      if (addMasterContext.tipe === 'Dompet') {
+        const existingMaster = (listKategori.dompet || []).find(d => cleanPosName(d).toLowerCase() === namaKirim.toLowerCase());
+        if (existingMaster) {
+          aktifkanDompetCepat(existingMaster);
+          return;
+        }
+      }
+
       const btn = document.getElementById('btnSimpanAddMaster');
       btn.disabled = true;
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Menyimpan...';
@@ -3582,12 +3816,14 @@
 
       if (res?.sukses) {
         listKategori = res;
+        if (addMasterContext.tipe === 'Dompet') pinWalletForUser(activeUser, namaKirim);
         closeAddMasterModal();
         showToast(`"${namaKirim}" berhasil ditambahkan.`, 'success');
         if (typeof addMasterContext.onSuccess === 'function') {
           addMasterContext.onSuccess(namaKirim);
         } else {
           renderMetodePembayaran();
+          renderMenuSaldo();
           loadDataDashboard(true);
         }
       } else if (!res?.authError) {
@@ -3597,21 +3833,22 @@
 
     // ================= MODAL TRANSFER =================
     function openTransferModal() {
-      const myWallets = latestDompetPerUser?.[activeUser] || {};
       const dompetList = listKategori.dompet?.length > 0 ? listKategori.dompet : ["Uang Cash", "BNI", "BRI", "BCA", "Mandiri", "GoPay", "Spay", "Dana", "Tapcash"];
+      const uniqueClean = [...new Set(dompetList.map(cleanPosName).filter(Boolean))];
+      // Urutkan dompet dengan saldo > 0 di paling atas untuk sumber transfer
+      const sortedDari = [...uniqueClean].sort((a, b) => getMyWalletBalance(b) - getMyWalletBalance(a));
 
-      document.getElementById('trfDari').innerHTML = dompetList.map(d => {
-        const cleanD = cleanPosName(d);
-        return `<option value="${escapeHtml(cleanD)}">${escapeHtml(cleanD)} (${formatRp(myWallets[cleanD] || 0)})</option>`;
+      document.getElementById('trfDari').innerHTML = sortedDari.map(cleanD => {
+        return `<option value="${escapeHtml(cleanD)}">${escapeHtml(cleanD)} (${formatRp(getMyWalletBalance(cleanD))})</option>`;
       }).join('');
 
       const selKe = document.getElementById('trfKe');
-      selKe.innerHTML = dompetList.map(d => {
-        const cleanD = cleanPosName(d);
+      selKe.innerHTML = uniqueClean.map(cleanD => {
         return `<option value="${escapeHtml(cleanD)}">${escapeHtml(cleanD)}</option>`;
       }).join('');
 
-      if (dompetList.length > 1) selKe.selectedIndex = 1;
+      const firstTargetIdx = uniqueClean.findIndex(d => d.toLowerCase() !== (sortedDari[0] || '').toLowerCase());
+      if (firstTargetIdx >= 0) selKe.selectedIndex = firstTargetIdx;
       document.getElementById('trfNominal').value = '';
       document.getElementById('trfCatatan').value = '';
       cekInfoAdminTransfer();
@@ -3650,6 +3887,10 @@
       }
       if (!Number.isFinite(biayaAdmin) || biayaAdmin < 0) {
         return showToast("Biaya admin tidak boleh negatif.", 'error');
+      }
+      const saldoDari = getMyWalletBalance(dari);
+      if (saldoDari - (nominal + biayaAdmin) < 0) {
+        return showToast(`Saldo ${dari} tidak mencukupi (tersedia: ${formatRp(Math.max(0, saldoDari))}). Saldo tidak boleh minus.`, 'error');
       }
 
       const btn = document.getElementById('btnProsesTrf');
@@ -3905,6 +4146,10 @@
       if (nominalBayar > selectedHutangToPay.sisa) {
         return showToast("Nominal bayar melebihi sisa hutang.", 'error');
       }
+      const saldoDompet = getMyWalletBalance(metode);
+      if (saldoDompet - nominalBayar < 0) {
+        return showToast(`Saldo ${metode} tidak mencukupi (tersedia: ${formatRp(Math.max(0, saldoDompet))}). Saldo tidak boleh minus.`, 'error');
+      }
 
       const btn = document.getElementById('btnKonfirmasiBayarHutang');
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Memproses...';
@@ -3969,7 +4214,11 @@
         label.innerText = "Pembayaran Menggunakan";
         select.innerHTML = `
           <optgroup label="Saldoku (Rekening / E-Wallet / Cash)">
-            ${dompetList.map(d => `<option value="${escapeHtml(cleanPosName(d))}">${escapeHtml(cleanPosName(d))}</option>`).join('')}
+            ${dompetList.map(d => {
+              const c = cleanPosName(d);
+              const bal = getMyWalletBalance(c);
+              return `<option value="${escapeHtml(c)}">${escapeHtml(c)} (${formatRp(bal)})</option>`;
+            }).join('')}
           </optgroup>
           <optgroup label="PayLater (Otomatis Masuk Hutangku)">
             ${paylaterList.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('')}
@@ -3980,7 +4229,11 @@
         label.innerText = jenisTabunganAktif === 'Setor' ? "Sumber Dana (Opsional)" : "Tujuan Dana (Opsional)";
         select.innerHTML = [
           '<option value="Virtual">Alokasi Virtual (Tidak ubah saldo dompet)</option>',
-          ...dompetList.map(d => `<option value="${escapeHtml(cleanPosName(d))}">${escapeHtml(cleanPosName(d))}</option>`),
+          ...dompetList.map(d => {
+            const c = cleanPosName(d);
+            const bal = getMyWalletBalance(c);
+            return `<option value="${escapeHtml(c)}">${escapeHtml(c)} (${formatRp(bal)})</option>`;
+          }),
           '<option value="ADD_NEW_DOMPET">+ Tambah Dompet / Rekening Lainnya</option>'
         ].join('');
       }
@@ -4143,7 +4396,7 @@
 
       const btnUi = document.getElementById('btnScanUi');
       const resetBtn = () => {
-        btnUi.innerHTML = '<i class="fa-solid fa-camera" aria-hidden="true"></i>Foto Struk (Scan AI)';
+        btnUi.innerHTML = '<i class="fa-solid fa-camera" aria-hidden="true"></i>Foto Struk';
         inputNode.value = '';
       };
 
@@ -4217,6 +4470,17 @@
       if (!Number.isFinite(nominalNum) || nominalNum <= 0) {
         return showToast('Nominal harus berupa angka lebih dari 0.', 'error');
       }
+      if (tipeAktif === 'Pengeluaran' && !isPaylater(form.metode)) {
+        const saldoDompet = getMyWalletBalance(form.metode);
+        if (saldoDompet - nominalNum < 0) {
+          return showToast(`Saldo ${form.metode} tidak mencukupi (tersedia: ${formatRp(Math.max(0, saldoDompet))}). Catat pemasukan atau sesuaikan saldo dulu agar tidak minus.`, 'error');
+        }
+      } else if (tipeAktif === 'Tabungan' && jenisTabunganAktif === 'Setor' && form.metode && form.metode.toLowerCase() !== 'virtual') {
+        const saldoDompet = getMyWalletBalance(form.metode);
+        if (saldoDompet - nominalNum < 0) {
+          return showToast(`Saldo ${form.metode} tidak mencukupi untuk setor tabungan (tersedia: ${formatRp(Math.max(0, saldoDompet))}).`, 'error');
+        }
+      }
 
       const btn = document.getElementById('btnSimpan');
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Menyimpan...';
@@ -4284,6 +4548,19 @@
     }
 
     // ================= TAB REKAP BULANAN =================
+    function switchOwnerRekap(ownerType) {
+      activeRekapOwner = ownerType;
+      currentPageRekap = 1;
+      const isMe = ownerType === 'me';
+      document.getElementById('btnRekapAku').className = isMe
+        ? "flex-1 py-2 rounded-lg text-xs font-bold bg-white text-main-700 shadow transition"
+        : "flex-1 py-2 rounded-lg text-xs font-bold text-gray-600 transition";
+      document.getElementById('btnRekapPasangan').className = !isMe
+        ? "flex-1 py-2 rounded-lg text-xs font-bold bg-white text-accent-700 shadow transition"
+        : "flex-1 py-2 rounded-lg text-xs font-bold text-gray-600 transition";
+      renderListRekap();
+    }
+
     async function loadRekap() {
       if (!activeToken) return;
       const bln = document.getElementById('inputBulan').value;
@@ -4295,13 +4572,49 @@
 
       const res = await callAPI('getRekap', { bulanTahun: bln });
       if (res?.sukses && Array.isArray(res.detail)) {
+        dataRekapBulanIni = res.detail;
+        rekapPerUserBulanIni = res.rekapPerUser || {};
+
+        // Hitung rincian pemasukan & pengeluaran kas per user (pakai data server, dengan fallback lokal yang konsisten)
+        let masukAku = rekapPerUserBulanIni[activeUser]?.masuk;
+        let keluarAku = rekapPerUserBulanIni[activeUser]?.keluar;
+        let masukPasangan = rekapPerUserBulanIni[partnerFullName]?.masuk;
+        let keluarPasangan = rekapPerUserBulanIni[partnerFullName]?.keluar;
+
+        if (masukAku === undefined || masukPasangan === undefined) {
+          masukAku = 0; keluarAku = 0; masukPasangan = 0; keluarPasangan = 0;
+          dataRekapBulanIni.forEach(d => {
+            const isMine = String(d.Oleh).trim() === activeUser;
+            const nom = Number(d.Nominal) || 0;
+            if (d.Tipe === 'Pemasukan') {
+              if (isMine) masukAku += nom; else masukPasangan += nom;
+            } else if (d.Tipe === 'Pengeluaran' && !isPaylater(d.Metode)) {
+              if (isMine) keluarAku += nom; else keluarPasangan += nom;
+            }
+          });
+        }
+
+        const myShort = (activeUser || 'Aku').split(' ')[0];
+        const partnerShort = (partnerFullName || 'Pasangan').split(' ')[0];
+        document.getElementById('rekapMasukAkuLabel').innerText = myShort;
+        document.getElementById('rekapMasukPasanganLabel').innerText = partnerShort;
+        document.getElementById('rekapKeluarAkuLabel').innerText = myShort;
+        document.getElementById('rekapKeluarPasanganLabel').innerText = partnerShort;
+        document.getElementById('rekapTabNamaAku').innerText = myShort;
+        document.getElementById('rekapTabNamaPasangan').innerText = partnerShort;
+
         document.getElementById('rekapMasuk').innerText = formatRp(res.totalMasuk);
         document.getElementById('rekapKeluar').innerText = formatRp(res.totalKeluar);
-        dataRekapBulanIni = res.detail;
+        document.getElementById('rekapMasukAku').innerText = formatRp(masukAku);
+        document.getElementById('rekapMasukPasangan').innerText = formatRp(masukPasangan);
+        document.getElementById('rekapKeluarAku').innerText = formatRp(keluarAku);
+        document.getElementById('rekapKeluarPasangan').innerText = formatRp(keluarPasangan);
+
         currentPageRekap = 1;
         renderListRekap();
       } else if (!res?.authError) {
         dataRekapBulanIni = [];
+        rekapPerUserBulanIni = {};
         listUi.innerHTML = `
           <div class="text-center py-6 space-y-2">
             <p class="text-xs font-bold text-red-700">${escapeHtml(res?.pesan || 'Gagal memuat rekap bulanan.')}</p>
@@ -4316,22 +4629,30 @@
       const paginationUi = document.getElementById('paginationRekap');
       const infoTotal = document.getElementById('infoTotalRekap');
 
-      if (dataRekapBulanIni.length === 0) {
-        listUi.innerHTML = '<p class="text-center text-gray-600 text-sm py-6">Belum ada transaksi di bulan ini.</p>';
+      const listAku = dataRekapBulanIni.filter(d => String(d.Oleh).trim() === activeUser);
+      const listPasangan = dataRekapBulanIni.filter(d => String(d.Oleh).trim() !== activeUser);
+      document.getElementById('countRekapAku').innerText = listAku.length;
+      document.getElementById('countRekapPasangan').innerText = listPasangan.length;
+
+      const isMeTab = activeRekapOwner === 'me';
+      const filteredList = isMeTab ? listAku : listPasangan;
+      const partnerShort = (partnerFullName || 'Pasangan').split(' ')[0];
+
+      infoTotal.innerText = `Total ${dataRekapBulanIni.length} Trx`;
+
+      if (filteredList.length === 0) {
+        listUi.innerHTML = `<p class="text-center text-gray-600 text-sm py-6">${isMeTab ? 'Belum ada transaksi milikmu di bulan ini.' : `Belum ada transaksi milik ${escapeHtml(partnerShort)} di bulan ini.`}</p>`;
         paginationUi.classList.add('hide');
-        infoTotal.innerText = '0 Transaksi';
         return;
       }
 
-      const totalPages = Math.ceil(dataRekapBulanIni.length / ITEMS_PER_PAGE_REKAP);
+      const totalPages = Math.ceil(filteredList.length / ITEMS_PER_PAGE_REKAP);
       currentPageRekap = Math.max(1, Math.min(currentPageRekap, totalPages));
 
       const startIdx = (currentPageRekap - 1) * ITEMS_PER_PAGE_REKAP;
-      const itemsHalamanIni = dataRekapBulanIni.slice(startIdx, startIdx + ITEMS_PER_PAGE_REKAP);
-      infoTotal.innerText = `${dataRekapBulanIni.length} Transaksi`;
+      const itemsHalamanIni = filteredList.slice(startIdx, startIdx + ITEMS_PER_PAGE_REKAP);
 
-      listUi.innerHTML = itemsHalamanIni.map((d, idxOnPage) => {
-        const globalIdx = startIdx + idxOnPage;
+      listUi.innerHTML = itemsHalamanIni.map(d => {
         const isOwner = String(d.Oleh).trim() === activeUser;
         const isTrf = d.Tipe === 'Transfer';
         const isAdj = d.Tipe === 'Penyesuaian';
@@ -4352,7 +4673,7 @@
         const aksiHtml = isOwner
           ? `
             <div class="flex items-center gap-1.5">
-              <button type="button" onclick="bukaEditTransaksi(${globalIdx})" aria-label="Edit catatan ${escapeHtml(d.Kategori)}" class="h-7 w-7 rounded-lg flex items-center justify-center text-main-700 hover:bg-main-50 transition" title="Edit Catatanku">
+              <button type="button" data-id="${escapeHtml(d.id)}" onclick="bukaEditTransaksiById(this.dataset.id)" aria-label="Edit catatan ${escapeHtml(d.Kategori)}" class="h-7 w-7 rounded-lg flex items-center justify-center text-main-700 hover:bg-main-50 transition" title="Edit Catatanku">
                 <i class="fa-solid fa-pen text-xs" aria-hidden="true"></i>
               </button>
               <button type="button" data-id="${escapeHtml(d.id)}" onclick="konfirmasiHapusCatatan(this.dataset.id)" aria-label="Hapus catatan ${escapeHtml(d.Kategori)}" class="h-7 w-7 rounded-lg flex items-center justify-center text-red-600 hover:bg-red-50 transition" title="Hapus Catatanku">
@@ -4400,6 +4721,12 @@
     }
 
     // ================= EDIT & HAPUS TRANSAKSI =================
+    function bukaEditTransaksiById(idTrx) {
+      const idx = dataRekapBulanIni.findIndex(item => String(item.id) === String(idTrx));
+      if (idx === -1) return showToast("Catatan tidak ditemukan.", 'error');
+      bukaEditTransaksi(idx);
+    }
+
     function bukaEditTransaksi(idx) {
       const item = dataRekapBulanIni[idx];
       if (!item || String(item.Oleh).trim() !== activeUser) {
@@ -4580,7 +4907,7 @@
       try {
         await loadScriptOnce("https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js");
         const bln = document.getElementById('inputBulan').value;
-        const rowsBersih = dataRekapBulanIni.map(d => ({
+        const mapRow = (d) => ({
           Tanggal: safeExcelCell(d.Tanggal),
           Oleh: safeExcelCell(d.Oleh),
           Tipe: safeExcelCell(d.Tipe),
@@ -4588,12 +4915,24 @@
           Metode: safeExcelCell(d.Metode),
           Nominal: Number(d.Nominal) || 0,
           Catatan: safeExcelCell(d.Catatan || '')
-        }));
-
-        const ws = XLSX.utils.json_to_sheet(rowsBersih);
-        ws['!cols'] = [{ wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 22 }, { wch: 18 }, { wch: 15 }, { wch: 32 }];
+        });
+        const colWidths = [{ wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 22 }, { wch: 18 }, { wch: 15 }, { wch: 32 }];
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, `Rekap_${bln}`);
+        const sanitizeSheet = (name) => String(name || 'Sheet').replace(/[\\/?*[\]:]/g, '').slice(0, 31) || 'Sheet';
+
+        const appendListSheet = (list, sheetName) => {
+          const rows = list.length > 0 ? list.map(mapRow) : [{ Tanggal: '-', Oleh: '-', Tipe: '-', Kategori: 'Belum ada transaksi', Metode: '-', Nominal: 0, Catatan: '' }];
+          const ws = XLSX.utils.json_to_sheet(rows);
+          ws['!cols'] = colWidths;
+          XLSX.utils.book_append_sheet(wb, ws, sanitizeSheet(sheetName));
+        };
+
+        const myShort = (activeUser || 'User').split(' ')[0];
+        const partnerShort = (partnerFullName || 'Pasangan').split(' ')[0];
+        appendListSheet(dataRekapBulanIni, `Semua_${bln}`);
+        appendListSheet(dataRekapBulanIni.filter(d => String(d.Oleh).trim() === activeUser), `${myShort}_${bln}`);
+        appendListSheet(dataRekapBulanIni.filter(d => String(d.Oleh).trim() !== activeUser), `${partnerShort}_${bln}`);
+
         XLSX.writeFile(wb, `PAWket_Rekap_${bln}.xlsx`);
         showToast('File Excel berhasil diunduh.', 'success');
       } catch (_) {
