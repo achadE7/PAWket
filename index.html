@@ -203,6 +203,70 @@
       0%, 100% { transform: scaleY(0.45); }
       50% { transform: scaleY(1.25); }
     }
+
+    /* ================= FLOATING 3D ANIME NEKO COMPANION ================= */
+    #floatingNekoWrap {
+      position: fixed;
+      z-index: 60;
+      width: 128px;
+      touch-action: none;
+      user-select: none;
+      will-change: transform;
+      pointer-events: none;
+    }
+    #floatingNekoWrap.is-peeking {
+      z-index: 35;
+    }
+    #floatingNekoWrap.peek-glide {
+      transition: transform 0.55s cubic-bezier(0.34, 1.32, 0.64, 1);
+    }
+    #floatingNekoWrap.is-peeking #floatingNekoControls,
+    #floatingNekoWrap.is-peeking #floatingNekoShadow {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #floatingNekoWrap.is-peeking #floatingNekoStage {
+      cursor: pointer;
+    }
+    #floatingNekoStage {
+      position: relative;
+      width: 128px;
+      height: 128px;
+      pointer-events: auto;
+      cursor: grab;
+    }
+    #floatingNekoStage:active {
+      cursor: grabbing;
+    }
+    .neko3d-shadow {
+      position: absolute;
+      left: 50%;
+      bottom: 8px;
+      width: 68px;
+      height: 12px;
+      margin-left: -34px;
+      border-radius: 999px;
+      background: radial-gradient(ellipse at center, rgba(30, 41, 59, 0.28) 0%, rgba(30, 41, 59, 0) 72%);
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    #floatingNekoControls {
+      pointer-events: auto;
+      opacity: 0.9;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    #floatingNekoWrap:hover #floatingNekoControls,
+    #floatingNekoWrap:focus-within #floatingNekoControls {
+      opacity: 1;
+    }
+    #floatingNekoBubble {
+      pointer-events: none;
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+    #floatingNekoBubble.bubble-hidden {
+      opacity: 0;
+      transform: translateY(6px) scale(0.92);
+    }
   </style>
 </head>
 <body class="text-gray-700 antialiased bg-gray-100 flex justify-center min-h-screen">
@@ -593,7 +657,7 @@
     </div>
 
     <!-- ================= BOTTOM NAVIGATION ================= -->
-    <nav id="bottomNav" aria-label="Navigasi utama" class="hide fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/95 backdrop-blur-md border-t border-gray-200 rounded-t-3xl flex justify-around py-2 px-2 text-gray-500 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+    <nav id="bottomNav" aria-label="Navigasi utama" class="hide fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200 rounded-t-3xl flex justify-around py-2 px-2 text-gray-500 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
       <button type="button" onclick="switchTab('dashboard')" aria-current="page" class="flex flex-col items-center justify-center min-h-[48px] w-16 text-main-600 font-bold" id="nav-dashboard">
         <i class="fa-solid fa-house-chimney text-lg mb-0.5" aria-hidden="true"></i><span class="text-[11px]">Beranda</span>
       </button>
@@ -856,13 +920,34 @@
     </div>
   </div>
 
+  <!-- ================= FLOATING 3D ANIME NEKO COMPANION ================= -->
+  <div id="floatingNekoWrap" class="hide" style="left: 0; top: 0;">
+    <div id="floatingNekoBubble" class="bubble-hidden absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md border border-main-100">
+      <span id="floatingNekoBubbleText">Meong! Klik Neko~</span>
+    </div>
+    <div id="floatingNekoStage" role="button" tabindex="0" aria-label="Maskot 3D Neko, klik untuk buka wejangan atau seret untuk memindahkan" title="Klik untuk Wejangan Neko • Seret untuk geser">
+      <div id="floatingNekoShadow" class="neko3d-shadow"></div>
+      <canvas id="floatingNekoCanvas" class="relative z-10 w-full h-full block"></canvas>
+    </div>
+    <div id="floatingNekoControls" class="flex items-center justify-center gap-1.5 -mt-1">
+      <button type="button" id="btnFloatRoam" onclick="toggleFloatingNekoRoam()" aria-label="Atur gerak melayang Neko" title="Aktifkan/hentikan melayang keliling" class="w-6 h-6 rounded-full bg-white/90 hover:bg-white text-main-600 text-[10px] shadow-sm border border-gray-200 flex items-center justify-center transition active:scale-95">
+        <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+      </button>
+      <button type="button" onclick="toggleFloatingNekoMinimize(true)" aria-label="Sembunyikan Neko ke belakang tab" title="Sembunyikan (Neko ngintip di balik tab)" class="w-6 h-6 rounded-full bg-white/90 hover:bg-white text-gray-500 hover:text-gray-800 text-[10px] shadow-sm border border-gray-200 flex items-center justify-center transition active:scale-95">
+        <i class="fa-solid fa-minus" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+
   <!-- ================= POPUP MODAL NEKO AI ================= -->
   <div id="nekoModal" role="dialog" aria-modal="true" aria-labelledby="nekoModalTitle" onclick="handleBackdropClose(event, closeNekoModal)" class="hide fixed inset-0 z-[100] bg-gray-900/60 flex items-center justify-center p-5 backdrop-blur-sm opacity-0 transition-opacity duration-300">
-    <div id="nekoModalContent" class="relative w-full max-w-sm mt-12 transform scale-95 transition-all duration-300">
-      <div class="absolute -top-16 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center">
-        <button type="button" onclick="toggleBicaraNeko()" aria-label="Klik maskot Neko untuk mulai atau hentikan suara" title="Klik Neko untuk bicara" class="w-32 h-28 rounded-full bg-gradient-to-b from-main-50 to-accent-50 border-4 border-white shadow-lg flex items-center justify-center p-1 hover:scale-105 transition">
-          <div id="nekoModalMascot" class="w-full h-full flex items-center justify-center"></div>
-        </button>
+    <div id="nekoModalContent" class="relative w-full max-w-sm mt-16 transform scale-95 transition-all duration-300">
+      <div class="absolute -top-24 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center">
+        <div id="nekoModal3dStage" role="button" tabindex="0" aria-label="Maskot 3D Neko, klik untuk mulai atau hentikan suara, seret untuk putar 3D" title="Klik untuk bicara • Seret untuk putar 360°" class="relative w-40 h-36 flex items-center justify-center cursor-grab active:cursor-grabbing select-none touch-none">
+          <div id="nekoModalShadow" class="neko3d-shadow" style="bottom: 10px; width: 84px; margin-left: -42px;"></div>
+          <canvas id="nekoModalCanvas" class="relative z-10 w-full h-full block"></canvas>
+          <div id="nekoModalMascot" class="hide w-28 h-28 rounded-full bg-gradient-to-b from-main-50 to-accent-50 border-4 border-white shadow-lg flex items-center justify-center p-1"></div>
+        </div>
       </div>
       <div class="bg-white rounded-3xl px-5 pb-5 pt-14 w-full shadow-2xl max-h-[78vh] overflow-y-auto">
         <h3 id="nekoModalTitle" class="text-lg font-bold text-center text-gray-800 mt-1 mb-2">Wejangan Neko</h3>
@@ -1115,6 +1200,7 @@
       localStorage.removeItem('pawketUsername');
 
       document.getElementById('inputTanggal').value = todayIso();
+      initNeko3DSystem();
       ensureNekoModalMascot('santai');
       const savedToken = localStorage.getItem('pawketToken');
       const savedUser = localStorage.getItem('pawketActiveUser');
@@ -1126,6 +1212,7 @@
         document.getElementById('loginScreen').classList.add('hide');
         document.getElementById('appScreen').classList.remove('hide');
         document.getElementById('bottomNav').classList.remove('hide');
+        setFloatingNekoLoggedIn(true);
 
         const localWejangan = localStorage.getItem(`pawketNekoData_${activeUser}`);
         if (localWejangan) {
@@ -1174,6 +1261,7 @@
         document.getElementById('loginScreen').classList.add('hide');
         document.getElementById('appScreen').classList.remove('hide');
         document.getElementById('bottomNav').classList.remove('hide');
+        setFloatingNekoLoggedIn(true);
 
         if (res.dashboard?.sukses) {
           lastDashboardFetchAt = Date.now();
@@ -1196,6 +1284,7 @@
       }
 
       stopNekoSpeech();
+      setFloatingNekoLoggedIn(false);
       nekoAudioCache.clear();
       nekoVoiceDiag = { source: "", voiceType: "", model: "", detail: "" };
       activeUser = "";
@@ -1247,241 +1336,1365 @@
       if (ok) showToast('Data berhasil diperbarui.', 'success');
     }
 
-    // ================= MASKOT KUCING TABBY PUTIH-ABU ("MUJAER") & SUARA NEKO =================
-    function buildNekoMascotSvg(uid = 'modal', mood = 'santai', isTalking = false) {
+    // ================= MASKOT 3D ANIME NEKO (GAYA CHI + TANGAN + 3 POSE) & SUARA NEKO =================
+    // SVG ringkas gaya Chi (untuk kartu inline & cadangan jika perangkat tanpa WebGL)
+    function buildNekoMascotSvg(uid = 'inline', mood = 'santai', isTalking = false) {
       const m = NEKO_MOOD_META[mood] ? mood : 'santai';
       const talkingAttr = isTalking ? 'true' : 'false';
-      const furGradId = `nekoFur_${uid}`;
-      const bodyGradId = `nekoBody_${uid}`;
       const earInnerId = `nekoEar_${uid}`;
 
       return `
-        <svg viewBox="0 0 180 158" class="neko-svg w-full h-full drop-shadow-sm" data-mood="${m}" data-talking="${talkingAttr}" role="img" aria-label="Maskot kucing tabby putih abu Neko (${NEKO_MOOD_META[m].label})">
+        <svg viewBox="0 0 180 158" class="neko-svg w-full h-full drop-shadow-sm" data-mood="${m}" data-talking="${talkingAttr}" role="img" aria-label="Maskot kucing anime Neko (${NEKO_MOOD_META[m].label})">
           <defs>
-            <radialGradient id="${furGradId}" cx="50%" cy="38%" r="60%">
-              <stop offset="0%" stop-color="#b7b2aa"/>
-              <stop offset="55%" stop-color="#8b867f"/>
-              <stop offset="100%" stop-color="#64605b"/>
-            </radialGradient>
-            <linearGradient id="${bodyGradId}" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#7c7872"/>
-              <stop offset="100%" stop-color="#4e4b47"/>
-            </linearGradient>
             <linearGradient id="${earInnerId}" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#f8b7c4"/>
-              <stop offset="100%" stop-color="#fde4e9"/>
+              <stop offset="0%" stop-color="#f3a3ab"/>
+              <stop offset="100%" stop-color="#fde3e6"/>
             </linearGradient>
           </defs>
 
-          <!-- Ekor berbulu belang tabby gelap -->
+          <!-- Ekor belang abu-charcoal -->
           <g class="neko-tail">
-            <path d="M122 128 C147 125 162 108 156 91 C152 80 140 82 138 92 C137 100 132 109 119 113 Z" fill="#5e5a55" stroke="#3c3936" stroke-width="2" stroke-linejoin="round"/>
-            <path d="M134 114 Q143 118 148 111" stroke="#2f2d2b" stroke-width="4" stroke-linecap="round" fill="none"/>
-            <path d="M143 102 Q151 104 155 98" stroke="#2f2d2b" stroke-width="4" stroke-linecap="round" fill="none"/>
-            <ellipse cx="148" cy="87" rx="5.5" ry="4" fill="#d9d4cc" transform="rotate(-18 148 87)"/>
+            <path d="M122 132 C148 130 164 114 159 94 C155 82 143 85 141 96 C140 106 134 115 119 119 Z" fill="#8e9195" stroke="#474444" stroke-width="2.4" stroke-linejoin="round"/>
+            <path d="M135 118 Q144 121 150 114" stroke="#313336" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+            <path d="M144 104 Q152 106 157 99" stroke="#313336" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+            <path d="M148 91 Q154 91 157 86" stroke="#313336" stroke-width="4.5" stroke-linecap="round" fill="none"/>
           </g>
 
-          <!-- Tubuh kucing berbulu abu-abu + dada/bib putih salju -->
+          <!-- Badan duduk putih + bahu belang abu -->
           <g class="neko-body">
-            <ellipse cx="90" cy="128" rx="44" ry="26" fill="url(#${bodyGradId})" stroke="#43403c" stroke-width="2"/>
-            <!-- Belang tabby di bahu -->
-            <path d="M51 121 Q59 118 65 123" stroke="#302e2c" stroke-width="3.2" stroke-linecap="round" fill="none"/>
-            <path d="M129 121 Q121 118 115 123" stroke="#302e2c" stroke-width="3.2" stroke-linecap="round" fill="none"/>
-            <!-- Bulu dada putih lebar khas foto -->
-            <path d="M62 110 C58 124 63 144 90 148 C117 144 122 124 118 110 C108 115 72 115 62 110 Z" fill="#ffffff"/>
-            <path d="M77 128 Q90 135 103 128" stroke="#ece8e1" stroke-width="2" stroke-linecap="round" fill="none"/>
-            <!-- Dua kaki depan putih mungil -->
+            <ellipse cx="90" cy="129" rx="40" ry="24" fill="#ffffff" stroke="#474444" stroke-width="2.4"/>
+            <path d="M51 124 C54 111 66 106 75 112 C67 119 64 132 65 142 C56 138 50 132 51 124 Z" fill="#8e9195"/>
+            <path d="M129 124 C126 111 114 106 105 112 C113 119 116 132 115 142 C124 138 130 132 129 124 Z" fill="#8e9195"/>
+            <path d="M54 123 Q62 121 66 125 M126 123 Q118 121 114 125" stroke="#313336" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+            <!-- Tangan & kaki putih mungil dengan paw pads hitam -->
             <g class="neko-paws">
-              <ellipse cx="67" cy="143" rx="14" ry="9" fill="#ffffff" stroke="#d9d4cc" stroke-width="1.6"/>
-              <path d="M62 145 L62 150 M68 146 L68 151" stroke="#d5cfc7" stroke-width="1.4" stroke-linecap="round"/>
-              <ellipse cx="113" cy="143" rx="14" ry="9" fill="#ffffff" stroke="#d9d4cc" stroke-width="1.6"/>
-              <path d="M112 146 L112 151 M118 145 L118 150" stroke="#d5cfc7" stroke-width="1.4" stroke-linecap="round"/>
+              <ellipse cx="64" cy="142" rx="13" ry="9" fill="#ffffff" stroke="#474444" stroke-width="2.2"/>
+              <circle cx="64" cy="143" r="3.2" fill="#2d2a2a"/>
+              <circle cx="59" cy="138" r="1.5" fill="#2d2a2a"/><circle cx="64" cy="136.5" r="1.5" fill="#2d2a2a"/><circle cx="69" cy="138" r="1.5" fill="#2d2a2a"/>
+              <ellipse cx="116" cy="142" rx="13" ry="9" fill="#ffffff" stroke="#474444" stroke-width="2.2"/>
+              <circle cx="116" cy="143" r="3.2" fill="#2d2a2a"/>
+              <circle cx="111" cy="138" r="1.5" fill="#2d2a2a"/><circle cx="116" cy="136.5" r="1.5" fill="#2d2a2a"/><circle cx="121" cy="138" r="1.5" fill="#2d2a2a"/>
             </g>
           </g>
 
-          <!-- Grup Kepala (bernapas & mengangguk saat bicara) -->
+          <!-- Kepala bulat empuk gaya Chi -->
           <g class="neko-head">
-            <!-- Telinga Kiri (agak miring/setengah lipat imut sesuai foto) -->
+            <!-- Telinga segitiga besar khas Chi -->
             <g class="neko-ear-l">
-              <path d="M44 69 C32 51 31 32 42 26 C53 24 66 35 73 49 Z" fill="#7c7770" stroke="#3e3b38" stroke-width="2" stroke-linejoin="round"/>
-              <path d="M36 33 C39 27 45 25 51 28" stroke="#2c2a28" stroke-width="4.5" stroke-linecap="round" fill="none"/>
-              <path d="M45 61 C38 49 38 38 45 34 C53 33 61 41 66 51 Z" fill="url(#${earInnerId})"/>
-              <path d="M47 54 Q52 49 58 51" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" fill="none" opacity="0.9"/>
+              <path d="M40 72 L30 22 L76 47 Z" fill="#8e9195" stroke="#474444" stroke-width="2.4" stroke-linejoin="round"/>
+              <path d="M43 64 L36 31 L67 49 Z" fill="url(#${earInnerId})" stroke="#5a5656" stroke-width="1.4" stroke-linejoin="round"/>
+              <path d="M41 44 L48 46 M42 52 L51 54 M44 59 L54 60" stroke="#9d6d71" stroke-width="1.3" stroke-linecap="round"/>
             </g>
-
-            <!-- Telinga Kanan -->
             <g class="neko-ear-r">
-              <path d="M136 69 C148 51 149 32 138 26 C127 24 114 35 107 49 Z" fill="#7c7770" stroke="#3e3b38" stroke-width="2" stroke-linejoin="round"/>
-              <path d="M144 33 C141 27 135 25 129 28" stroke="#2c2a28" stroke-width="4.5" stroke-linecap="round" fill="none"/>
-              <path d="M135 61 C142 49 142 38 135 34 C127 33 119 41 114 51 Z" fill="url(#${earInnerId})"/>
-              <path d="M133 54 Q128 49 122 51" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" fill="none" opacity="0.9"/>
+              <path d="M140 72 L150 22 L104 47 Z" fill="#8e9195" stroke="#474444" stroke-width="2.4" stroke-linejoin="round"/>
+              <path d="M137 64 L144 31 L113 49 Z" fill="url(#${earInnerId})" stroke="#5a5656" stroke-width="1.4" stroke-linejoin="round"/>
+              <path d="M139 44 L132 46 M138 52 L129 54 M136 59 L126 60" stroke="#9d6d71" stroke-width="1.3" stroke-linecap="round"/>
             </g>
 
-            <!-- Bentuk Kepala Bulat Berbulu Fluffy -->
-            <path d="M90 38 C122 38 144 57 146 83 C148 103 132 119 90 119 C48 119 32 103 34 83 C36 57 58 38 90 38 Z" fill="url(#${furGradId})" stroke="#43403c" stroke-width="2"/>
-            <!-- Rumbai bulu pipi kiri & kanan -->
-            <path d="M35 84 L29 89 L36 93 L31 98 L40 100" fill="#9a958d" stroke="#43403c" stroke-width="1.6" stroke-linejoin="round"/>
-            <path d="M145 84 L151 89 L144 93 L149 98 L140 100" fill="#9a958d" stroke="#43403c" stroke-width="1.6" stroke-linejoin="round"/>
-
-            <!-- Motif Tabby "Mujaer" Dahi (Garis M Khas) & Pipi -->
-            <g stroke="#2f2d2a" stroke-linecap="round" fill="none">
-              <path d="M90 41 L90 56" stroke-width="3.6"/>
-              <path d="M79 43 Q82 52 84 58" stroke-width="3.2"/>
-              <path d="M101 43 Q98 52 96 58" stroke-width="3.2"/>
-              <path d="M68 48 Q73 55 75 61" stroke-width="2.6"/>
-              <path d="M112 48 Q107 55 105 61" stroke-width="2.6"/>
-              <!-- Garis tabby pipi kiri & kanan -->
-              <path d="M40 77 Q47 79 52 82" stroke-width="2.6"/>
-              <path d="M38 87 Q46 88 52 89" stroke-width="2.4"/>
-              <path d="M140 77 Q133 79 128 82" stroke-width="2.6"/>
-              <path d="M142 87 Q134 88 128 89" stroke-width="2.4"/>
+            <!-- Bentuk kepala bulat oval bersih -->
+            <ellipse cx="90" cy="82" rx="58" ry="44" fill="#8e9195" stroke="#474444" stroke-width="2.4"/>
+            <!-- Pola putih tinggi lancip di dahi lalu melebar ke seluruh pipi bawah -->
+            <path d="M90 42 C78 62 66 78 44 86 C34 90 36 112 58 121 C72 126 108 126 122 121 C144 112 146 90 136 86 C114 78 102 62 90 42 Z" fill="#ffffff"/>
+            <!-- Belang charcoal dahi & samping mata -->
+            <g fill="#313336">
+              <path d="M80 42 Q70 54 64 68 L72 66 Q78 55 86 43 Z"/>
+              <path d="M100 42 Q110 54 116 68 L108 66 Q102 55 94 43 Z"/>
+              <path d="M36 82 L50 80 L48 85 L38 87 Z"/>
+              <path d="M144 82 L130 80 L132 85 L142 87 Z"/>
             </g>
 
-            <!-- Pola Putih V Terbalik di Tengah Wajah + Moncong & Dagu Putih (Khas Foto!) -->
-            <path d="M90 61 C84 74 79 84 65 89 C52 93 52 110 70 116 C80 119 100 119 110 116 C128 110 128 93 115 89 C101 84 96 74 90 61 Z" fill="#ffffff"/>
-            <!-- Bayangan lembut bawah pipi putih -->
-            <ellipse cx="81" cy="100" rx="11" ry="8" fill="#fdfcfa"/>
-            <ellipse cx="99" cy="100" rx="11" ry="8" fill="#fdfcfa"/>
-
-            <!-- Pipi Merona -->
-            <ellipse cx="55" cy="96" rx="8.5" ry="4.8" fill="#fda4af" opacity="0.55"/>
-            <ellipse cx="125" cy="96" rx="8.5" ry="4.8" fill="#fda4af" opacity="0.55"/>
-
-            <!-- Kumis Halus -->
-            <g stroke="#e7e2da" stroke-width="1.6" stroke-linecap="round">
-              <path d="M56 97 Q40 94 28 97"/>
-              <path d="M57 102 Q42 103 30 108"/>
-              <path d="M124 97 Q140 94 152 97"/>
-              <path d="M123 102 Q138 103 150 108"/>
+            <!-- 6 Kumis tipis hitam -->
+            <g stroke="#474444" stroke-width="1.5" stroke-linecap="round">
+              <path d="M46 94 L22 90 M46 100 L20 101 M48 106 L25 112"/>
+              <path d="M134 94 L158 90 M134 100 L160 101 M132 106 L155 112"/>
             </g>
 
-            <!-- ========== 6 EKSPRESI MATA ========== -->
+            <!-- 6 Ekspresi Mata Gaya Chi -->
             <g class="neko-blink-group">
-              <!-- 1. SANTAI: Mata bulat glossy gelap kebiruan -->
               <g class="neko-expr neko-expr-santai">
-                <ellipse cx="68" cy="81" rx="10.5" ry="11.5" fill="#1d2436"/>
-                <ellipse cx="68" cy="84" rx="7.5" ry="6" fill="#2d3b59" opacity="0.65"/>
-                <circle cx="64.5" cy="76.5" r="3.6" fill="#ffffff"/>
-                <circle cx="71.5" cy="84.5" r="1.6" fill="#ffffff"/>
-
-                <ellipse cx="112" cy="81" rx="10.5" ry="11.5" fill="#1d2436"/>
-                <ellipse cx="112" cy="84" rx="7.5" ry="6" fill="#2d3b59" opacity="0.65"/>
-                <circle cx="108.5" cy="76.5" r="3.6" fill="#ffffff"/>
-                <circle cx="115.5" cy="84.5" r="1.6" fill="#ffffff"/>
+                <circle cx="65" cy="82" r="17" fill="#ffffff" stroke="#474444" stroke-width="2.2"/>
+                <circle cx="66" cy="83" r="11.5" fill="#0d0d0f"/>
+                <circle cx="115" cy="82" r="17" fill="#ffffff" stroke="#474444" stroke-width="2.2"/>
+                <circle cx="114" cy="83" r="11.5" fill="#0d0d0f"/>
               </g>
-
-              <!-- 2. MARAH GEMAS: Alis menukik tegas + mata tajam imut -->
               <g class="neko-expr neko-expr-marah_gemas">
-                <ellipse cx="68" cy="82" rx="10" ry="10.5" fill="#1d2436"/>
-                <circle cx="65" cy="78" r="3.1" fill="#ffffff"/>
-                <circle cx="71" cy="85" r="1.4" fill="#ffffff"/>
-                <path d="M55 68 L80 76" stroke="#2c2a28" stroke-width="3.6" stroke-linecap="round"/>
-
-                <ellipse cx="112" cy="82" rx="10" ry="10.5" fill="#1d2436"/>
-                <circle cx="109" cy="78" r="3.1" fill="#ffffff"/>
-                <circle cx="115" cy="85" r="1.4" fill="#ffffff"/>
-                <path d="M125 68 L100 76" stroke="#2c2a28" stroke-width="3.6" stroke-linecap="round"/>
+                <path d="M52 75 L74 84 L53 92" stroke="#2d2a2a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <path d="M128 75 L106 84 L127 92" stroke="#2d2a2a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <path d="M48 67 L78 79" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+                <path d="M132 67 L102 79" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
               </g>
-
-              <!-- 3. PANIK: Mata lebar kaget + pupil kecil -->
               <g class="neko-expr neko-expr-panik">
-                <ellipse cx="68" cy="81" rx="11.5" ry="12.5" fill="#ffffff" stroke="#2c2a28" stroke-width="2.2"/>
-                <circle cx="68" cy="82" r="4.5" fill="#1d2436"/>
-                <circle cx="66.5" cy="80" r="1.6" fill="#ffffff"/>
-                <path d="M58 66 Q68 62 77 67" stroke="#2c2a28" stroke-width="2.4" stroke-linecap="round" fill="none"/>
-
-                <ellipse cx="112" cy="81" rx="11.5" ry="12.5" fill="#ffffff" stroke="#2c2a28" stroke-width="2.2"/>
-                <circle cx="112" cy="82" r="4.5" fill="#1d2436"/>
-                <circle cx="110.5" cy="80" r="1.6" fill="#ffffff"/>
-                <path d="M103 67 Q112 62 122 66" stroke="#2c2a28" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+                <circle cx="65" cy="82" r="18" fill="#ffffff" stroke="#333131" stroke-width="2.4"/>
+                <circle cx="65" cy="82" r="2.2" fill="#111111"/>
+                <circle cx="115" cy="82" r="18" fill="#ffffff" stroke="#333131" stroke-width="2.4"/>
+                <circle cx="115" cy="82" r="2.2" fill="#111111"/>
               </g>
-
-              <!-- 4. BANGGA: Mata melengkung senang ^ ^ -->
               <g class="neko-expr neko-expr-bangga">
-                <path d="M57 83 Q68 70 79 83" stroke="#262422" stroke-width="4" stroke-linecap="round" fill="none"/>
-                <path d="M101 83 Q112 70 123 83" stroke="#262422" stroke-width="4" stroke-linecap="round" fill="none"/>
-                <ellipse cx="55" cy="95" rx="9" ry="5" fill="#fb7185" opacity="0.45"/>
-                <ellipse cx="125" cy="95" rx="9" ry="5" fill="#fb7185" opacity="0.45"/>
+                <path d="M52 76 Q71 84 74 86 Q63 90 53 93" stroke="#2d2a2a" stroke-width="4.2" stroke-linecap="round" fill="none"/>
+                <path d="M128 76 Q109 84 106 86 Q117 90 127 93" stroke="#2d2a2a" stroke-width="4.2" stroke-linecap="round" fill="none"/>
               </g>
-
-              <!-- 5. SARKAS: Mata menyipit licik + alis terangkat -->
               <g class="neko-expr neko-expr-sarkas">
-                <ellipse cx="68" cy="83" rx="10" ry="8.5" fill="#1d2436"/>
-                <circle cx="71" cy="81" r="2.6" fill="#ffffff"/>
-                <path d="M56 77 L80 79" stroke="#8b867f" stroke-width="6" stroke-linecap="round"/>
-                <path d="M56 77 L80 79" stroke="#2c2a28" stroke-width="2.8" stroke-linecap="round"/>
-
-                <ellipse cx="112" cy="83" rx="10" ry="8.5" fill="#1d2436"/>
-                <circle cx="115" cy="81" r="2.6" fill="#ffffff"/>
-                <path d="M100 79 L124 76" stroke="#8b867f" stroke-width="6" stroke-linecap="round"/>
-                <path d="M100 79 L124 76" stroke="#2c2a28" stroke-width="2.8" stroke-linecap="round"/>
-                <path d="M103 69 Q113 64 123 68" stroke="#2c2a28" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                <circle cx="65" cy="83" r="16" fill="#ffffff" stroke="#474444" stroke-width="2.2"/>
+                <circle cx="65" cy="86" r="10.5" fill="#0d0d0f"/>
+                <path d="M47 66 H83 V82 H47 Z" fill="#8e9195"/>
+                <path d="M48 82 L82 83" stroke="#2d2a2a" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="115" cy="83" r="16" fill="#ffffff" stroke="#474444" stroke-width="2.2"/>
+                <circle cx="115" cy="86" r="10.5" fill="#0d0d0f"/>
+                <path d="M97 66 H133 V82 H97 Z" fill="#8e9195"/>
+                <path d="M98 83 L132 82" stroke="#2d2a2a" stroke-width="3" stroke-linecap="round"/>
               </g>
-
-              <!-- 6. BERPIKIR: Melirik ke atas-kanan -->
               <g class="neko-expr neko-expr-berpikir">
-                <ellipse cx="68" cy="81" rx="10" ry="11" fill="#1d2436"/>
-                <circle cx="71.5" cy="76.5" r="3.4" fill="#ffffff"/>
-                <ellipse cx="112" cy="81" rx="10" ry="11" fill="#1d2436"/>
-                <circle cx="115.5" cy="76.5" r="3.4" fill="#ffffff"/>
-                <path d="M59 68 Q68 65 76 68" stroke="#2c2a28" stroke-width="2.2" stroke-linecap="round" fill="none"/>
-                <path d="M104 68 Q112 65 121 68" stroke="#2c2a28" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                <circle cx="65" cy="82" r="16.5" fill="#ffffff" stroke="#474444" stroke-width="2.2"/>
+                <circle cx="70" cy="78" r="10.5" fill="#0d0d0f"/>
+                <circle cx="115" cy="82" r="16.5" fill="#ffffff" stroke="#474444" stroke-width="2.2"/>
+                <circle cx="120" cy="78" r="10.5" fill="#0d0d0f"/>
               </g>
             </g>
 
-            <!-- Hidung Pink Imut -->
-            <path d="M85.5 92.5 Q90 90.5 94.5 92.5 Q92 97.5 90 98 Q88 97.5 85.5 92.5 Z" fill="#f48fa1"/>
-            <ellipse cx="89" cy="93.2" rx="1.6" ry="0.9" fill="#ffd9e0"/>
+            <!-- Hidung segitiga mungil khas Chi -->
+            <polygon points="86,95 94,95 90,99.5" fill="#363232"/>
 
-            <!-- ========== MULUT ISTIRAHAT PER MOOD ========== -->
+            <!-- Mulut istirahat & mulut bicara -->
             <g class="neko-mouth-idle">
-              <path class="neko-expr neko-expr-santai neko-expr-bangga" d="M81 101.5 Q85.5 106.5 90 101 Q94.5 106.5 99 101.5" stroke="#473c3a" stroke-width="2.2" stroke-linecap="round" fill="none"/>
-              <path class="neko-expr neko-expr-marah_gemas" d="M83 106 Q90 100 97 106" stroke="#473c3a" stroke-width="2.4" stroke-linecap="round" fill="none"/>
-              <g class="neko-expr neko-expr-panik">
-                <ellipse cx="90" cy="104.5" rx="4.5" ry="5.5" fill="#9f2b48" stroke="#473c3a" stroke-width="1.8"/>
-                <ellipse cx="90" cy="107.5" rx="2.6" ry="1.8" fill="#fb7185"/>
-              </g>
-              <path class="neko-expr neko-expr-sarkas" d="M82 103.5 Q91 106.5 99 99.5" stroke="#473c3a" stroke-width="2.3" stroke-linecap="round" fill="none"/>
-              <path class="neko-expr neko-expr-berpikir" d="M84 103 Q87 101 90 103 Q93 105 96 103" stroke="#473c3a" stroke-width="2.1" stroke-linecap="round" fill="none"/>
+              <path class="neko-expr neko-expr-santai" d="M81 103 Q85.5 109 90 103 Q94.5 109 99 103" stroke="#474444" stroke-width="2.3" stroke-linecap="round" fill="none"/>
+              <path class="neko-expr neko-expr-marah_gemas neko-expr-panik neko-expr-bangga" d="M77 103 Q90 98 103 103 Q99 121 90 123 Q81 121 77 103 Z" fill="#f8b9bc" stroke="#474444" stroke-width="2"/>
+              <ellipse class="neko-expr neko-expr-sarkas" cx="90" cy="107" rx="3.2" ry="4" fill="#b9787b" stroke="#474444" stroke-width="1.8"/>
+              <path class="neko-expr neko-expr-berpikir" d="M84 105 Q87 103 90 105 Q93 107 96 105" stroke="#474444" stroke-width="2.1" stroke-linecap="round" fill="none"/>
             </g>
-
-            <!-- ========== MULUT LIP-SYNC SAAT BICARA ========== -->
             <g class="neko-mouth-talk">
-              <path d="M82 101 Q90 99 98 101 C98 112 82 112 82 101 Z" fill="#9f2b48" stroke="#473c3a" stroke-width="1.9" stroke-linejoin="round"/>
-              <ellipse cx="90" cy="108" rx="4.6" ry="2.6" fill="#fb7185"/>
-              <path d="M81 101 Q85.5 104 90 100.2 Q94.5 104 99 101" stroke="#473c3a" stroke-width="1.9" stroke-linecap="round" fill="none"/>
+              <path d="M78 102 Q90 99 102 102 Q98 121 90 123 Q82 121 78 102 Z" fill="#b9787b" stroke="#474444" stroke-width="2"/>
+              <ellipse cx="90" cy="115" rx="8" ry="6" fill="#f8b9bc"/>
             </g>
 
-            <!-- ========== EFEK KOMIK PER MOOD ========== -->
-            <!-- Urat kesal lucu (marah_gemas) -->
-            <g class="neko-expr neko-expr-marah_gemas neko-anger-vein" stroke="#e11d48" stroke-width="2.6" stroke-linecap="round" fill="none">
-              <path d="M126 42 Q130 46 126 50"/>
-              <path d="M138 42 Q134 46 138 50"/>
-              <path d="M128 40 Q132 44 136 40"/>
-              <path d="M128 52 Q132 48 136 52"/>
+            <!-- Efek komik -->
+            <g class="neko-expr neko-expr-marah_gemas neko-anger-vein" stroke="#e11d48" stroke-width="2.8" stroke-linecap="round" fill="none">
+              <path d="M122 40 Q126 44 122 48 M134 40 Q130 44 134 48 M124 38 Q128 42 132 38 M124 50 Q128 46 132 50"/>
             </g>
-
-            <!-- Keringat kaget (panik) -->
             <g class="neko-expr neko-expr-panik neko-sweat">
-              <path d="M136 62 C136 62 141 69 141 72.5 A5 5 0 0 1 131 72.5 C131 69 136 62 136 62 Z" fill="#38bdf8" stroke="#0284c7" stroke-width="1.2"/>
-              <circle cx="134.5" cy="71.5" r="1.2" fill="#ffffff"/>
+              <path d="M138 62 C138 62 143 69 143 72.5 A5 5 0 0 1 133 72.5 C133 69 138 62 138 62 Z" fill="#38bdf8" stroke="#0284c7" stroke-width="1.2"/>
             </g>
-
-            <!-- Bintang & hati ceria (bangga) -->
             <g class="neko-expr neko-expr-bangga neko-sparkle">
-              <path d="M36 44 L38.2 49.8 L44 52 L38.2 54.2 L36 60 L33.8 54.2 L28 52 L33.8 49.8 Z" fill="#f59e0b"/>
-              <path d="M145 48 C145 44.5 140 43.5 139 47 C138 43.5 133 44.5 133 48 C133 52 139 56 139 56 C139 56 145 52 145 48 Z" fill="#ec4899"/>
+              <path d="M34 44 L36.5 50 L42.5 52.5 L36.5 55 L34 61 L31.5 55 L25.5 52.5 L31.5 50 Z" fill="#f59e0b"/>
+              <path d="M148 48 C148 44.5 143 43.5 142 47 C141 43.5 136 44.5 136 48 C136 52 142 56 142 56 C142 56 148 52 148 48 Z" fill="#ec4899"/>
             </g>
-
-            <!-- Titik berpikir (berpikir) -->
             <g class="neko-expr neko-expr-berpikir neko-think-dot" fill="#3b82f6">
-              <circle cx="144" cy="52" r="3"/>
-              <circle cx="152" cy="43" r="4"/>
-              <circle cx="161" cy="33" r="5"/>
+              <circle cx="144" cy="52" r="3"/><circle cx="152" cy="43" r="4"/><circle cx="161" cy="33" r="5"/>
             </g>
           </g>
         </svg>
       `;
+    }
+
+    // ================= ENGINE 3D ANIME CHI (WEBGL ZERO-DEPENDENCY, CEL-SHADED + LINEART) =================
+    let nekoSharedFurBase = null;
+    let nekoSharedBodyCanvas = null;
+    let nekoSharedEarCanvas = null;
+
+    function getNekoSharedTextures() {
+      if (!nekoSharedFurBase) {
+        nekoSharedFurBase = document.createElement('canvas');
+        nekoSharedFurBase.width = 1024;
+        nekoSharedFurBase.height = 512;
+        const ctx = nekoSharedFurBase.getContext('2d');
+        ctx.fillStyle = '#8e9195';
+        ctx.fillRect(0, 0, 1024, 512);
+        ctx.fillStyle = '#333538';
+        for (let row = 0; row < 5; row++) {
+          const y = 78 + row * 68;
+          ctx.beginPath();
+          ctx.moveTo(0, y); ctx.quadraticCurveTo(130, y - 16, 260, y + 6);
+          ctx.lineTo(260, y + 26); ctx.quadraticCurveTo(130, y + 6, 0, y + 22);
+          ctx.closePath(); ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(1024, y); ctx.quadraticCurveTo(894, y - 16, 764, y + 6);
+          ctx.lineTo(764, y + 26); ctx.quadraticCurveTo(894, y + 6, 1024, y + 22);
+          ctx.closePath(); ctx.fill();
+        }
+        [[-1, 512], [1, 512]].forEach(([dir, cx]) => {
+          ctx.beginPath();
+          ctx.moveTo(cx + dir * 24, 102); ctx.quadraticCurveTo(cx + dir * 64, 152, cx + dir * 92, 206);
+          ctx.lineTo(cx + dir * 116, 198); ctx.quadraticCurveTo(cx + dir * 82, 138, cx + dir * 42, 92);
+          ctx.closePath(); ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(cx + dir * 98, 134); ctx.quadraticCurveTo(cx + dir * 138, 174, cx + dir * 162, 224);
+          ctx.lineTo(cx + dir * 178, 214); ctx.quadraticCurveTo(cx + dir * 150, 158, cx + dir * 112, 124);
+          ctx.closePath(); ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(cx + dir * 124, 294); ctx.lineTo(cx + dir * 178, 282); ctx.lineTo(cx + dir * 184, 296);
+          ctx.lineTo(cx + dir * 144, 306); ctx.lineTo(cx + dir * 178, 322); ctx.lineTo(cx + dir * 170, 336);
+          ctx.lineTo(cx + dir * 118, 312); ctx.closePath(); ctx.fill();
+        });
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(512, 146);
+        ctx.bezierCurveTo(476, 196, 444, 250, 412, 296);
+        ctx.bezierCurveTo(372, 314, 336, 330, 332, 378);
+        ctx.bezierCurveTo(328, 462, 412, 512, 512, 512);
+        ctx.bezierCurveTo(612, 512, 696, 462, 692, 378);
+        ctx.bezierCurveTo(688, 330, 652, 314, 612, 296);
+        ctx.bezierCurveTo(580, 250, 548, 196, 512, 146);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#6d7074';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(412, 296); ctx.quadraticCurveTo(372, 314, 344, 344);
+        ctx.moveTo(612, 296); ctx.quadraticCurveTo(652, 314, 680, 344);
+        ctx.stroke();
+      }
+
+      if (!nekoSharedBodyCanvas) {
+        nekoSharedBodyCanvas = document.createElement('canvas');
+        nekoSharedBodyCanvas.width = 512;
+        nekoSharedBodyCanvas.height = 256;
+        const ctx = nekoSharedBodyCanvas.getContext('2d');
+        ctx.fillStyle = '#8e9195';
+        ctx.fillRect(0, 0, 512, 256);
+        ctx.fillStyle = '#313336';
+        for (let i = 0; i < 6; i++) {
+          const y = 34 + i * 38;
+          ctx.beginPath();
+          ctx.moveTo(0, y); ctx.bezierCurveTo(140, y - 14, 372, y + 14, 512, y);
+          ctx.lineTo(512, y + 18); ctx.bezierCurveTo(372, y + 30, 140, y + 4, 0, y + 18);
+          ctx.closePath(); ctx.fill();
+        }
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(256, 0);
+        ctx.bezierCurveTo(346, 0, 368, 70, 362, 160);
+        ctx.bezierCurveTo(356, 224, 320, 256, 256, 256);
+        ctx.bezierCurveTo(192, 256, 156, 224, 150, 160);
+        ctx.bezierCurveTo(144, 70, 166, 0, 256, 0);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#5c5e62';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(156, 24); ctx.quadraticCurveTo(146, 130, 162, 222);
+        ctx.moveTo(356, 24); ctx.quadraticCurveTo(366, 130, 350, 222);
+        ctx.stroke();
+      }
+
+      if (!nekoSharedEarCanvas) {
+        nekoSharedEarCanvas = document.createElement('canvas');
+        nekoSharedEarCanvas.width = 256;
+        nekoSharedEarCanvas.height = 256;
+        const ctx = nekoSharedEarCanvas.getContext('2d');
+        ctx.fillStyle = '#8e9195';
+        ctx.fillRect(0, 0, 256, 256);
+        const g = ctx.createLinearGradient(0, 28, 0, 240);
+        g.addColorStop(0, '#f3a3ab');
+        g.addColorStop(0.6, '#f9c4c9');
+        g.addColorStop(1, '#fde3e6');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.moveTo(128, 22); ctx.lineTo(176, 232);
+        ctx.quadraticCurveTo(128, 246, 80, 232);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#5a5656';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        ctx.strokeStyle = 'rgba(130, 82, 86, 0.55)';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        for (let i = 0; i < 6; i++) {
+          const y = 74 + i * 25;
+          const spread = 14 + i * 5.2;
+          ctx.beginPath();
+          ctx.moveTo(128 - spread, y); ctx.lineTo(128 - spread * 0.28, y + 3);
+          ctx.moveTo(128 + spread, y); ctx.lineTo(128 + spread * 0.28, y + 3);
+          ctx.stroke();
+        }
+      }
+      return { furBase: nekoSharedFurBase, bodyCanvas: nekoSharedBodyCanvas, earCanvas: nekoSharedEarCanvas };
+    }
+
+    function paintChiFaceToCanvas(fctx, mood, blink, talkAmt, talking, timeSec) {
+      const { furBase } = getNekoSharedTextures();
+      fctx.drawImage(furBase, 0, 0);
+
+      const eyeL = { x: 446, y: 264 };
+      const eyeR = { x: 578, y: 264 };
+      const rx = 43, ry = 53;
+
+      [[-1, eyeL], [1, eyeR]].forEach(([side, pos]) => {
+        fctx.save();
+        fctx.translate(pos.x, pos.y);
+
+        if (mood === 'marah_gemas') {
+          fctx.strokeStyle = '#2d2a2a';
+          fctx.lineWidth = 10; fctx.lineCap = 'round'; fctx.lineJoin = 'round';
+          fctx.beginPath();
+          if (side < 0) { fctx.moveTo(-26, -18); fctx.lineTo(22, 4); fctx.lineTo(-24, 24); }
+          else { fctx.moveTo(26, -18); fctx.lineTo(-22, 4); fctx.lineTo(24, 24); }
+          fctx.stroke();
+
+          fctx.fillStyle = '#ffffff'; fctx.strokeStyle = '#474343'; fctx.lineWidth = 3.5;
+          fctx.beginPath();
+          if (side < 0) { fctx.moveTo(-36, -38); fctx.lineTo(38, -2); fctx.lineTo(30, 8); fctx.lineTo(-42, -22); }
+          else { fctx.moveTo(36, -38); fctx.lineTo(-38, -2); fctx.lineTo(-30, 8); fctx.lineTo(42, -22); }
+          fctx.closePath(); fctx.fill(); fctx.stroke();
+        } else if (mood === 'bangga') {
+          fctx.strokeStyle = '#2d2a2a';
+          fctx.lineWidth = 10; fctx.lineCap = 'round'; fctx.lineJoin = 'round';
+          fctx.beginPath();
+          if (side < 0) { fctx.moveTo(-28, -16); fctx.quadraticCurveTo(16, 2, 22, 6); fctx.quadraticCurveTo(-4, 16, -26, 24); }
+          else { fctx.moveTo(28, -16); fctx.quadraticCurveTo(-16, 2, -22, 6); fctx.quadraticCurveTo(4, 16, 26, 24); }
+          fctx.stroke();
+        } else if (mood === 'panik') {
+          const jx = Math.sin(timeSec * 38) * 2.5;
+          const jy = Math.cos(timeSec * 44) * 2.5;
+          fctx.fillStyle = '#ffffff'; fctx.strokeStyle = '#333131'; fctx.lineWidth = 5.5;
+          fctx.beginPath(); fctx.ellipse(0, 0, rx + 5, ry + 5, side * 0.08, 0, Math.PI * 2); fctx.fill(); fctx.stroke();
+          fctx.fillStyle = '#111111';
+          fctx.beginPath(); fctx.arc(jx, jy, 4.5, 0, Math.PI * 2); fctx.fill();
+        } else if (mood === 'sarkas') {
+          fctx.fillStyle = '#ffffff'; fctx.strokeStyle = '#3c3939'; fctx.lineWidth = 5.5;
+          fctx.beginPath(); fctx.ellipse(0, 2, rx, ry * 0.92, 0, 0, Math.PI * 2); fctx.fill();
+          fctx.save();
+          fctx.beginPath(); fctx.ellipse(0, 2, rx, ry * 0.92, 0, 0, Math.PI * 2); fctx.clip();
+          fctx.fillStyle = '#0d0d0f';
+          fctx.beginPath(); fctx.ellipse(0, 6, rx * 0.72, ry * 0.66, 0, 0, Math.PI * 2); fctx.fill();
+          fctx.fillStyle = '#8e9195';
+          fctx.fillRect(-rx - 6, -ry - 6, rx * 2 + 12, ry * 0.94);
+          fctx.strokeStyle = '#2d2a2a'; fctx.lineWidth = 7;
+          fctx.beginPath(); fctx.moveTo(-rx - 4, -2); fctx.lineTo(rx + 4, 4 * side * -1 + 2); fctx.stroke();
+          fctx.restore();
+          fctx.strokeStyle = '#3c3939'; fctx.lineWidth = 5.5;
+          fctx.beginPath(); fctx.ellipse(0, 2, rx, ry * 0.92, 0, 0, Math.PI * 2); fctx.stroke();
+        } else if (mood === 'berpikir') {
+          fctx.fillStyle = '#ffffff'; fctx.strokeStyle = '#474545'; fctx.lineWidth = 5.5;
+          fctx.beginPath(); fctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2); fctx.fill(); fctx.stroke();
+          fctx.fillStyle = '#0b0b0d';
+          fctx.beginPath(); fctx.ellipse(10, -10, rx * 0.62, ry * 0.62, 0, 0, Math.PI * 2); fctx.fill();
+          fctx.fillStyle = 'rgba(255, 255, 255, 0.24)';
+          fctx.beginPath(); fctx.ellipse(2, -22, 6, 8, -0.25, 0, Math.PI * 2); fctx.fill();
+        } else if (blink) {
+          fctx.strokeStyle = '#2d2a2a'; fctx.lineWidth = 7.5; fctx.lineCap = 'round';
+          fctx.beginPath(); fctx.moveTo(-rx + 4, 4); fctx.quadraticCurveTo(0, -10, rx - 4, 4); fctx.stroke();
+        } else {
+          fctx.fillStyle = '#ffffff'; fctx.strokeStyle = '#474545'; fctx.lineWidth = 5.5;
+          fctx.beginPath(); fctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2); fctx.fill(); fctx.stroke();
+          fctx.fillStyle = '#0b0b0d';
+          fctx.beginPath(); fctx.ellipse(side * -3, 2, rx * 0.67, ry * 0.68, 0, 0, Math.PI * 2); fctx.fill();
+          fctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
+          fctx.beginPath(); fctx.ellipse(side * -3 - 9, -12, 6, 8, -0.25, 0, Math.PI * 2); fctx.fill();
+        }
+        fctx.restore();
+      });
+
+      // Hidung segitiga mungil khas Chi
+      fctx.fillStyle = '#363232';
+      fctx.beginPath();
+      fctx.moveTo(503, 304); fctx.lineTo(521, 304); fctx.lineTo(512, 313);
+      fctx.closePath(); fctx.fill();
+
+      // Mulut buka-tutup rapat saat bicara di semua ekspresi
+      const mx = 512, my = 326;
+      const shouldOpen = talking
+        ? (talkAmt >= 0.14)
+        : (mood === 'marah_gemas' || mood === 'panik' || mood === 'bangga');
+
+      if (shouldOpen) {
+        const openness = talking
+          ? Math.max(0.05, Math.min(1, (talkAmt - 0.14) / 0.86))
+          : (mood === 'bangga' ? 0.90 : (mood === 'marah_gemas' ? 0.94 : 0.98));
+        const mw = 16 + openness * 29;
+        const mh = 12 + openness * 66;
+
+        fctx.fillStyle = '#b9787b';
+        fctx.beginPath();
+        fctx.moveTo(mx - mw, my + 4);
+        fctx.quadraticCurveTo(mx - mw * 0.35, my - 4 * openness, mx, my - 8 * openness);
+        fctx.quadraticCurveTo(mx + mw * 0.35, my - 4 * openness, mx + mw, my + 4);
+        fctx.quadraticCurveTo(mx + mw * 0.72, my + mh * 0.78, mx, my + mh);
+        fctx.quadraticCurveTo(mx - mw * 0.72, my + mh * 0.78, mx - mw, my + 4);
+        fctx.closePath(); fctx.fill();
+
+        fctx.save();
+        fctx.clip();
+        fctx.fillStyle = '#f8b9bc';
+        fctx.beginPath();
+        fctx.ellipse(mx, my + mh * 0.72, mw * 0.85, mh * 0.56, 0, 0, Math.PI * 2);
+        fctx.fill();
+        fctx.restore();
+
+        if (openness > 0.32) {
+          fctx.fillStyle = '#ffffff'; fctx.strokeStyle = '#534949'; fctx.lineWidth = 2.4;
+          const fangH = 6 + openness * 6;
+          [[-1, 0.44], [1, 0.44]].forEach(([dir, frac]) => {
+            const fx = mx + dir * mw * frac;
+            fctx.beginPath();
+            fctx.moveTo(fx - dir * 6, my - 1); fctx.lineTo(fx, my + fangH); fctx.lineTo(fx + dir * 6, my + 2);
+            fctx.closePath(); fctx.fill(); fctx.stroke();
+          });
+        }
+
+        fctx.strokeStyle = '#4e4646'; fctx.lineWidth = 4.2; fctx.lineJoin = 'round';
+        fctx.beginPath();
+        fctx.moveTo(mx - mw, my + 4);
+        fctx.quadraticCurveTo(mx - mw * 0.35, my - 4 * openness, mx, my - 8 * openness);
+        fctx.quadraticCurveTo(mx + mw * 0.35, my - 4 * openness, mx + mw, my + 4);
+        fctx.quadraticCurveTo(mx + mw * 0.72, my + mh * 0.78, mx, my + mh);
+        fctx.quadraticCurveTo(mx - mw * 0.72, my + mh * 0.78, mx - mw, my + 4);
+        fctx.closePath(); fctx.stroke();
+      } else if (mood === 'sarkas' && !talking) {
+        fctx.fillStyle = '#b9787b'; fctx.strokeStyle = '#474343'; fctx.lineWidth = 4;
+        fctx.beginPath(); fctx.ellipse(mx, my + 14, 7, 9, 0, 0, Math.PI * 2); fctx.fill(); fctx.stroke();
+      } else if (mood === 'berpikir' && !talking) {
+        fctx.strokeStyle = '#474343'; fctx.lineWidth = 4.5; fctx.lineCap = 'round';
+        fctx.beginPath();
+        fctx.moveTo(mx - 16, my + 12);
+        fctx.quadraticCurveTo(mx - 8, my + 6, mx, my + 12);
+        fctx.quadraticCurveTo(mx + 8, my + 18, mx + 16, my + 12);
+        fctx.stroke();
+      } else if (mood === 'marah_gemas' && talking) {
+        fctx.strokeStyle = '#474343'; fctx.lineWidth = 5; fctx.lineCap = 'round';
+        fctx.beginPath();
+        fctx.moveTo(mx - 18, my + 10); fctx.quadraticCurveTo(mx, my + 1, mx + 18, my + 10);
+        fctx.stroke();
+      } else {
+        fctx.strokeStyle = '#474343'; fctx.lineWidth = 5; fctx.lineCap = 'round';
+        fctx.beginPath();
+        fctx.moveTo(mx - 22, my + 8);
+        fctx.quadraticCurveTo(mx - 11, my + 21, mx, my + 8);
+        fctx.quadraticCurveTo(mx + 11, my + 21, mx + 22, my + 8);
+        fctx.stroke();
+      }
+    }
+
+    function createNekoChi3DEngine(canvas, shadowEl, opts = {}) {
+      if (!canvas) return null;
+      const gl = canvas.getContext('webgl', { alpha: true, antialias: true, premultipliedAlpha: false });
+      if (!gl) return null;
+
+      let contextLost = false;
+      canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); contextLost = true; });
+      canvas.addEventListener('webglcontextrestored', () => { contextLost = false; });
+
+      const vsSrc = `
+        attribute vec3 aPos;
+        attribute vec3 aNorm;
+        attribute vec2 aUv;
+        uniform mat4 uProj;
+        uniform mat4 uTransform;
+        uniform vec3 uScale;
+        uniform float uOutlineWidth;
+        varying vec3 vNorm;
+        varying vec3 vWorldPos;
+        varying vec2 vUv;
+        void main() {
+          vec3 nLocal = normalize(aNorm / max(uScale, vec3(0.001)));
+          vec3 pLocal = aPos * uScale + nLocal * uOutlineWidth;
+          vec4 wp = uTransform * vec4(pLocal, 1.0);
+          vWorldPos = wp.xyz;
+          vNorm = normalize(mat3(uTransform) * nLocal);
+          vUv = aUv;
+          gl_Position = uProj * wp;
+        }
+      `;
+      const fsSrc = `
+        precision mediump float;
+        varying vec3 vNorm;
+        varying vec3 vWorldPos;
+        varying vec2 vUv;
+        uniform vec3 uColor;
+        uniform float uUseTex;
+        uniform float uIsOutline;
+        uniform float uRimStr;
+        uniform float uSpecStr;
+        uniform float uFlatFace;
+        uniform sampler2D uTex;
+        void main() {
+          if (uIsOutline > 0.5) {
+            gl_FragColor = vec4(0.28, 0.26, 0.26, 1.0);
+            return;
+          }
+          vec3 N = normalize(vNorm);
+          vec3 V = normalize(vec3(0.0, 0.05, 6.4) - vWorldPos);
+          vec3 L = normalize(vec3(0.42, 0.72, 0.96));
+          vec3 H = normalize(L + V);
+          vec3 baseCol = uUseTex > 0.5 ? texture2D(uTex, vUv).rgb : uColor;
+          float ndotl = dot(N, L);
+          float shift = uFlatFace > 0.5 ? 0.22 : 0.06;
+          float cel = smoothstep(-0.14 - shift, 0.08 - shift, ndotl);
+          vec3 lightCol = mix(vec3(0.84, 0.84, 0.89), vec3(1.01, 1.01, 1.00), cel);
+          float rim = smoothstep(0.68, 0.82, 1.0 - max(dot(N, V), 0.0)) * uRimStr;
+          float spec = smoothstep(0.88, 0.94, pow(max(dot(N, H), 0.0), 18.0)) * uSpecStr;
+          vec3 col = baseCol * lightCol + vec3(1.0, 0.99, 0.98) * (rim + spec);
+          gl_FragColor = vec4(min(col, vec3(1.0)), 1.0);
+        }
+      `;
+
+      const compile = (type, src) => {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        return s;
+      };
+      const prog = gl.createProgram();
+      gl.attachShader(prog, compile(gl.VERTEX_SHADER, vsSrc));
+      gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fsSrc));
+      gl.linkProgram(prog);
+      gl.useProgram(prog);
+
+      const loc = {
+        aPos: gl.getAttribLocation(prog, 'aPos'),
+        aNorm: gl.getAttribLocation(prog, 'aNorm'),
+        aUv: gl.getAttribLocation(prog, 'aUv'),
+        uProj: gl.getUniformLocation(prog, 'uProj'),
+        uTransform: gl.getUniformLocation(prog, 'uTransform'),
+        uScale: gl.getUniformLocation(prog, 'uScale'),
+        uOutlineWidth: gl.getUniformLocation(prog, 'uOutlineWidth'),
+        uColor: gl.getUniformLocation(prog, 'uColor'),
+        uUseTex: gl.getUniformLocation(prog, 'uUseTex'),
+        uIsOutline: gl.getUniformLocation(prog, 'uIsOutline'),
+        uRimStr: gl.getUniformLocation(prog, 'uRimStr'),
+        uSpecStr: gl.getUniformLocation(prog, 'uSpecStr'),
+        uFlatFace: gl.getUniformLocation(prog, 'uFlatFace'),
+        uTex: gl.getUniformLocation(prog, 'uTex')
+      };
+
+      const buildMesh = (latBands, lonBands, evalPos) => {
+        const rows = latBands + 1, cols = lonBands + 1;
+        const pos = new Float32Array(rows * cols * 3);
+        const norm = new Float32Array(rows * cols * 3);
+        const uv = new Float32Array(rows * cols * 2);
+        const idx = [];
+        for (let lat = 0; lat <= latBands; lat++) {
+          const v = lat / latBands;
+          for (let lon = 0; lon <= lonBands; lon++) {
+            const u = lon / lonBands;
+            const p = evalPos(u, v);
+            const k = lat * cols + lon;
+            pos[k * 3] = p[0]; pos[k * 3 + 1] = p[1]; pos[k * 3 + 2] = p[2];
+            uv[k * 2] = u; uv[k * 2 + 1] = v;
+          }
+        }
+        for (let lat = 0; lat < latBands; lat++) {
+          for (let lon = 0; lon < lonBands; lon++) {
+            const p00 = lat * cols + lon, p10 = p00 + cols, p01 = p00 + 1, p11 = p10 + 1;
+            idx.push(p00, p10, p01, p10, p11, p01);
+          }
+        }
+        for (let i = 0; i < idx.length; i += 3) {
+          const i0 = idx[i] * 3, i1 = idx[i + 1] * 3, i2 = idx[i + 2] * 3;
+          const ax = pos[i1] - pos[i0], ay = pos[i1 + 1] - pos[i0 + 1], az = pos[i1 + 2] - pos[i0 + 2];
+          const bx = pos[i2] - pos[i0], by = pos[i2 + 1] - pos[i0 + 1], bz = pos[i2 + 2] - pos[i0 + 2];
+          const nx = ay * bz - az * by, ny = az * bx - ax * bz, nz = ax * by - ay * bx;
+          [i0, i1, i2].forEach(k => { norm[k] += nx; norm[k + 1] += ny; norm[k + 2] += nz; });
+        }
+        for (let lat = 0; lat <= latBands; lat++) {
+          const a = (lat * cols) * 3, b = (lat * cols + lonBands) * 3;
+          const sx = norm[a] + norm[b], sy = norm[a + 1] + norm[b + 1], sz = norm[a + 2] + norm[b + 2];
+          norm[a] = norm[b] = sx; norm[a + 1] = norm[b + 1] = sy; norm[a + 2] = norm[b + 2] = sz;
+        }
+        [0, latBands].forEach(poleLat => {
+          let px = 0, py = 0, pz = 0;
+          for (let lon = 0; lon <= lonBands; lon++) {
+            const k = (poleLat * cols + lon) * 3;
+            px += norm[k]; py += norm[k + 1]; pz += norm[k + 2];
+          }
+          for (let lon = 0; lon <= lonBands; lon++) {
+            const k = (poleLat * cols + lon) * 3;
+            norm[k] = px; norm[k + 1] = py; norm[k + 2] = pz;
+          }
+        });
+        for (let i = 0; i < norm.length; i += 3) {
+          const l = Math.hypot(norm[i], norm[i + 1], norm[i + 2]) || 1;
+          norm[i] /= l; norm[i + 1] /= l; norm[i + 2] /= l;
+        }
+        const mk = (data, target) => {
+          const b = gl.createBuffer();
+          gl.bindBuffer(target, b);
+          gl.bufferData(target, data, gl.STATIC_DRAW);
+          return b;
+        };
+        return {
+          pos: mk(pos, gl.ARRAY_BUFFER),
+          norm: mk(norm, gl.ARRAY_BUFFER),
+          uv: mk(uv, gl.ARRAY_BUFFER),
+          idx: mk(new Uint16Array(idx), gl.ELEMENT_ARRAY_BUFFER),
+          count: idx.length
+        };
+      };
+
+      const headMesh = buildMesh(22, 30, (u, v) => {
+        const theta = v * Math.PI, phi = (u - 0.5) * Math.PI * 2;
+        const sinT = Math.sin(theta), cosT = Math.cos(theta);
+        const sx = Math.sin(phi) * sinT, sy = cosT, sz = Math.cos(phi) * sinT;
+        const cheek = Math.exp(-Math.pow((sy + 0.14) / 0.42, 2));
+        let x = sx * (1.10 + 0.08 * cheek), y = sy * 0.90, z = sz * 0.94;
+        if (z > 0.48) z = 0.48 + (z - 0.48) * 0.88;
+        return [x, y, z];
+      });
+      const earMesh = buildMesh(12, 18, (u, v) => {
+        const phi = (u - 0.5) * Math.PI * 2, h = (1 - v) * 1.02;
+        const tipCap = Math.sin(Math.min(1, v * 1.18) * Math.PI * 0.5);
+        const baseCap = v > 0.92 ? Math.cos(((v - 0.92) / 0.08) * Math.PI * 0.5) : 1;
+        const rad = (0.03 + 0.48 * Math.pow(v, 0.72)) * tipCap * baseCap;
+        let z = Math.cos(phi) * rad * 0.42;
+        if (z > 0) z *= 0.62;
+        return [Math.sin(phi) * rad, h, z];
+      });
+      const bodyMesh = buildMesh(16, 22, (u, v) => {
+        const theta = v * Math.PI, phi = (u - 0.5) * Math.PI * 2;
+        const sinT = Math.sin(theta), cosT = Math.cos(theta);
+        const belly = 1 + 0.14 * Math.exp(-Math.pow((cosT + 0.25) / 0.5, 2));
+        return [Math.sin(phi) * sinT * 0.64 * belly, cosT * 0.76, Math.cos(phi) * sinT * 0.60 * belly];
+      });
+      const armMesh = buildMesh(12, 16, (u, v) => {
+        const theta = v * Math.PI, phi = (u - 0.5) * Math.PI * 2;
+        const sinT = Math.sin(theta), cosT = Math.cos(theta);
+        const r = 0.185, y = -0.31 + cosT * 0.34, flare = cosT < 0 ? (1 + (-cosT) * 0.16) : 1;
+        return [Math.sin(phi) * sinT * r * flare, y, Math.cos(phi) * sinT * r * 0.92 * flare];
+      });
+      const sphereMesh = buildMesh(10, 16, (u, v) => {
+        const theta = v * Math.PI, phi = (u - 0.5) * Math.PI * 2;
+        return [Math.sin(phi) * Math.sin(theta), Math.cos(theta), Math.cos(phi) * Math.sin(theta)];
+      });
+
+      const faceCanvas = document.createElement('canvas');
+      faceCanvas.width = 1024;
+      faceCanvas.height = 512;
+      const fctx = faceCanvas.getContext('2d');
+      paintChiFaceToCanvas(fctx, 'santai', false, 0, false, 0);
+
+      const { bodyCanvas, earCanvas } = getNekoSharedTextures();
+      const mkTex = (c) => {
+        const t = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, t);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        return t;
+      };
+      const faceTex = mkTex(faceCanvas);
+      const bodyTex = mkTex(bodyCanvas);
+      const earTex = mkTex(earCanvas);
+
+      const m4 = {
+        mul: (a, b) => {
+          const o = new Float32Array(16);
+          for (let c = 0; c < 4; c++) {
+            for (let r = 0; r < 4; r++) {
+              o[c * 4 + r] = a[r] * b[c * 4] + a[4 + r] * b[c * 4 + 1] + a[8 + r] * b[c * 4 + 2] + a[12 + r] * b[c * 4 + 3];
+            }
+          }
+          return o;
+        },
+        persp: (fov, asp, near, far) => {
+          const f = 1 / Math.tan(fov / 2), nf = 1 / (near - far);
+          return new Float32Array([f / asp, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) * nf, -1, 0, 0, 2 * far * near * nf, 0]);
+        },
+        trans: (x, y, z) => new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1]),
+        rotX: (a) => { const c = Math.cos(a), s = Math.sin(a); return new Float32Array([1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1]); },
+        rotY: (a) => { const c = Math.cos(a), s = Math.sin(a); return new Float32Array([c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1]); },
+        rotZ: (a) => { const c = Math.cos(a), s = Math.sin(a); return new Float32Array([c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]); }
+      };
+
+      let boundMesh = null;
+      const bindMesh = (mesh) => {
+        if (boundMesh === mesh) return;
+        boundMesh = mesh;
+        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.pos);
+        gl.enableVertexAttribArray(loc.aPos);
+        gl.vertexAttribPointer(loc.aPos, 3, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.norm);
+        gl.enableVertexAttribArray(loc.aNorm);
+        gl.vertexAttribPointer(loc.aNorm, 3, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.uv);
+        gl.enableVertexAttribArray(loc.aUv);
+        gl.vertexAttribPointer(loc.aUv, 2, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.idx);
+      };
+
+      const drawPart = (mesh, parentMat, { p = [0, 0, 0], r = [0, 0, 0], s = [1, 1, 1], col = [0.6, 0.6, 0.6], tex = null, outline = 0.03, rimStr = 0.12, specStr = 0.0, flatFace = false }) => {
+        bindMesh(mesh);
+        let m = m4.mul(parentMat, m4.trans(p[0], p[1], p[2]));
+        if (r[1]) m = m4.mul(m, m4.rotY(r[1]));
+        if (r[0]) m = m4.mul(m, m4.rotX(r[0]));
+        if (r[2]) m = m4.mul(m, m4.rotZ(r[2]));
+        gl.uniformMatrix4fv(loc.uTransform, false, m);
+        gl.uniform3fv(loc.uScale, s);
+        if (outline > 0) {
+          gl.cullFace(gl.FRONT);
+          gl.uniform1f(loc.uIsOutline, 1.0);
+          gl.uniform1f(loc.uOutlineWidth, outline);
+          gl.uniform1f(loc.uUseTex, 0.0);
+          gl.drawElements(gl.TRIANGLES, mesh.count, gl.UNSIGNED_SHORT, 0);
+        }
+        gl.cullFace(gl.BACK);
+        gl.uniform1f(loc.uIsOutline, 0.0);
+        gl.uniform1f(loc.uOutlineWidth, 0.0);
+        gl.uniform3fv(loc.uColor, col);
+        gl.uniform1f(loc.uRimStr, rimStr);
+        gl.uniform1f(loc.uSpecStr, specStr);
+        gl.uniform1f(loc.uFlatFace, flatFace ? 1.0 : 0.0);
+        if (tex) {
+          gl.activeTexture(gl.TEXTURE0);
+          gl.bindTexture(gl.TEXTURE_2D, tex);
+          gl.uniform1i(loc.uTex, 0);
+          gl.uniform1f(loc.uUseTex, 1.0);
+        } else {
+          gl.uniform1f(loc.uUseTex, 0.0);
+        }
+        gl.drawElements(gl.TRIANGLES, mesh.count, gl.UNSIGNED_SHORT, 0);
+      };
+
+      const drawChiArm = (parentMat, shoulderPos, rotX, rotZ) => {
+        let arm = m4.mul(parentMat, m4.trans(shoulderPos[0], shoulderPos[1], shoulderPos[2]));
+        arm = m4.mul(arm, m4.rotZ(rotZ));
+        arm = m4.mul(arm, m4.rotX(rotX));
+        drawPart(armMesh, arm, { col: [0.99, 0.99, 0.99], outline: 0.028, flatFace: true });
+        drawPart(sphereMesh, arm, { p: [0, -0.62, 0.02], s: [0.22, 0.19, 0.17], col: [0.99, 0.99, 0.99], outline: 0.028, flatFace: true });
+        const padCol = [0.20, 0.19, 0.20];
+        drawPart(sphereMesh, arm, { p: [0, -0.59, 0.172], s: [0.072, 0.064, 0.032], col: padCol, outline: 0 });
+        [[-0.10, -0.68], [-0.038, -0.73], [0.038, -0.73], [0.10, -0.68]].forEach(([bx, by]) => {
+          drawPart(sphereMesh, arm, { p: [bx, by, 0.154], s: [0.034, 0.038, 0.026], col: padCol, outline: 0 });
+        });
+      };
+
+      const state = {
+        mood: 'santai',
+        pose: 'duduk',
+        peeking: false,
+        talking: false,
+        mouthOpen: 0,
+        yaw: opts.initYaw ?? 0.12,
+        pitch: opts.initPitch ?? 0.04,
+        targetYaw: opts.initYaw ?? 0.12,
+        targetPitch: opts.initPitch ?? 0.04,
+        pokeTimer: 0,
+        camZ: opts.camZ ?? -6.05,
+        poseW: { duduk: 1, berdiri: 0, rebahan: 0 },
+        lastFaceKey: '',
+        faceDirty: true
+      };
+
+      function render(t) {
+        if (contextLost) return;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const w = Math.max(80, Math.round((canvas.clientWidth || 128) * dpr));
+        const h = Math.max(80, Math.round((canvas.clientHeight || 128) * dpr));
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width = w;
+          canvas.height = h;
+        }
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.CULL_FACE);
+        gl.useProgram(prog);
+        boundMesh = null;
+
+        gl.uniformMatrix4fv(loc.uProj, false, m4.persp(0.56, canvas.width / canvas.height, 0.1, 30));
+
+        if (state.pokeTimer > 0) state.pokeTimer = Math.max(0, state.pokeTimer - 0.016);
+        const isBlink = (state.mood === 'santai') && (Math.sin(t * 1.45) > 0.985);
+        const talkAmt = state.talking ? Math.max(0, Math.min(1, state.mouthOpen)) : 0;
+        const panicTick = state.mood === 'panik' ? Math.floor(t * 16) : 0;
+        const faceKey = `${state.mood}|${isBlink ? 1 : 0}|${state.talking ? 1 : 0}|${Math.round(talkAmt * 16)}|${panicTick}`;
+        if (state.faceDirty || faceKey !== state.lastFaceKey) {
+          paintChiFaceToCanvas(fctx, state.mood, isBlink, talkAmt, state.talking, t);
+          gl.bindTexture(gl.TEXTURE_2D, faceTex);
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, faceCanvas);
+          state.lastFaceKey = faceKey;
+          state.faceDirty = false;
+        }
+
+        const targetPoseNow = state.peeking ? 'duduk' : state.pose;
+        state.poseW.duduk += ((targetPoseNow === 'duduk' ? 1 : 0) - state.poseW.duduk) * 0.14;
+        state.poseW.berdiri += ((targetPoseNow === 'berdiri' ? 1 : 0) - state.poseW.berdiri) * 0.14;
+        state.poseW.rebahan += ((targetPoseNow === 'rebahan' ? 1 : 0) - state.poseW.rebahan) * 0.14;
+        const wD = state.poseW.duduk, wB = state.poseW.berdiri, wR = state.poseW.rebahan;
+        const mixP = (d, b, r) => d * wD + b * wB + r * wR;
+
+        state.yaw += (state.targetYaw - state.yaw) * 0.12;
+        state.pitch += (state.targetPitch - state.pitch) * 0.12;
+
+        const pokeHop = state.pokeTimer > 0 ? Math.sin((state.pokeTimer / 0.58) * Math.PI) * 0.34 : 0;
+        const panicShake = state.mood === 'panik' ? Math.sin(t * 34) * 0.04 : 0;
+        const floatY = state.peeking
+          ? (Math.sin(t * 1.65) * 0.075 - 0.04 + pokeHop)
+          : (Math.sin(t * 2.2) * mixP(0.10, 0.14, 0.06) + mixP(0.14, 0.16, 0.04) + pokeHop + (state.mood === 'bangga' ? Math.abs(Math.sin(t * 5.2)) * 0.12 : 0));
+        const idleYaw = state.peeking ? Math.sin(t * 0.85) * 0.28 : Math.sin(t * 0.9) * 0.12;
+
+        if (shadowEl) {
+          const shScale = Math.max(0.58, mixP(1.06, 0.96, 1.22) - floatY * 0.45);
+          shadowEl.style.transform = `scale(${shScale.toFixed(2)})`;
+        }
+
+        let root = m4.mul(m4.trans(panicShake, floatY, state.camZ), m4.rotY(state.yaw + idleYaw));
+        root = m4.mul(root, m4.rotX(state.pitch));
+
+        // 1. Tubuh 3D
+        const bodyY = mixP(-1.04, -0.96, -0.96);
+        const bodyZ = mixP(-0.08, -0.04, -0.60);
+        const bodyRotX = mixP(-0.15, 0.0, 1.36) + (state.mood === 'panik' ? -0.14 * wD : 0);
+        const bodyScale = [mixP(1.06, 1.0, 1.02), mixP(0.96, 1.0, 1.08), mixP(1.06, 1.0, 0.92)];
+        drawPart(bodyMesh, root, { p: [0, bodyY, bodyZ], r: [bodyRotX, 0, 0], s: bodyScale, tex: bodyTex, outline: 0.034, flatFace: true });
+
+        // 2. Dua Tangan 3D Ekspresif + Paw Pads
+        const shX = state.peeking ? 0.56 : mixP(0.54, 0.56, 0.46);
+        const shY = state.peeking ? -0.28 : mixP(-0.74, -0.68, -0.96);
+        const shZ = state.peeking ? 0.28 : mixP(0.16, 0.14, 0.04);
+        let lRotX = -0.25, lRotZ = -0.35, rRotX = -0.25, rRotZ = 0.35;
+
+        if (state.peeking && !state.talking) {
+          // Pose ngintip gemas: kedua tangan mungil mencengkeram pinggiran atas tab!
+          const gripWiggle = Math.sin(t * 2.1) * 0.06;
+          lRotX = -1.36; lRotZ = -0.42 + gripWiggle;
+          rRotX = -1.36; rRotZ = 0.42 - gripWiggle;
+        } else if (state.pokeTimer > 0) {
+          lRotZ = -2.35; rRotZ = 2.35; lRotX = -0.38; rRotX = -0.38;
+        } else if (state.mood === 'panik') {
+          const flail = Math.sin(t * 22) * 0.22;
+          lRotZ = -2.42 + flail; lRotX = -0.35;
+          rRotZ = 2.42 - flail; rRotX = -0.35;
+        } else if (state.mood === 'bangga') {
+          const cheer = Math.sin(t * 8.5) * 0.16;
+          lRotZ = -2.58 + cheer; lRotX = -0.25;
+          rRotZ = 2.58 - cheer; rRotX = -0.25;
+        } else if (state.mood === 'marah_gemas') {
+          const tantrum = Math.sin(t * 20) * 0.38;
+          lRotZ = -1.65 + tantrum; lRotX = -0.68;
+          rRotZ = 1.65 + tantrum; rRotX = -0.68;
+        } else if (state.mood === 'berpikir') {
+          lRotZ = -0.22; lRotX = -0.78;
+          rRotZ = 1.75 + Math.sin(t * 2.4) * 0.08; rRotX = -0.82;
+        } else if (state.mood === 'sarkas') {
+          lRotZ = mixP(-0.14, -0.24, -0.18) + Math.sin(t * 1.5) * 0.04;
+          rRotZ = mixP(0.14, 0.24, 0.18) - Math.sin(t * 1.5) * 0.04;
+          lRotX = mixP(-0.74, -0.18, -1.42);
+          rRotX = mixP(-0.74, -0.18, -1.42);
+        } else if (state.talking) {
+          const wave = Math.sin(t * 10) * 0.24;
+          rRotZ = mixP(2.05, 2.18, 0.55) + wave;
+          rRotX = mixP(-0.36, -0.28, -1.25);
+          lRotZ = mixP(-1.55, -1.45, -0.55) - wave * 0.8;
+          lRotX = mixP(-0.48, -0.42, -1.25);
+        } else {
+          lRotZ = mixP(-0.18, -0.36, -0.18) - Math.sin(t * 2.0) * 0.05;
+          lRotX = mixP(-0.78, -0.22, -1.45);
+          rRotZ = mixP(0.24, 2.18, 0.18) + Math.sin(t * 3.6) * mixP(0.10, 0.24, 0.06);
+          rRotX = mixP(-0.82 - Math.max(0, Math.sin(t * 1.6)) * 0.35, -0.28, -1.45);
+        }
+        drawChiArm(root, [-shX, shY, shZ], lRotX, lRotZ);
+        drawChiArm(root, [shX, shY, shZ], rRotX, rRotZ);
+
+        // 3. Dua Kaki Belakang Putih (Duduk / Berdiri / Rebahan)
+        const kickAmp = state.mood === 'panik' ? 0.28 : (wD > 0.5 ? 0.06 : 0.10);
+        const kickL = Math.sin(t * (state.mood === 'panik' ? 18 : 2.6)) * kickAmp;
+        [-1, 1].forEach(side => {
+          const k = side < 0 ? kickL : -kickL;
+          if (wD > 0.04) {
+            drawPart(sphereMesh, root, {
+              p: [side * 0.52, -1.34, 0.10],
+              s: [0.27 * wD, 0.26 * wD, 0.30 * wD],
+              col: [0.99, 0.99, 0.99],
+              outline: 0.026 * wD,
+              flatFace: true
+            });
+          }
+          const lx = side * mixP(0.47, 0.31, 0.38);
+          const ly = mixP(-1.46, -1.62, -1.16);
+          const lz = mixP(0.45, 0.08, -1.30);
+          let leg = m4.mul(root, m4.trans(lx, ly, lz));
+          leg = m4.mul(leg, m4.rotY(side * mixP(0.30, 0.0, 0.18)));
+          leg = m4.mul(leg, m4.rotX(mixP(-0.32 + k * 0.8, k, 0.15 + k * 0.5)));
+          drawPart(sphereMesh, leg, { s: [0.22, 0.16, 0.26], col: [0.99, 0.99, 0.99], outline: 0.028, flatFace: true });
+          drawPart(sphereMesh, leg, {
+            p: [0, mixP(-0.02, -0.14, -0.11), mixP(0.24, 0.05, -0.06)],
+            s: [0.078, mixP(0.065, 0.03, 0.04), mixP(0.035, 0.08, 0.07)],
+            col: [0.20, 0.19, 0.20], outline: 0
+          });
+          if (wD > 0.35) {
+            [[-0.08, 0.075, 0.205], [0, 0.105, 0.192], [0.08, 0.075, 0.205]].forEach(([bx, by, bz]) => {
+              drawPart(sphereMesh, leg, { p: [bx, by, bz], s: [0.030 * wD, 0.032 * wD, 0.025 * wD], col: [0.20, 0.19, 0.20], outline: 0 });
+            });
+          }
+        });
+
+        // 4. Ekor Belang Abu-Charcoal
+        const tailPuff = state.mood === 'panik' ? 1.32 : 1.0;
+        for (let seg = 0; seg < 7; seg++) {
+          const wag = Math.sin(t * (state.mood === 'panik' ? 14 : 2.8) - seg * 0.42) * (state.mood === 'panik' ? 0.08 : 0.20);
+          const frac = seg / 6;
+          const ang = -0.35 + frac * 1.95;
+          const sx = mixP(0.22 + Math.sin(ang) * 0.68 + wag * frac * 0.22, 0.48 + seg * 0.15 + wag * (seg * 0.22), 0.10 + seg * 0.10 + wag * (seg * 0.26));
+          const sy = mixP(-1.50 + frac * 0.12 + (state.mood === 'panik' ? frac * 0.72 : 0), -1.32 + seg * 0.22 + (state.mood === 'panik' ? seg * 0.04 : 0), -0.96 + seg * 0.10);
+          const sz = mixP(-0.52 + (1 - Math.cos(ang)) * 0.56, -0.44 - seg * 0.06, -1.24 - seg * 0.14);
+          const rad = (0.142 - seg * 0.005) * tailPuff;
+          const col = (seg === 6 || seg % 2 === 1) ? [0.20, 0.21, 0.22] : [0.56, 0.57, 0.59];
+          drawPart(sphereMesh, root, { p: [sx, sy, sz], s: [rad, rad, rad], col, outline: 0.026 });
+        }
+
+        // 5. Kepala Bulat Chi + Telinga Segitiga + 6 Kumis 3D
+        const headNod = state.talking ? Math.sin(t * 11) * 0.075 : Math.sin(t * 1.8) * 0.03;
+        const headTilt = state.mood === 'berpikir' ? 0.14 : (state.mood === 'santai' ? Math.sin(t * 1.1) * 0.06 : (state.mood === 'marah_gemas' ? Math.sin(t * 16) * 0.05 : 0));
+        let head = m4.mul(root, m4.trans(0, mixP(0.24, 0.34, -0.18), mixP(0.08, 0.05, 0.38)));
+        head = m4.mul(head, m4.rotX(headNod + mixP(0.04, 0, -0.08)));
+        head = m4.mul(head, m4.rotZ(headTilt));
+        drawPart(headMesh, head, { tex: faceTex, outline: 0.036, rimStr: 0.10, flatFace: true });
+
+        const earDroop = state.mood === 'panik' ? 0.56 : (state.mood === 'sarkas' ? 0.16 : 0);
+        const twL = Math.sin(t * 1.65) > 0.94 ? 0.14 : 0;
+        const twR = Math.sin(t * 1.35 + 1.8) > 0.94 ? 0.14 : 0;
+        [-1, 1].forEach(side => {
+          const tw = side < 0 ? twL : twR;
+          let ear = m4.mul(head, m4.trans(side * 0.64, 0.54, -0.02));
+          ear = m4.mul(ear, m4.rotX(0.10));
+          ear = m4.mul(ear, m4.rotZ(side * -(0.46 + earDroop + tw)));
+          drawPart(earMesh, ear, { s: [1.06, 1.04, 1.0], tex: earTex, outline: 0.032, rimStr: 0.14, flatFace: true });
+        });
+
+        [-1, 1].forEach(side => {
+          [{ dy: -0.16, rz: side * 0.16 }, { dy: -0.27, rz: side * -0.02 }, { dy: -0.38, rz: side * -0.18 }].forEach(w => {
+            drawPart(sphereMesh, head, { p: [side * 1.02, w.dy, 0.44], r: [0, side * -0.28, w.rz], s: [0.34, 0.013, 0.013], col: [0.22, 0.21, 0.21], outline: 0 });
+          });
+        });
+
+        // 6. Efek Komik 3D
+        if (state.mood === 'marah_gemas') {
+          const pulse = 1 + Math.sin(t * 12) * 0.16;
+          drawPart(sphereMesh, head, { p: [0.58, 0.96, 0.48], r: [0, 0, 0.72], s: [0.20 * pulse, 0.052 * pulse, 0.052], col: [0.92, 0.18, 0.28], outline: 0.018 });
+          drawPart(sphereMesh, head, { p: [0.58, 0.96, 0.48], r: [0, 0, -0.72], s: [0.20 * pulse, 0.052 * pulse, 0.052], col: [0.92, 0.18, 0.28], outline: 0.018 });
+        } else if (state.mood === 'panik') {
+          const d1 = 0.72 - ((t * 0.65) % 0.52);
+          const d2 = 0.56 - (((t + 0.25) * 0.65) % 0.52);
+          drawPart(sphereMesh, head, { p: [-0.96, d1, 0.45], s: [0.085, 0.15, 0.085], col: [0.46, 0.84, 0.99], outline: 0.018, specStr: 0.8 });
+          drawPart(sphereMesh, head, { p: [0.96, d2, 0.45], s: [0.075, 0.13, 0.075], col: [0.46, 0.84, 0.99], outline: 0.018, specStr: 0.8 });
+        } else if (state.mood === 'bangga') {
+          const spY = 0.82 + Math.sin(t * 4.5) * 0.09;
+          drawPart(sphereMesh, head, { p: [-1.05, spY, 0.38], r: [0, t * 2.5, 0], s: [0.19, 0.055, 0.055], col: [0.99, 0.80, 0.20], outline: 0.015, specStr: 0.7 });
+          drawPart(sphereMesh, head, { p: [-1.05, spY, 0.38], r: [0, t * 2.5, 0], s: [0.055, 0.19, 0.055], col: [0.99, 0.80, 0.20], outline: 0.015, specStr: 0.7 });
+          drawPart(sphereMesh, head, { p: [1.05, spY - 0.05, 0.38], r: [0, -t * 2.5, 0], s: [0.16, 0.05, 0.05], col: [0.98, 0.45, 0.66], outline: 0.015, specStr: 0.7 });
+          drawPart(sphereMesh, head, { p: [1.05, spY - 0.05, 0.38], r: [0, -t * 2.5, 0], s: [0.05, 0.16, 0.05], col: [0.98, 0.45, 0.66], outline: 0.015, specStr: 0.7 });
+        } else if (state.mood === 'berpikir') {
+          for (let i = 0; i < 3; i++) {
+            const dy = Math.sin(t * 4.5 - i * 0.7) * 0.08;
+            drawPart(sphereMesh, head, { p: [0.68 + i * 0.20, 0.86 + i * 0.14 + dy, 0.35], s: [0.07 + i * 0.015, 0.07 + i * 0.015, 0.07 + i * 0.015], col: [0.24, 0.52, 0.96], outline: 0.015, specStr: 0.6 });
+          }
+        }
+      }
+
+      return {
+        state,
+        render,
+        setMood(m) {
+          const valid = NEKO_MOOD_META[m] ? m : 'santai';
+          if (state.mood !== valid) { state.mood = valid; state.faceDirty = true; }
+        },
+        setPose(p) {
+          if (p === 'duduk' || p === 'berdiri' || p === 'rebahan') state.pose = p;
+        },
+        setPeeking(p) {
+          state.peeking = Boolean(p);
+        },
+        setTalking(talking, mouthOpen = null) {
+          if (state.talking !== talking) { state.talking = talking; state.faceDirty = true; }
+          if (mouthOpen !== null) state.mouthOpen = mouthOpen;
+          else if (!talking) state.mouthOpen = 0;
+        },
+        poke() { state.pokeTimer = 0.58; }
+      };
+    }
+
+    // ================= PENGATUR NEKO 3D MELAYANG, POSE ALAMI & NGINTIP DI BALIK TAB =================
+    const NEKO_TAB_IDS = ['nav-dashboard', 'nav-saldo', 'nav-catat', 'nav-hutang', 'nav-rekap'];
+
+    let floatingNeko3D = null;
+    let modalNeko3D = null;
+    let neko3dLoopStarted = false;
+    const nekoFloatState = {
+      loggedIn: false,
+      minimized: false, // true = bersembunyi sambil mengintip di balik salah satu tab bawah
+      peekTabId: 'nav-rekap',
+      sneakTimers: [],
+      roaming: true,
+      pose: 'duduk',
+      x: 0,
+      y: 0,
+      vx: 0.42,
+      vy: 0.26,
+      dragging: false,
+      moved: 0,
+      dragOffsetX: 0,
+      dragOffsetY: 0,
+      lastPoseSwitchAt: 0,
+      lastSneakAt: 0,
+      bubbleTimeout: null
+    };
+
+    function getFloatingNekoBounds() {
+      const appCard = document.querySelector('.max-w-md');
+      const rect = appCard ? appCard.getBoundingClientRect() : { left: 0, right: window.innerWidth };
+      const minX = Math.max(8, rect.left + 8);
+      const maxX = Math.max(minX, Math.min(window.innerWidth - 136, rect.right - 136));
+      const minY = 82;
+      const maxY = Math.max(minY, window.innerHeight - 238);
+      return { minX, maxX, minY, maxY };
+    }
+
+    function clearNekoSneakTimers() {
+      nekoFloatState.sneakTimers.forEach(id => clearTimeout(id));
+      nekoFloatState.sneakTimers = [];
+    }
+
+    function getPeekCoordsForTab(tabId, ducked = false) {
+      const nav = document.getElementById('bottomNav');
+      const tabBtn = document.getElementById(tabId) || document.getElementById('nav-rekap');
+      const navRect = nav ? nav.getBoundingClientRect() : { left: 0, right: window.innerWidth, top: window.innerHeight - 65 };
+      const tabRect = tabBtn ? tabBtn.getBoundingClientRect() : { left: navRect.right - 76, width: 64 };
+      const minX = Math.max(4, navRect.left + 2);
+      const maxX = Math.max(minX, navRect.right - 130);
+      const x = Math.max(minX, Math.min(maxX, tabRect.left + tabRect.width / 2 - 64));
+      // 86px menyembul di atas pinggir tab (telinga, mata & tangan terlihat ngintip), 22px saat merunduk pindah tab!
+      const y = navRect.top - (ducked ? 22 : 86);
+      return { x, y };
+    }
+
+    function pickRandomPeekTab(excludeTabId = null) {
+      const candidates = NEKO_TAB_IDS.filter(id => id !== excludeTabId);
+      return candidates[Math.floor(Math.random() * candidates.length)] || 'nav-rekap';
+    }
+
+    function applyFloatingNekoPosition() {
+      const wrap = document.getElementById('floatingNekoWrap');
+      if (!wrap) return;
+      wrap.style.transform = `translate3d(${nekoFloatState.x.toFixed(1)}px, ${nekoFloatState.y.toFixed(1)}px, 0)`;
+    }
+
+    function showFloatingNekoBubble(text, ms = 2400) {
+      const b = document.getElementById('floatingNekoBubble');
+      const bt = document.getElementById('floatingNekoBubbleText');
+      if (!b || !bt) return;
+      bt.textContent = text;
+      b.classList.remove('bubble-hidden');
+      if (nekoFloatState.bubbleTimeout) clearTimeout(nekoFloatState.bubbleTimeout);
+      nekoFloatState.bubbleTimeout = setTimeout(() => b.classList.add('bubble-hidden'), ms);
+    }
+
+    function updateFloatingNekoButtonsUI() {
+      const btnRoam = document.getElementById('btnFloatRoam');
+      if (btnRoam) {
+        btnRoam.className = nekoFloatState.roaming
+          ? 'w-6 h-6 rounded-full bg-main-600 text-white text-[10px] shadow-sm border border-main-600 flex items-center justify-center transition active:scale-95'
+          : 'w-6 h-6 rounded-full bg-white/90 hover:bg-white text-gray-500 text-[10px] shadow-sm border border-gray-200 flex items-center justify-center transition active:scale-95';
+        btnRoam.title = nekoFloatState.roaming ? 'Melayang keliling: AKTIF (klik untuk parkir)' : 'Mode parkir: klik agar Neko melayang keliling';
+      }
+      const fStage = document.getElementById('floatingNekoStage');
+      if (fStage) {
+        fStage.title = nekoFloatState.minimized
+          ? 'Neko lagi ngintip! Klik untuk panggil keluar'
+          : 'Klik untuk Wejangan Neko • Seret untuk geser';
+        fStage.setAttribute('aria-label', nekoFloatState.minimized
+          ? 'Neko sedang mengintip di balik tab, klik untuk memunculkannya kembali'
+          : 'Maskot 3D Neko, klik untuk buka wejangan atau seret untuk memindahkan');
+      }
+    }
+
+    function sneakNekoToAnotherTab(targetTabId = null) {
+      if (!nekoFloatState.loggedIn || !nekoFloatState.minimized) return;
+      const wrap = document.getElementById('floatingNekoWrap');
+      if (!wrap || wrap.classList.contains('hide')) return;
+      clearNekoSneakTimers();
+
+      const nextTab = targetTabId && NEKO_TAB_IDS.includes(targetTabId)
+        ? targetTabId
+        : pickRandomPeekTab(nekoFloatState.peekTabId);
+      nekoFloatState.lastSneakAt = performance.now();
+
+      // 1. Merunduk sebentar di balik tab sekarang
+      wrap.classList.add('peek-glide');
+      const duckCur = getPeekCoordsForTab(nekoFloatState.peekTabId, true);
+      nekoFloatState.x = duckCur.x;
+      nekoFloatState.y = duckCur.y;
+      applyFloatingNekoPosition();
+
+      // 2. Mengendap-endap geser ke belakang tab baru
+      nekoFloatState.sneakTimers.push(setTimeout(() => {
+        if (!nekoFloatState.minimized) return;
+        nekoFloatState.peekTabId = nextTab;
+        const duckNext = getPeekCoordsForTab(nextTab, true);
+        nekoFloatState.x = duckNext.x;
+        nekoFloatState.y = duckNext.y;
+        applyFloatingNekoPosition();
+      }, 280));
+
+      // 3. Menyembul mengintip lagi dari balik tab baru!
+      nekoFloatState.sneakTimers.push(setTimeout(() => {
+        if (!nekoFloatState.minimized) return;
+        const peekPos = getPeekCoordsForTab(nextTab, false);
+        nekoFloatState.x = peekPos.x;
+        nekoFloatState.y = peekPos.y;
+        applyFloatingNekoPosition();
+      }, 640));
+    }
+
+    function syncFloatingNekoVisibility(animateTransition = false) {
+      const wrap = document.getElementById('floatingNekoWrap');
+      const modalOpen = !document.getElementById('nekoModal').classList.contains('hide');
+      if (!wrap) return;
+
+      if (!nekoFloatState.loggedIn || !floatingNeko3D || modalOpen) {
+        clearNekoSneakTimers();
+        wrap.classList.add('hide');
+        return;
+      }
+
+      wrap.classList.remove('hide');
+      if (nekoFloatState.minimized) {
+        if (animateTransition) wrap.classList.add('peek-glide');
+        else wrap.classList.remove('peek-glide');
+        wrap.classList.add('is-peeking');
+        floatingNeko3D.setPeeking(true);
+        const pos = getPeekCoordsForTab(nekoFloatState.peekTabId, false);
+        nekoFloatState.x = pos.x;
+        nekoFloatState.y = pos.y;
+        applyFloatingNekoPosition();
+      } else {
+        clearNekoSneakTimers();
+        wrap.classList.remove('is-peeking');
+        floatingNeko3D.setPeeking(false);
+        const b = getFloatingNekoBounds();
+        nekoFloatState.x = Math.max(b.minX, Math.min(b.maxX, nekoFloatState.x));
+        nekoFloatState.y = Math.max(b.minY, Math.min(b.maxY, nekoFloatState.y));
+        if (animateTransition) {
+          wrap.classList.add('peek-glide');
+          applyFloatingNekoPosition();
+          nekoFloatState.sneakTimers.push(setTimeout(() => wrap.classList.remove('peek-glide'), 560));
+        } else {
+          wrap.classList.remove('peek-glide');
+          applyFloatingNekoPosition();
+        }
+      }
+      updateFloatingNekoButtonsUI();
+    }
+
+    function setFloatingNekoLoggedIn(isLoggedIn) {
+      nekoFloatState.loggedIn = Boolean(isLoggedIn);
+      if (isLoggedIn) {
+        const b = getFloatingNekoBounds();
+        nekoFloatState.x = b.maxX;
+        nekoFloatState.y = b.maxY;
+        nekoFloatState.minimized = localStorage.getItem('pawketNekoMinimized') === '1';
+        nekoFloatState.peekTabId = pickRandomPeekTab(null);
+        nekoFloatState.lastSneakAt = performance.now();
+      } else {
+        clearNekoSneakTimers();
+      }
+      syncFloatingNekoVisibility(false);
+    }
+
+    function toggleFloatingNekoRoam() {
+      nekoFloatState.roaming = !nekoFloatState.roaming;
+      localStorage.setItem('pawketNekoRoam', nekoFloatState.roaming ? '1' : '0');
+      updateFloatingNekoButtonsUI();
+      showFloatingNekoBubble(nekoFloatState.roaming ? 'Neko jalan-jalan~' : 'Neko diam di sini ya!', 2000);
+    }
+
+    function toggleFloatingNekoMinimize(min) {
+      const nextMin = Boolean(min);
+      nekoFloatState.minimized = nextMin;
+      localStorage.setItem('pawketNekoMinimized', nextMin ? '1' : '0');
+      if (nextMin) {
+        nekoFloatState.peekTabId = pickRandomPeekTab(nekoFloatState.peekTabId);
+        nekoFloatState.lastSneakAt = performance.now();
+        syncFloatingNekoVisibility(true);
+        showFloatingNekoBubble('Psst... Neko ngintip di sini ya~', 2200);
+      } else {
+        const b = getFloatingNekoBounds();
+        nekoFloatState.y = Math.min(b.maxY, nekoFloatState.y - 95);
+        syncFloatingNekoVisibility(true);
+        if (floatingNeko3D) floatingNeko3D.poke();
+        showFloatingNekoBubble('Meong! Ketahuan deh~', 2000);
+      }
+    }
+
+    function initNeko3DSystem() {
+      if (neko3dLoopStarted) return;
+      neko3dLoopStarted = true;
+
+      const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const savedRoam = localStorage.getItem('pawketNekoRoam');
+      nekoFloatState.roaming = savedRoam === null ? !reducedMotion : savedRoam === '1';
+
+      floatingNeko3D = createNekoChi3DEngine(
+        document.getElementById('floatingNekoCanvas'),
+        document.getElementById('floatingNekoShadow'),
+        { camZ: -6.1, initYaw: -0.14 }
+      );
+      modalNeko3D = createNekoChi3DEngine(
+        document.getElementById('nekoModalCanvas'),
+        document.getElementById('nekoModalShadow'),
+        { camZ: -5.95, initYaw: 0.14 }
+      );
+
+      if (!modalNeko3D) {
+        const mc = document.getElementById('nekoModalCanvas');
+        const ms = document.getElementById('nekoModalShadow');
+        const mf = document.getElementById('nekoModalMascot');
+        if (mc) mc.classList.add('hide');
+        if (ms) ms.classList.add('hide');
+        if (mf) mf.classList.remove('hide');
+      }
+
+      const b = getFloatingNekoBounds();
+      nekoFloatState.x = b.maxX;
+      nekoFloatState.y = b.maxY;
+      nekoFloatState.lastPoseSwitchAt = performance.now();
+      nekoFloatState.lastSneakAt = performance.now();
+      applyFloatingNekoPosition();
+      updateFloatingNekoButtonsUI();
+
+      // Interaksi Seret & Klik pada Floating 3D Neko (dan klik keluar saat sedang ngintip di balik tab!)
+      const fStage = document.getElementById('floatingNekoStage');
+      if (fStage) {
+        fStage.addEventListener('pointerdown', (e) => {
+          if (nekoFloatState.minimized) {
+            toggleFloatingNekoMinimize(false);
+            return;
+          }
+          document.getElementById('floatingNekoWrap')?.classList.remove('peek-glide');
+          nekoFloatState.dragging = true;
+          nekoFloatState.moved = 0;
+          nekoFloatState.dragOffsetX = e.clientX - nekoFloatState.x;
+          nekoFloatState.dragOffsetY = e.clientY - nekoFloatState.y;
+          try { fStage.setPointerCapture(e.pointerId); } catch (_) {}
+        });
+        fStage.addEventListener('pointermove', (e) => {
+          if (!nekoFloatState.dragging || nekoFloatState.minimized) return;
+          const nx = e.clientX - nekoFloatState.dragOffsetX;
+          const ny = e.clientY - nekoFloatState.dragOffsetY;
+          nekoFloatState.moved += Math.abs(nx - nekoFloatState.x) + Math.abs(ny - nekoFloatState.y);
+          nekoFloatState.x = Math.max(4, Math.min(window.innerWidth - 132, nx));
+          nekoFloatState.y = Math.max(58, Math.min(window.innerHeight - 165, ny));
+          applyFloatingNekoPosition();
+        });
+        fStage.addEventListener('pointerup', () => {
+          if (!nekoFloatState.dragging) return;
+          nekoFloatState.dragging = false;
+          if (nekoFloatState.moved < 9) {
+            if (floatingNeko3D) floatingNeko3D.poke();
+            showNekoModal(false);
+          } else {
+            nekoFloatState.roaming = false;
+            updateFloatingNekoButtonsUI();
+          }
+        });
+        fStage.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            if (nekoFloatState.minimized) toggleFloatingNekoMinimize(false);
+            else showNekoModal(false);
+          }
+        });
+      }
+
+      // Interaksi Putar 360° & Klik Bicara pada Modal 3D Neko
+      const mStage = document.getElementById('nekoModal3dStage');
+      if (mStage) {
+        let mDrag = { active: false, moved: 0, lx: 0, ly: 0 };
+        mStage.addEventListener('pointerdown', (e) => {
+          mDrag = { active: true, moved: 0, lx: e.clientX, ly: e.clientY };
+          try { mStage.setPointerCapture(e.pointerId); } catch (_) {}
+        });
+        mStage.addEventListener('pointermove', (e) => {
+          if (!modalNeko3D) return;
+          if (mDrag.active) {
+            const dx = e.clientX - mDrag.lx;
+            const dy = e.clientY - mDrag.ly;
+            mDrag.moved += Math.abs(dx) + Math.abs(dy);
+            modalNeko3D.state.targetYaw += dx * 0.016;
+            modalNeko3D.state.targetPitch = Math.max(-0.55, Math.min(0.55, modalNeko3D.state.targetPitch + dy * 0.013));
+            mDrag.lx = e.clientX;
+            mDrag.ly = e.clientY;
+          }
+        });
+        mStage.addEventListener('pointerup', () => {
+          if (!mDrag.active) return;
+          mDrag.active = false;
+          if (mDrag.moved < 9) {
+            if (modalNeko3D) modalNeko3D.poke();
+            toggleBicaraNeko();
+          }
+        });
+        mStage.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleBicaraNeko();
+          }
+        });
+      }
+
+      window.addEventListener('resize', () => {
+        if (!nekoFloatState.loggedIn) return;
+        if (nekoFloatState.minimized) {
+          const pos = getPeekCoordsForTab(nekoFloatState.peekTabId, false);
+          nekoFloatState.x = pos.x;
+          nekoFloatState.y = pos.y;
+          applyFloatingNekoPosition();
+        } else {
+          const nb = getFloatingNekoBounds();
+          nekoFloatState.x = Math.max(nb.minX, Math.min(nb.maxX, nekoFloatState.x));
+          nekoFloatState.y = Math.max(nb.minY, Math.min(nb.maxY, nekoFloatState.y));
+          applyFloatingNekoPosition();
+        }
+      });
+
+      const t0 = performance.now();
+      const loop3d = (now) => {
+        if (document.visibilityState === 'visible') {
+          const t = (now - t0) / 1000;
+          const modalOpen = !document.getElementById('nekoModal').classList.contains('hide');
+
+          if (modalOpen && modalNeko3D) {
+            modalNeko3D.render(t);
+          } else if (nekoFloatState.loggedIn && floatingNeko3D) {
+            if (nekoFloatState.minimized) {
+              // Mode bersembunyi sambil mengintip di balik tab: sesekali berpindah mengendap-endap ke tab lain!
+              floatingNeko3D.state.targetYaw = 0;
+              if (!reducedMotion && (now - nekoFloatState.lastSneakAt > 24000)) {
+                sneakNekoToAnotherTab();
+              }
+            } else {
+              const typingInForm = document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+              if (nekoFloatState.roaming && !nekoFloatState.dragging && !typingInForm) {
+                const nb = getFloatingNekoBounds();
+                nekoFloatState.x += nekoFloatState.vx;
+                nekoFloatState.y += nekoFloatState.vy + Math.sin(t * 1.4) * 0.14;
+                if (nekoFloatState.x <= nb.minX) { nekoFloatState.x = nb.minX; nekoFloatState.vx = Math.abs(nekoFloatState.vx); }
+                if (nekoFloatState.x >= nb.maxX) { nekoFloatState.x = nb.maxX; nekoFloatState.vx = -Math.abs(nekoFloatState.vx); }
+                if (nekoFloatState.y <= nb.minY) { nekoFloatState.y = nb.minY; nekoFloatState.vy = Math.abs(nekoFloatState.vy); }
+                if (nekoFloatState.y >= nb.maxY) { nekoFloatState.y = nb.maxY; nekoFloatState.vy = -Math.abs(nekoFloatState.vy); }
+                floatingNeko3D.state.targetYaw = nekoFloatState.vx >= 0 ? 0.24 : -0.24;
+                applyFloatingNekoPosition();
+              } else {
+                floatingNeko3D.state.targetYaw = -0.14;
+              }
+
+              // Berganti pose secara alami (Duduk <-> Berdiri <-> Rebahan) tiap ~12 detik
+              if (nekoSpeechState !== 'speaking' && (now - nekoFloatState.lastPoseSwitchAt > 12000)) {
+                nekoFloatState.lastPoseSwitchAt = now;
+                const activeMood = getActiveNekoMood();
+                const pool = activeMood === 'sarkas'
+                  ? ['rebahan', 'rebahan', 'duduk']
+                  : ['duduk', 'duduk', 'berdiri', 'rebahan'];
+                const filtered = pool.filter(p => p !== nekoFloatState.pose);
+                const picked = filtered[Math.floor(Math.random() * filtered.length)] || 'duduk';
+                nekoFloatState.pose = picked;
+                floatingNeko3D.setPose(picked);
+              }
+            }
+            floatingNeko3D.render(t);
+          }
+        }
+        requestAnimationFrame(loop3d);
+      };
+      requestAnimationFrame(loop3d);
     }
 
     function getActiveNekoMood() {
@@ -1490,11 +2703,21 @@
       return NEKO_MOOD_META[m] ? m : 'santai';
     }
 
+    function getAutoPoseForMood(mood) {
+      if (mood === 'sarkas') return 'rebahan';
+      return 'duduk';
+    }
+
     function ensureNekoModalMascot(moodOverride = null) {
-      const holder = document.getElementById('nekoModalMascot');
-      if (!holder) return;
       const mood = moodOverride || getActiveNekoMood();
       const isTalking = nekoSpeechState === 'speaking';
+      if (modalNeko3D) {
+        modalNeko3D.setMood(mood);
+        modalNeko3D.setPose(getAutoPoseForMood(mood));
+        modalNeko3D.setTalking(isTalking);
+      }
+      const holder = document.getElementById('nekoModalMascot');
+      if (!holder) return;
       const existingSvg = holder.querySelector('.neko-svg');
       if (!existingSvg) {
         holder.innerHTML = buildNekoMascotSvg('modal', mood, isTalking);
@@ -1508,11 +2731,29 @@
       const mood = moodOverride || getActiveNekoMood();
       const isTalking = nekoSpeechState === 'speaking';
       ensureNekoModalMascot(mood);
+
+      if (modalNeko3D) {
+        modalNeko3D.setMood(mood);
+        modalNeko3D.setPose(getAutoPoseForMood(mood));
+        modalNeko3D.setTalking(isTalking, mouthOpen);
+      }
+      if (floatingNeko3D) {
+        floatingNeko3D.setMood(mood);
+        if (!nekoFloatState.minimized) {
+          const targetPose = isTalking ? 'duduk' : getAutoPoseForMood(mood);
+          if (nekoFloatState.pose !== targetPose && (mood === 'sarkas' || isTalking)) {
+            nekoFloatState.pose = targetPose;
+            floatingNeko3D.setPose(targetPose);
+          }
+        }
+        floatingNeko3D.setTalking(isTalking, mouthOpen);
+      }
+
       document.querySelectorAll('.neko-svg').forEach(svg => {
         svg.setAttribute('data-mood', mood);
         svg.setAttribute('data-talking', isTalking ? 'true' : 'false');
         if (mouthOpen !== null) {
-          svg.style.setProperty('--mouth-open', mouthOpen.toFixed(2));
+          svg.style.setProperty('--mouth-open', Math.max(0.08, mouthOpen).toFixed(2));
         } else if (!isTalking) {
           svg.style.removeProperty('--mouth-open');
         }
@@ -1569,7 +2810,7 @@
 
     function startAudioAnalyserLipSync(analyser) {
       const dataArr = new Uint8Array(analyser.fftSize);
-      let smoothed = 0.25;
+      let smoothed = 0;
       const tick = () => {
         if (nekoSpeechState !== 'speaking') return;
         analyser.getByteTimeDomainData(dataArr);
@@ -1579,8 +2820,10 @@
           sumSq += norm * norm;
         }
         const rms = Math.sqrt(sumSq / dataArr.length);
-        const target = Math.min(1.25, Math.max(0.18, rms * 5.2));
-        smoothed = smoothed * 0.55 + target * 0.45;
+        // Noise gate murni: saat jeda kata/suku kata turun ke 0 (mulut menutup rapat ":3"), lalu membuka sesuai volume suara
+        const target = rms < 0.022 ? 0 : Math.min(1.0, (rms - 0.022) * 7.8);
+        smoothed = smoothed * 0.42 + target * 0.58;
+        if (smoothed < 0.04) smoothed = 0;
         syncAllNekoMascots(null, smoothed);
         nekoLipSyncRaf = requestAnimationFrame(tick);
       };
@@ -1592,8 +2835,11 @@
       const tick = (now) => {
         if (nekoSpeechState !== 'speaking') return;
         const t = (now - startTime) / 1000;
-        const wave = 0.35 + Math.abs(Math.sin(t * 13.5)) * 0.55 + Math.abs(Math.sin(t * 5.3)) * 0.2;
-        syncAllNekoMascots(null, Math.min(1.15, wave));
+        const syllable = Math.sin(t * 15.5);
+        const phrase = 0.5 + 0.5 * Math.sin(t * 2.6);
+        const pulse = syllable > -0.10 ? Math.pow((syllable + 0.10) / 1.10, 1.35) : 0;
+        const wave = phrase < 0.14 ? 0 : Math.min(1, pulse * (0.68 + 0.32 * Math.sin(t * 6.4)));
+        syncAllNekoMascots(null, wave);
         nekoLipSyncRaf = requestAnimationFrame(tick);
       };
       nekoLipSyncRaf = requestAnimationFrame(tick);
@@ -1804,6 +3050,7 @@
       ensureNekoModalMascot();
       const modal = document.getElementById('nekoModal');
       modal.classList.remove('hide');
+      syncFloatingNekoVisibility();
       setTimeout(() => {
         modal.classList.remove('opacity-0');
         document.getElementById('nekoModalContent').classList.remove('scale-95');
@@ -1823,7 +3070,10 @@
       const modal = document.getElementById('nekoModal');
       modal.classList.add('opacity-0');
       document.getElementById('nekoModalContent').classList.add('scale-95');
-      setTimeout(() => modal.classList.add('hide'), 250);
+      setTimeout(() => {
+        modal.classList.add('hide');
+        syncFloatingNekoVisibility();
+      }, 250);
     }
 
     function toggleWejanganPasangan() {
@@ -3007,6 +4257,11 @@
 
       if (tabId === 'dashboard' && chartsPendingRender) {
         requestAnimationFrame(() => renderDashboardCharts());
+      }
+
+      // Jika user menekan tab tempat Neko bersembunyi, ia langsung merunduk & pindah mengintip di balik tab lain!
+      if (nekoFloatState.loggedIn && nekoFloatState.minimized && nekoFloatState.peekTabId === `nav-${tabId}`) {
+        sneakNekoToAnotherTab();
       }
 
       // Hindari fetch berulang setiap tap tab; hanya muat ulang jika data sudah > 60 detik atau belum pernah dimuat
