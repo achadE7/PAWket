@@ -208,7 +208,7 @@
     #floatingNekoWrap {
       position: fixed;
       z-index: 60;
-      width: 128px;
+      width: 152px;
       touch-action: none;
       user-select: none;
       will-change: transform;
@@ -230,8 +230,8 @@
     }
     #floatingNekoStage {
       position: relative;
-      width: 128px;
-      height: 128px;
+      width: 152px;
+      height: 152px;
       pointer-events: auto;
       cursor: grab;
     }
@@ -922,14 +922,14 @@
 
   <!-- ================= FLOATING 3D ANIME NEKO COMPANION ================= -->
   <div id="floatingNekoWrap" class="hide" style="left: 0; top: 0;">
-    <div id="floatingNekoBubble" class="bubble-hidden absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md border border-main-100">
+    <div id="floatingNekoBubble" class="bubble-hidden absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md border border-main-100">
       <span id="floatingNekoBubbleText">Meong! Klik Neko~</span>
     </div>
     <div id="floatingNekoStage" role="button" tabindex="0" aria-label="Maskot 3D Neko, klik untuk buka wejangan atau seret untuk memindahkan" title="Klik untuk Wejangan Neko • Seret untuk geser">
-      <div id="floatingNekoShadow" class="neko3d-shadow"></div>
+      <div id="floatingNekoShadow" class="neko3d-shadow" style="bottom: 12px;"></div>
       <canvas id="floatingNekoCanvas" class="relative z-10 w-full h-full block"></canvas>
     </div>
-    <div id="floatingNekoControls" class="flex items-center justify-center gap-1.5 -mt-1">
+    <div id="floatingNekoControls" class="flex items-center justify-center gap-1.5 -mt-2">
       <button type="button" id="btnFloatRoam" onclick="toggleFloatingNekoRoam()" aria-label="Atur gerak melayang Neko" title="Aktifkan/hentikan melayang keliling" class="w-6 h-6 rounded-full bg-white/90 hover:bg-white text-main-600 text-[10px] shadow-sm border border-gray-200 flex items-center justify-center transition active:scale-95">
         <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
       </button>
@@ -941,10 +941,10 @@
 
   <!-- ================= POPUP MODAL NEKO AI ================= -->
   <div id="nekoModal" role="dialog" aria-modal="true" aria-labelledby="nekoModalTitle" onclick="handleBackdropClose(event, closeNekoModal)" class="hide fixed inset-0 z-[100] bg-gray-900/60 flex items-center justify-center p-5 backdrop-blur-sm opacity-0 transition-opacity duration-300">
-    <div id="nekoModalContent" class="relative w-full max-w-sm mt-16 transform scale-95 transition-all duration-300">
-      <div class="absolute -top-24 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center">
-        <div id="nekoModal3dStage" role="button" tabindex="0" aria-label="Maskot 3D Neko, klik untuk mulai atau hentikan suara, seret untuk putar 3D" title="Klik untuk bicara • Seret untuk putar 360°" class="relative w-40 h-36 flex items-center justify-center cursor-grab active:cursor-grabbing select-none touch-none">
-          <div id="nekoModalShadow" class="neko3d-shadow" style="bottom: 10px; width: 84px; margin-left: -42px;"></div>
+    <div id="nekoModalContent" class="relative w-full max-w-sm mt-20 transform scale-95 transition-all duration-300">
+      <div class="absolute -top-28 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center">
+        <div id="nekoModal3dStage" role="button" tabindex="0" aria-label="Maskot 3D Neko, klik untuk mulai atau hentikan suara, seret untuk putar 3D" title="Klik untuk bicara • Seret untuk putar 360°" class="relative w-44 h-44 flex items-center justify-center cursor-grab active:cursor-grabbing select-none touch-none">
+          <div id="nekoModalShadow" class="neko3d-shadow" style="bottom: 14px; width: 84px; margin-left: -42px;"></div>
           <canvas id="nekoModalCanvas" class="relative z-10 w-full h-full block"></canvas>
           <div id="nekoModalMascot" class="hide w-28 h-28 rounded-full bg-gradient-to-b from-main-50 to-accent-50 border-4 border-white shadow-lg flex items-center justify-center p-1"></div>
         </div>
@@ -2114,11 +2114,11 @@
         state.yaw += (state.targetYaw - state.yaw) * 0.12;
         state.pitch += (state.targetPitch - state.pitch) * 0.12;
 
-        const pokeHop = state.pokeTimer > 0 ? Math.sin((state.pokeTimer / 0.58) * Math.PI) * 0.34 : 0;
+        const pokeHop = state.pokeTimer > 0 ? Math.sin((state.pokeTimer / 0.58) * Math.PI) * 0.28 : 0;
         const panicShake = state.mood === 'panik' ? Math.sin(t * 34) * 0.04 : 0;
         const floatY = state.peeking
           ? (Math.sin(t * 1.65) * 0.075 - 0.04 + pokeHop)
-          : (Math.sin(t * 2.2) * mixP(0.10, 0.14, 0.06) + mixP(0.14, 0.16, 0.04) + pokeHop + (state.mood === 'bangga' ? Math.abs(Math.sin(t * 5.2)) * 0.12 : 0));
+          : (Math.sin(t * 2.2) * mixP(0.10, 0.14, 0.06) + mixP(0.10, 0.12, 0.02) + pokeHop + (state.mood === 'bangga' ? Math.abs(Math.sin(t * 5.2)) * 0.12 : 0));
         const idleYaw = state.peeking ? Math.sin(t * 0.85) * 0.28 : Math.sin(t * 0.9) * 0.12;
 
         if (shadowEl) {
@@ -2126,7 +2126,8 @@
           shadowEl.style.transform = `scale(${shScale.toFixed(2)})`;
         }
 
-        let root = m4.mul(m4.trans(panicShake, floatY, state.camZ), m4.rotY(state.yaw + idleYaw));
+        // Geser pusat vertikal -0.22 agar telinga, efek marah/bintang, dan lompatan punya ruang atas luas tanpa pernah terpotong!
+        let root = m4.mul(m4.trans(panicShake, floatY - 0.22, state.camZ), m4.rotY(state.yaw + idleYaw));
         root = m4.mul(root, m4.rotX(state.pitch));
 
         // 1. Tubuh 3D
@@ -2217,18 +2218,19 @@
           }
         });
 
-        // 4. Ekor Belang Abu-Charcoal
-        const tailPuff = state.mood === 'panik' ? 1.32 : 1.0;
-        for (let seg = 0; seg < 7; seg++) {
-          const wag = Math.sin(t * (state.mood === 'panik' ? 14 : 2.8) - seg * 0.42) * (state.mood === 'panik' ? 0.08 : 0.20);
-          const frac = seg / 6;
+        // 4. Ekor Belang Abu-Charcoal (11 segmen rapat menyambung mulus tanpa putus!)
+        const tailPuff = state.mood === 'panik' ? 1.28 : 1.0;
+        for (let seg = 0; seg < 11; seg++) {
+          const frac = seg / 10;
+          const wag = Math.sin(t * (state.mood === 'panik' ? 14 : 2.8) - frac * 2.5) * (state.mood === 'panik' ? 0.08 : 0.18);
           const ang = -0.35 + frac * 1.95;
-          const sx = mixP(0.22 + Math.sin(ang) * 0.68 + wag * frac * 0.22, 0.48 + seg * 0.15 + wag * (seg * 0.22), 0.10 + seg * 0.10 + wag * (seg * 0.26));
-          const sy = mixP(-1.50 + frac * 0.12 + (state.mood === 'panik' ? frac * 0.72 : 0), -1.32 + seg * 0.22 + (state.mood === 'panik' ? seg * 0.04 : 0), -0.96 + seg * 0.10);
-          const sz = mixP(-0.52 + (1 - Math.cos(ang)) * 0.56, -0.44 - seg * 0.06, -1.24 - seg * 0.14);
-          const rad = (0.142 - seg * 0.005) * tailPuff;
-          const col = (seg === 6 || seg % 2 === 1) ? [0.20, 0.21, 0.22] : [0.56, 0.57, 0.59];
-          drawPart(sphereMesh, root, { p: [sx, sy, sz], s: [rad, rad, rad], col, outline: 0.026 });
+          const sx = mixP(0.22 + Math.sin(ang) * 0.68 + wag * frac * 0.22, 0.44 + frac * 0.78 + wag * frac * 0.85, 0.08 + frac * 0.56 + wag * frac * 0.95);
+          const sy = mixP(-1.50 + frac * 0.12 + (state.mood === 'panik' ? frac * 0.72 : 0), -1.32 + frac * 1.15 + (state.mood === 'panik' ? frac * 0.22 : 0), -0.96 + frac * 0.52);
+          const sz = mixP(-0.52 + (1 - Math.cos(ang)) * 0.56, -0.44 - frac * 0.34, -1.24 - frac * 0.82);
+          const rad = (0.145 - frac * 0.025) * tailPuff;
+          const stripeBand = Math.floor(frac * 5.99);
+          const col = (seg === 10 || stripeBand % 2 === 1) ? [0.20, 0.21, 0.22] : [0.56, 0.57, 0.59];
+          drawPart(sphereMesh, root, { p: [sx, sy, sz], s: [rad, rad, rad], col, outline: 0.025 });
         }
 
         // 5. Kepala Bulat Chi + Telinga Segitiga + 6 Kumis 3D
@@ -2331,10 +2333,10 @@
     function getFloatingNekoBounds() {
       const appCard = document.querySelector('.max-w-md');
       const rect = appCard ? appCard.getBoundingClientRect() : { left: 0, right: window.innerWidth };
-      const minX = Math.max(8, rect.left + 8);
-      const maxX = Math.max(minX, Math.min(window.innerWidth - 136, rect.right - 136));
-      const minY = 82;
-      const maxY = Math.max(minY, window.innerHeight - 238);
+      const minX = Math.max(4, rect.left + 4);
+      const maxX = Math.max(minX, Math.min(window.innerWidth - 156, rect.right - 156));
+      const minY = 74;
+      const maxY = Math.max(minY, window.innerHeight - 256);
       return { minX, maxX, minY, maxY };
     }
 
@@ -2348,11 +2350,11 @@
       const tabBtn = document.getElementById(tabId) || document.getElementById('nav-rekap');
       const navRect = nav ? nav.getBoundingClientRect() : { left: 0, right: window.innerWidth, top: window.innerHeight - 65 };
       const tabRect = tabBtn ? tabBtn.getBoundingClientRect() : { left: navRect.right - 76, width: 64 };
-      const minX = Math.max(4, navRect.left + 2);
-      const maxX = Math.max(minX, navRect.right - 130);
-      const x = Math.max(minX, Math.min(maxX, tabRect.left + tabRect.width / 2 - 64));
-      // 86px menyembul di atas pinggir tab (telinga, mata & tangan terlihat ngintip), 22px saat merunduk pindah tab!
-      const y = navRect.top - (ducked ? 22 : 86);
+      const minX = Math.max(0, navRect.left - 8);
+      const maxX = Math.max(minX, navRect.right - 144);
+      const x = Math.max(minX, Math.min(maxX, tabRect.left + tabRect.width / 2 - 76));
+      // 104px menyembul di atas pinggir tab (telinga utuh, mata & tangan terlihat ngintip), 42px saat merunduk pindah tab!
+      const y = navRect.top - (ducked ? 42 : 104);
       return { x, y };
     }
 
@@ -2525,12 +2527,12 @@
       floatingNeko3D = createNekoChi3DEngine(
         document.getElementById('floatingNekoCanvas'),
         document.getElementById('floatingNekoShadow'),
-        { camZ: -6.1, initYaw: -0.14 }
+        { camZ: -8.15, initYaw: -0.14 }
       );
       modalNeko3D = createNekoChi3DEngine(
         document.getElementById('nekoModalCanvas'),
         document.getElementById('nekoModalShadow'),
-        { camZ: -5.95, initYaw: 0.14 }
+        { camZ: -7.95, initYaw: 0.14 }
       );
 
       if (!modalNeko3D) {
@@ -2570,8 +2572,8 @@
           const nx = e.clientX - nekoFloatState.dragOffsetX;
           const ny = e.clientY - nekoFloatState.dragOffsetY;
           nekoFloatState.moved += Math.abs(nx - nekoFloatState.x) + Math.abs(ny - nekoFloatState.y);
-          nekoFloatState.x = Math.max(4, Math.min(window.innerWidth - 132, nx));
-          nekoFloatState.y = Math.max(58, Math.min(window.innerHeight - 165, ny));
+          nekoFloatState.x = Math.max(0, Math.min(window.innerWidth - 152, nx));
+          nekoFloatState.y = Math.max(48, Math.min(window.innerHeight - 185, ny));
           applyFloatingNekoPosition();
         });
         fStage.addEventListener('pointerup', () => {
