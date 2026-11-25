@@ -4439,14 +4439,30 @@
       }
     }
 
+    function getUniqueDompetList() {
+      const raw = listKategori.dompet?.length > 0
+        ? listKategori.dompet
+        : ["Uang Cash", "BNI", "BRI", "BCA", "Mandiri", "GoPay", "Spay", "Dana", "Tapcash"];
+      const seen = new Set();
+      const unique = [];
+      raw.forEach(d => {
+        const clean = cleanPosName(d);
+        if (!clean) return;
+        const key = clean.toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        unique.push(clean);
+      });
+      return unique;
+    }
+
     function openTambahDompetModal(onSuccessCallback = null) {
       const usedKeys = new Set([
         ...Object.keys(latestDompetPerUser?.[activeUser] || {}),
         ...getPinnedWalletsForUser(activeUser)
       ].map(k => cleanPosName(k).toLowerCase()));
-      const availableUnused = (listKategori.dompet || [])
-        .map(cleanPosName)
-        .filter(d => d && !usedKeys.has(d.toLowerCase()));
+      const availableUnused = getUniqueDompetList()
+        .filter(d => !usedKeys.has(d.toLowerCase()));
 
       openAddMasterModal({
         tipe: 'Dompet',
@@ -4503,8 +4519,7 @@
 
     // ================= MODAL TRANSFER =================
     function openTransferModal() {
-      const dompetList = listKategori.dompet?.length > 0 ? listKategori.dompet : ["Uang Cash", "BNI", "BRI", "BCA", "Mandiri", "GoPay", "Spay", "Dana", "Tapcash"];
-      const uniqueClean = [...new Set(dompetList.map(cleanPosName).filter(Boolean))];
+      const uniqueClean = getUniqueDompetList();
       // Urutkan dompet dengan saldo > 0 di paling atas untuk sumber transfer
       const sortedDari = [...uniqueClean].sort((a, b) => getMyWalletBalance(b) - getMyWalletBalance(a));
 
@@ -4789,12 +4804,10 @@
       const nominalInput = document.getElementById('bayarHutangNominal');
       setRupiahInputValue('bayarHutangNominal', h.sisaHutang);
 
-      const myWallets = latestDompetPerUser?.[activeUser] || {};
-      const dompetList = listKategori.dompet?.length > 0 ? listKategori.dompet : ["Uang Cash", "BNI", "BRI", "BCA", "Mandiri", "GoPay", "Spay", "Dana", "Tapcash"];
+      const dompetList = getUniqueDompetList();
 
-      document.getElementById('bayarHutangMetode').innerHTML = dompetList.map(d => {
-        const cleanD = cleanPosName(d);
-        return `<option value="${escapeHtml(cleanD)}">${escapeHtml(cleanD)} (${formatRp(myWallets[cleanD] || 0)})</option>`;
+      document.getElementById('bayarHutangMetode').innerHTML = dompetList.map(cleanD => {
+        return `<option value="${escapeHtml(cleanD)}">${escapeHtml(cleanD)} (${formatRp(getMyWalletBalance(cleanD))})</option>`;
       }).join('');
 
       document.getElementById('bayarHutangModal').classList.remove('hide');
@@ -4869,7 +4882,7 @@
       const select = document.getElementById('inputMetode');
       const label = document.getElementById('labelMetodeBayar');
       const hintTab = document.getElementById('hintMetodeTabungan');
-      const dompetList = listKategori.dompet?.length > 0 ? listKategori.dompet : ["Uang Cash", "BNI", "BRI", "BCA", "Mandiri", "GoPay", "Spay", "Dana", "Tapcash"];
+      const dompetList = getUniqueDompetList();
       const paylaterList = listKategori.paylater || ["GopayLater", "SpayLater", "TiktokPaylater", "Kredivo", "Indodana"];
 
       hintTab.classList.toggle('hide', tipeAktif !== 'Tabungan');
@@ -5459,7 +5472,7 @@
       katSel.disabled = isTrf || isAdj || Boolean(item.isPayHutang);
 
       // Isi dropdown metode sesuai tipe
-      const dompetList = (listKategori.dompet || ["Uang Cash", "BNI", "BRI", "BCA", "Mandiri", "GoPay", "Spay", "Dana", "Tapcash"]).map(cleanPosName);
+      const dompetList = getUniqueDompetList();
       if (isTrf) {
         metodeBox.classList.add('hide');
       } else if (isTab) {
