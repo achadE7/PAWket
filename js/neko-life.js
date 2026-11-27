@@ -53,8 +53,9 @@ const nekoLife = {
   balloonColorIdx: 0,
   x: 60,
   y: 120,
-  vx: 0.44,
-  vy: 0.28,
+  vx: 10.5,             // piksel per detik (berbasis delta-time agar konsisten 60-120Hz)
+  vy: 6.5,
+  lastFrameAt: 0,
   dragging: false,
   moved: 0,
   dragOffsetX: 0,
@@ -180,6 +181,7 @@ function placeNeko() {
     }
     if (mainNeko3D) {
       mainNeko3D.setPeeking(false);
+      mainNeko3D.setGrounded(false);
       mainNeko3D.setBalloon(true, nekoLife.balloonColorIdx);
       mainNeko3D.setPose('berdiri');
     } else {
@@ -208,8 +210,9 @@ function placeNeko() {
     if (mainNeko3D) {
       mainNeko3D.setPeeking(false);
       mainNeko3D.setBalloon(false);
+      mainNeko3D.setGrounded(isMeja);
       mainNeko3D.setPose(isMeja ? nekoLife.deskPose : 'duduk');
-      mainNeko3D.state.targetYaw = isMeja ? -0.10 : 0.02;
+      mainNeko3D.state.targetYaw = isMeja ? -0.06 : 0.02;
     } else {
       mainNekoNode.innerHTML = buildNekoMascotSvg('main', getActiveNekoMood(), nekoSpeechState === 'speaking', false);
     }
@@ -223,6 +226,7 @@ function placeNeko() {
     }
     if (mainNeko3D) {
       mainNeko3D.setBalloon(false);
+      mainNeko3D.setGrounded(false);
       mainNeko3D.setPeeking(true);
       mainNeko3D.state.targetYaw = 0;
     } else {
@@ -327,6 +331,7 @@ function setFloatingNekoLoggedIn(isLoggedIn) {
     nekoLife.y = Math.round(b.minY + 40);
   } else {
     clearNekoSneakTimers();
+    resetNekoChatSession();
   }
   placeNeko();
 }
@@ -359,9 +364,13 @@ function requestNekoRenderFrame() {
 function nekoLoopTick(now) {
   nekoRafId = null;
   if (!shouldRunNekoLoop()) {
+    nekoLife.lastFrameAt = 0;
     requestNekoRenderFrame();
     return;
   }
+
+  const dt = nekoLife.lastFrameAt ? Math.min(0.05, Math.max(0.001, (now - nekoLife.lastFrameAt) / 1000)) : 0.016;
+  nekoLife.lastFrameAt = now;
 
   const motionOn = document.documentElement.dataset.motion !== 'off';
   const t = motionOn ? (now - nekoT0) / 1000 : FROZEN_NEKO_T;
@@ -387,13 +396,13 @@ function nekoLoopTick(now) {
       const typingInForm = document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
       if (motionOn && nekoLife.roaming && !nekoLife.dragging && !typingInForm) {
         const nb = getFloatingNekoBounds();
-        nekoLife.x += nekoLife.vx;
-        nekoLife.y += nekoLife.vy + Math.sin(t * 1.45) * 0.18;
+        nekoLife.x += nekoLife.vx * dt;
+        nekoLife.y += (nekoLife.vy + Math.sin(t * 0.8) * 3.0) * dt;
         if (nekoLife.x <= nb.minX) { nekoLife.x = nb.minX; nekoLife.vx = Math.abs(nekoLife.vx); }
         if (nekoLife.x >= nb.maxX) { nekoLife.x = nb.maxX; nekoLife.vx = -Math.abs(nekoLife.vx); }
         if (nekoLife.y <= nb.minY) { nekoLife.y = nb.minY; nekoLife.vy = Math.abs(nekoLife.vy); }
         if (nekoLife.y >= nb.maxY) { nekoLife.y = nb.maxY; nekoLife.vy = -Math.abs(nekoLife.vy); }
-        mainNeko3D.state.targetYaw = nekoLife.vx >= 0 ? 0.20 : -0.20;
+        mainNeko3D.state.targetYaw = nekoLife.vx >= 0 ? 0.16 : -0.16;
         applyFloatingNekoPosition();
       } else {
         mainNeko3D.state.targetYaw = -0.10;
@@ -749,18 +758,14 @@ async function playNekoWavBase64(audioBase64, mimeType, reqId) {
   }
 }
 
-async function toggleBicaraNeko() {
+async function speakCustomNekoText(teks, moodOverride = null) {
   if (nekoSpeechState === 'speaking' || nekoSpeechState === 'loading') {
     stopNekoSpeech();
     return;
   }
-  const isMe = wejanganState.mode === "me";
-  const teks = isMe ? wejanganState.komentarKu : wejanganState.komentarPasangan;
-  const mood = getActiveNekoMood();
-  if (!teks || !teks.trim()) {
-    showNekoModal(false);
-    return;
-  }
+  const clean = String(teks || '').trim();
+  if (!clean) return;
+  const mood = NEKO_MOOD_META[moodOverride] ? moodOverride : getActiveNekoMood();
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   if (AudioCtx) {
     try {
@@ -769,7 +774,7 @@ async function toggleBicaraNeko() {
     } catch (_) {}
   }
   const reqId = ++nekoSpeechRequestId;
-  const cacheKey = `${selectedNekoVoice}|${mood}|${teks}`;
+  const cacheKey = `${selectedNekoVoice}|${mood}|${clean}`;
   if (nekoAudioCache.has(cacheKey)) {
     const cached = nekoAudioCache.get(cacheKey);
     await playNekoWavBase64(cached.audioBase64, cached.mimeType, reqId);
@@ -777,7 +782,7 @@ async function toggleBicaraNeko() {
   }
   nekoSpeechState = 'loading';
   updateNekoVoiceButtonsUI();
-  const res = await callAPI('ttsNeko', { teks, voice: selectedNekoVoice, mood });
+  const res = await callAPI('ttsNeko', { teks: clean, voice: selectedNekoVoice, mood });
   if (reqId !== nekoSpeechRequestId) return;
   if (res?.sukses && res.audioBase64) {
     if (nekoAudioCache.size >= 8) nekoAudioCache.delete(nekoAudioCache.keys().next().value);
@@ -785,28 +790,385 @@ async function toggleBicaraNeko() {
     await playNekoWavBase64(res.audioBase64, res.mimeType || 'audio/wav', reqId);
   } else if (!res?.authError) {
     showToast('Suara AI sedang padat, memakai suara cadangan browser.', 'info');
-    playNekoBrowserSpeechFallback(teks, selectedNekoVoice, reqId);
+    playNekoBrowserSpeechFallback(clean, selectedNekoVoice, reqId);
   } else {
     stopNekoSpeech();
   }
 }
 
-function bukaPopupNekoSekarang() {
+async function toggleBicaraNeko() {
+  if (nekoSpeechState === 'speaking' || nekoSpeechState === 'loading') {
+    stopNekoSpeech();
+    return;
+  }
+  if (nekoChatState.mode === 'chat') {
+    const lastNeko = [...nekoChatState.messages].reverse().find(m => m.role === 'neko' && m.text);
+    if (lastNeko) {
+      await speakCustomNekoText(lastNeko.text, lastNeko.mood || 'santai');
+      return;
+    }
+  }
+  const isMe = wejanganState.mode === "me";
+  const teks = isMe ? wejanganState.komentarKu : wejanganState.komentarPasangan;
+  const mood = getActiveNekoMood();
+  if (!teks || !teks.trim()) {
+    showNekoModal(false);
+    return;
+  }
+  await speakCustomNekoText(teks, mood);
+}
+
+const nekoChatState = {
+  mode: 'wejangan',
+  messages: [],
+  isSending: false,
+  recognition: null,
+  isListening: false
+};
+
+function resetNekoChatSession() {
+  stopVoiceInputNeko();
+  nekoChatState.mode = 'wejangan';
+  nekoChatState.messages = [];
+  nekoChatState.isSending = false;
+}
+
+function stopVoiceInputNeko() {
+  if (nekoChatState.recognition) {
+    try { nekoChatState.recognition.stop(); } catch (_) {}
+    nekoChatState.recognition = null;
+  }
+  nekoChatState.isListening = false;
+  const btn = document.getElementById('btnNekoChatMic');
+  if (btn) {
+    btn.classList.remove('mic-listening');
+    btn.setAttribute('aria-label', 'Bicara lewat mikrofon');
+    btn.innerHTML = svgIcon('i-mic');
+  }
+}
+
+function syncVoiceButtonAvailability() {
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const btn = document.getElementById('btnNekoChatMic');
+  const form = document.getElementById('formNekoChat');
+  if (!btn || !form) return;
+  const supported = Boolean(SpeechRec);
+  btn.classList.toggle('hide', !supported);
+  form.classList.toggle('no-mic', !supported);
+}
+
+function toggleVoiceInputNeko() {
+  if (nekoChatState.isListening) {
+    stopVoiceInputNeko();
+    return;
+  }
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRec) return showToast('Browser ini belum mendukung input suara.', 'info');
+  stopNekoSpeech();
+  const rec = new SpeechRec();
+  rec.lang = 'id-ID';
+  rec.interimResults = false;
+  rec.maxAlternatives = 1;
+  nekoChatState.recognition = rec;
+  nekoChatState.isListening = true;
+  const btn = document.getElementById('btnNekoChatMic');
+  if (btn) {
+    btn.classList.add('mic-listening');
+    btn.setAttribute('aria-label', 'Hentikan rekaman suara');
+    btn.innerHTML = svgIcon('i-stop');
+  }
+  rec.onresult = (ev) => {
+    const transcript = ev.results?.[0]?.[0]?.transcript?.trim();
+    const input = document.getElementById('inputNekoChat');
+    if (transcript && input) {
+      input.value = input.value ? `${input.value} ${transcript}` : transcript;
+      input.focus();
+    }
+  };
+  rec.onerror = () => {
+    showToast('Gagal menangkap suara. Pastikan izin mikrofon aktif.', 'error');
+    stopVoiceInputNeko();
+  };
+  rec.onend = () => stopVoiceInputNeko();
+  try { rec.start(); } catch (_) { stopVoiceInputNeko(); }
+}
+
+function switchNekoModalMode(mode) {
+  stopNekoSpeech();
+  stopVoiceInputNeko();
+  nekoChatState.mode = mode === 'chat' ? 'chat' : 'wejangan';
+  const isChat = nekoChatState.mode === 'chat';
+  const btnW = document.getElementById('btnNekoModeWejangan');
+  const btnC = document.getElementById('btnNekoModeChat');
+  const panelW = document.getElementById('nekoWejanganPanel');
+  const panelC = document.getElementById('nekoChatPanel');
+  const titleEl = document.getElementById('nekoModalTitle');
+  if (btnW) btnW.setAttribute('aria-pressed', String(!isChat));
+  if (btnC) btnC.setAttribute('aria-pressed', String(isChat));
+  if (panelW) panelW.classList.toggle('hide', isChat);
+  if (panelC) panelC.classList.toggle('hide', !isChat);
+  if (titleEl) titleEl.innerText = isChat ? 'Chat Neko AI' : 'Wejangan Neko';
+  if (isChat) {
+    syncVoiceButtonAvailability();
+    if (nekoChatState.messages.length === 0) {
+      const myShort = (activeUser || 'Kamu').split(' ')[0];
+      nekoChatState.messages.push({
+        role: 'neko',
+        mood: 'santai',
+        text: `Meong ${myShort}! Mau konsultasi keuangan atau langsung lapor pemasukan dan pengeluaran? Tulis saja di sini ya!`,
+        drafts: []
+      });
+    }
+    renderNekoChatUI();
+    const input = document.getElementById('inputNekoChat');
+    if (input) setTimeout(() => input.focus(), 40);
+  }
+}
+
+function getChatDraftCategoryOptions(tipe, currentVal) {
+  const base = tipe === 'Pemasukan'
+    ? (listKategori.masuk?.length ? listKategori.masuk : ['Gaji', 'Bonus / Lainnya'])
+    : tipe === 'Tabungan'
+      ? (listKategori.tabungan?.length ? listKategori.tabungan : ['Simpanan', 'Liburan', 'Keperluan Lainnya']).map(cleanPosName)
+      : (listKategori.keluar?.length ? listKategori.keluar : ['Makan & Minum', 'Belanja Bulanan', 'Transportasi', 'Hiburan & Kencan', 'Keperluan Anabul']);
+  const opts = [...base];
+  if (currentVal && !opts.some(o => cleanPosName(o).toLowerCase() === cleanPosName(currentVal).toLowerCase())) {
+    opts.unshift(currentVal);
+  }
+  return opts;
+}
+
+function getChatDraftMethodOptions(tipe, currentVal) {
+  const wallets = getUniqueDompetList();
+  const base = tipe === 'Tabungan'
+    ? ['Virtual', ...wallets]
+    : tipe === 'Pengeluaran'
+      ? [...wallets, ...(listKategori.paylater || [])]
+      : [...wallets];
+  if (currentVal && !base.some(m => m.toLowerCase() === currentVal.toLowerCase())) {
+    base.unshift(currentVal);
+  }
+  return base;
+}
+
+function renderNekoChatUI() {
+  const container = document.getElementById('nekoChatMessages');
+  if (!container) return;
+  const quickBox = document.getElementById('nekoChatQuickChips');
+  if (quickBox) quickBox.classList.toggle('hide', nekoChatState.messages.length > 2);
+
+  container.innerHTML = nekoChatState.messages.map((msg, mIdx) => {
+    if (msg.role === 'user') {
+      return `<div class="chat-msg is-user"><p>${escapeHtml(msg.text)}</p></div>`;
+    }
+    const draftsHtml = (msg.drafts || []).map((dr, dIdx) => {
+      if (dr.status === 'saved') {
+        return `<div class="chat-draft" style="border-color:var(--ok);background:var(--ok-bg)"><p class="small txt-ok" style="font-weight:900;display:flex;align-items:center;gap:6px">${svgIcon('i-check', 'ico ico-sm')}<span>Tersimpan: ${escapeHtml(stripCategoryEmoji(dr.kategori) || dr.kategori)} (${formatRp(dr.nominal)})</span></p></div>`;
+      }
+      if (dr.status === 'cancelled') {
+        return `<div class="chat-draft"><p class="small muted" style="font-weight:700">Draft transaksi dibatalkan.</p></div>`;
+      }
+      const katOpts = getChatDraftCategoryOptions(dr.tipe, dr.kategori);
+      const metOpts = getChatDraftMethodOptions(dr.tipe, dr.metode);
+      const matchedKat = katOpts.find(k => cleanPosName(k).toLowerCase() === cleanPosName(dr.kategori).toLowerCase()) || katOpts[0] || dr.kategori;
+      const matchedMet = metOpts.find(m => m.toLowerCase() === String(dr.metode || '').toLowerCase()) || metOpts[0] || 'Uang Cash';
+      const idPref = `chatDr_${mIdx}_${dIdx}`;
+      const badgeCls = dr.tipe === 'Pemasukan' ? 'pen-reza' : (dr.tipe === 'Tabungan' ? 'txt-ok' : 'pen-naghiya');
+      const tipeLabel = dr.tipe === 'Tabungan' ? `Tabungan (${dr.jenisTabungan || 'Setor'})` : dr.tipe;
+      return `
+        <div class="chat-draft" id="${idPref}_box">
+          <div class="chat-draft-head">
+            <span class="chat-draft-badge ${badgeCls}">${escapeHtml(tipeLabel)}</span>
+            <span class="small muted">${escapeHtml(dr.tanggal || todayIso())}</span>
+          </div>
+          <div class="chat-draft-grid">
+            <div class="chat-draft-field">
+              <label for="${idPref}_nom">Nominal (Rp)</label>
+              <input class="input num" type="text" id="${idPref}_nom" inputmode="numeric" value="${escapeHtml(formatRupiahString(dr.nominal))}" oninput="formatRupiahInput(this)">
+            </div>
+            <div class="chat-draft-field">
+              <label for="${idPref}_kat">Kategori</label>
+              <select class="input" id="${idPref}_kat">${katOpts.map(k => `<option value="${escapeHtml(k)}" ${k === matchedKat ? 'selected' : ''}>${escapeHtml(stripCategoryEmoji(k) || k)}</option>`).join('')}</select>
+            </div>
+            <div class="chat-draft-field">
+              <label for="${idPref}_met">Dompet / Metode</label>
+              <select class="input" id="${idPref}_met">${metOpts.map(m => `<option value="${escapeHtml(m)}" ${m === matchedMet ? 'selected' : ''}>${escapeHtml(m)}</option>`).join('')}</select>
+            </div>
+            <div class="chat-draft-field">
+              <label for="${idPref}_cat">Catatan</label>
+              <input class="input" type="text" id="${idPref}_cat" value="${escapeHtml(dr.catatan || '')}">
+            </div>
+          </div>
+          <div class="chat-draft-actions">
+            <button type="button" id="${idPref}_save" onclick="simpanDraftChatNeko(${mIdx}, ${dIdx})" class="btn btn-primary btn-sm">Simpan ke Catatan</button>
+            <button type="button" onclick="batalDraftChatNeko(${mIdx}, ${dIdx})" class="btn btn-sm">Batal</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="chat-msg is-neko">
+        <div class="chat-msg-head">
+          <span class="chat-msg-who">Neko</span>
+          <button type="button" data-midx="${mIdx}" onclick="dengarkanBalasanChatNeko(Number(this.dataset.midx))" class="chat-speak-btn" aria-label="Dengarkan balasan Neko">
+            ${svgIcon('i-volume', 'ico ico-sm')}<span>Suara</span>
+          </button>
+        </div>
+        <p>${escapeHtml(msg.text).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>
+        ${draftsHtml}
+      </div>
+    `;
+  }).join('') + (nekoChatState.isSending ? `<div class="chat-msg is-neko"><p class="small muted" style="display:flex;align-items:center;gap:6px">${spinnerIcon('ico ico-sm spin')}<span>Neko sedang mengetik...</span></p></div>` : '');
+
+  container.scrollTop = container.scrollHeight;
+}
+
+function dengarkanBalasanChatNeko(msgIdx) {
+  const msg = nekoChatState.messages[msgIdx];
+  if (!msg || !msg.text) return;
+  speakCustomNekoText(msg.text, msg.mood || 'santai');
+}
+
+function kirimContohChatNeko(teks) {
+  const input = document.getElementById('inputNekoChat');
+  if (!input) return;
+  input.value = teks;
+  const form = document.getElementById('formNekoChat');
+  if (form) kirimChatNeko({ preventDefault() {} });
+}
+
+async function kirimChatNeko(event) {
+  if (event && typeof event.preventDefault === 'function') event.preventDefault();
+  if (nekoChatState.isSending) return;
+  const input = document.getElementById('inputNekoChat');
+  const sendBtn = document.getElementById('btnNekoChatSend');
+  const pesan = String(input?.value || '').trim();
+  if (!pesan) return;
+
+  stopVoiceInputNeko();
+  stopNekoSpeech();
+  const history = nekoChatState.messages
+    .filter(m => m.text && (m.role === 'user' || m.role === 'neko'))
+    .slice(-8)
+    .map(m => ({ role: m.role === 'user' ? 'user' : 'model', text: m.text }));
+
+  nekoChatState.messages.push({ role: 'user', text: pesan });
+  if (input) input.value = '';
+  nekoChatState.isSending = true;
+  if (sendBtn) sendBtn.disabled = true;
+  ensureNekoModalMascot('berpikir');
+  renderNekoChatUI();
+
+  const res = await callAPI('chatNeko', { pesan, history });
+  nekoChatState.isSending = false;
+  if (sendBtn) sendBtn.disabled = false;
+
+  if (res?.sukses) {
+    const mood = NEKO_MOOD_META[res.mood] ? res.mood : 'santai';
+    const drafts = Array.isArray(res.transactions)
+      ? res.transactions.map(t => ({
+          status: 'pending',
+          tipe: ['Pemasukan', 'Pengeluaran', 'Tabungan'].includes(t.tipe) ? t.tipe : 'Pengeluaran',
+          jenisTabungan: t.jenisTabungan === 'Tarik' ? 'Tarik' : 'Setor',
+          nominal: Math.max(0, Math.round(Number(t.nominal) || 0)),
+          kategori: String(t.kategori || '').trim() || 'Makan & Minum',
+          metode: String(t.metode || '').trim() || 'Uang Cash',
+          tanggal: /^\d{4}-\d{2}-\d{2}$/.test(String(t.tanggal || '')) ? t.tanggal : todayIso(),
+          catatan: String(t.catatan || '').trim()
+        })).filter(d => d.nominal > 0)
+      : [];
+    nekoChatState.messages.push({
+      role: 'neko',
+      mood,
+      text: res.reply || 'Meong! Neko sudah baca pesanmu.',
+      drafts
+    });
+    ensureNekoModalMascot(mood);
+    if (modalNeko3D) modalNeko3D.poke();
+  } else if (!res?.authError) {
+    nekoChatState.messages.push({
+      role: 'neko',
+      mood: 'panik',
+      text: res?.pesan || 'Maaf meong, Neko lagi kesulitan terhubung ke server AI. Pastikan kode Apps Script terbaru sudah di-deploy ya.',
+      drafts: []
+    });
+    ensureNekoModalMascot('panik');
+  }
+  renderNekoChatUI();
+}
+
+function batalDraftChatNeko(msgIdx, draftIdx) {
+  const dr = nekoChatState.messages[msgIdx]?.drafts?.[draftIdx];
+  if (!dr) return;
+  dr.status = 'cancelled';
+  renderNekoChatUI();
+}
+
+async function simpanDraftChatNeko(msgIdx, draftIdx) {
+  const dr = nekoChatState.messages[msgIdx]?.drafts?.[draftIdx];
+  if (!dr || dr.status !== 'pending') return;
+  const idPref = `chatDr_${msgIdx}_${draftIdx}`;
+  const nom = parseRupiahInput(document.getElementById(`${idPref}_nom`)?.value);
+  const kat = document.getElementById(`${idPref}_kat`)?.value || dr.kategori;
+  const met = document.getElementById(`${idPref}_met`)?.value || dr.metode;
+  const cat = String(document.getElementById(`${idPref}_cat`)?.value || '').trim();
+  const tgl = dr.tanggal || todayIso();
+
+  if (!Number.isFinite(nom) || nom <= 0) return showToast('Nominal transaksi harus lebih dari 0.', 'error');
+  if (!kat) return showToast('Pilih kategori terlebih dahulu.', 'error');
+
+  if (dr.tipe === 'Pengeluaran' && !isPaylater(met)) {
+    const saldoDompet = getMyWalletBalance(met);
+    if (saldoDompet - nom < 0) return showToast(`Saldo ${met} tidak mencukupi (tersedia: ${formatRp(Math.max(0, saldoDompet))}).`, 'error');
+  } else if (dr.tipe === 'Tabungan' && dr.jenisTabungan === 'Setor' && met && met.toLowerCase() !== 'virtual') {
+    const saldoDompet = getMyWalletBalance(met);
+    if (saldoDompet - nom < 0) return showToast(`Saldo ${met} tidak mencukupi untuk setor tabungan (tersedia: ${formatRp(Math.max(0, saldoDompet))}).`, 'error');
+  }
+
+  const saveBtn = document.getElementById(`${idPref}_save`);
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = `${spinnerIcon('ico ico-sm spin')}<span>Menyimpan...</span>`; }
+
+  const formPayload = { tanggal: tgl, tipe: dr.tipe, kategori: kat, metode: met, nominal: nom, catatan: cat };
+  const res = dr.tipe === 'Tabungan'
+    ? await callAPI('tambahTabungan', { form: { ...formPayload, pos: cleanPosName(kat), jenis: dr.jenisTabungan || 'Setor' } })
+    : await callAPI('tambahTransaksi', { form: formPayload });
+
+  if (res?.sukses) {
+    dr.nominal = nom; dr.kategori = kat; dr.metode = met; dr.catatan = cat;
+    dr.status = 'saved';
+    showToast('Transaksi dari Chat Neko berhasil dicatat.' + (res.pesanTambahan || ''), 'success');
+    renderNekoChatUI();
+    if (activeTab === 'rekap') loadRekap();
+    await loadDataDashboard(true);
+  } else {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.innerText = 'Simpan ke Catatan'; }
+    if (!res?.authError) showToast(res?.pesan || 'Gagal menyimpan transaksi.', 'error');
+  }
+}
+
+function bukaPopupNekoSekarang(initialMode = 'wejangan') {
   ensureNekoModalMascot();
+  switchNekoModalMode(initialMode);
   openModalDialog('nekoModal', closeNekoModal);
   placeNeko();
 }
 
-function showNekoModal(forceRefresh = false) {
+function showNekoModal(forceRefresh = false, initialMode = 'wejangan') {
+  if (initialMode === 'chat') {
+    bukaPopupNekoSekarang('chat');
+    return;
+  }
   if (!isNekoCalled || forceRefresh) {
     mintaWejanganAuto(forceRefresh, true);
   } else {
-    bukaPopupNekoSekarang();
+    bukaPopupNekoSekarang('wejangan');
   }
 }
 
 function closeNekoModal() {
   stopNekoSpeech();
+  stopVoiceInputNeko();
   closeModalDialog('nekoModal');
   placeNeko();
 }

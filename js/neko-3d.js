@@ -631,6 +631,7 @@ function createNekoChi3DEngine(canvas, shadowEl, opts = {}) {
   const state = {
     mood: 'santai',
     pose: 'duduk',
+    grounded: false,
     peeking: false,
     balloon: false,
     balloonW: 0,
@@ -695,25 +696,31 @@ function createNekoChi3DEngine(canvas, shadowEl, opts = {}) {
     state.yaw += (state.targetYaw - state.yaw) * (snapInstant ? 1.0 : 0.12);
     state.pitch += (state.targetPitch - state.pitch) * (snapInstant ? 1.0 : 0.12);
 
-    const pokeHop = state.pokeTimer > 0 ? Math.sin((state.pokeTimer / 0.58) * Math.PI) * 0.28 : 0;
+    const isDeskGrounded = state.grounded && !state.peeking && bW < 0.05;
+    const pokeHop = state.pokeTimer > 0 ? Math.sin((state.pokeTimer / 0.58) * Math.PI) * (isDeskGrounded ? 0.16 : 0.28) : 0;
     const panicShake = state.mood === 'panik' ? Math.sin(t * 34) * 0.04 : 0;
     const floatY = state.peeking
       ? (Math.sin(t * 1.65) * 0.075 - 0.04 + pokeHop)
-      : (Math.sin(t * 2.2) * mixP(0.08, 0.14, 0.05) + mixP(0.06, 0.10, 0.02) + pokeHop + (state.mood === 'bangga' ? Math.abs(Math.sin(t * 5.2)) * 0.12 : 0));
-    const idleYaw = state.peeking ? Math.sin(t * 0.85) * 0.24 : Math.sin(t * 0.9) * 0.11;
+      : isDeskGrounded
+        ? (pokeHop - 0.06)
+        : (bW > 0.05
+          ? (Math.sin(t * 1.05) * 0.075 + 0.05 + pokeHop)
+          : (Math.sin(t * 1.9) * mixP(0.05, 0.08, 0.03) + mixP(0.03, 0.06, 0.01) + pokeHop + (state.mood === 'bangga' ? Math.abs(Math.sin(t * 4.4)) * 0.09 : 0)));
+    const idleYaw = state.peeking ? Math.sin(t * 0.85) * 0.24 : (isDeskGrounded ? Math.sin(t * 0.55) * 0.055 : Math.sin(t * 0.72) * 0.09);
 
     const effCamZ = state.camZ - bW * 3.55;
     const rootY = floatY - 0.22 - bW * 1.15;
-    const balloonSwing = Math.sin(t * 1.65) * 0.08 * bW;
+    const balloonSwing = Math.sin(t * 0.85) * 0.05 * bW;
 
     let root = m4.mul(m4.trans(panicShake, rootY, effCamZ), m4.rotY(state.yaw + idleYaw));
     root = m4.mul(root, m4.rotX(state.pitch));
     if (bW > 0.01) root = m4.mul(root, m4.rotZ(balloonSwing));
 
-    const bodyY = mixP(-1.04, -0.96, -0.96);
+    const breathAmt = isDeskGrounded ? Math.sin(t * 2.0) * 0.018 : 0;
+    const bodyY = mixP(-1.04, -0.96, -0.96) + breathAmt * 0.4;
     const bodyZ = mixP(-0.08, -0.04, -0.60);
     const bodyRotX = mixP(-0.15, 0.0, 1.36) + (state.mood === 'panik' ? -0.14 * wD : 0);
-    const bodyScale = [mixP(1.06, 1.0, 1.02), mixP(0.96, 1.0, 1.08), mixP(1.06, 1.0, 0.92)];
+    const bodyScale = [mixP(1.06, 1.0, 1.02) + breathAmt * 0.4, mixP(0.96, 1.0, 1.08) + breathAmt, mixP(1.06, 1.0, 0.92)];
     drawPart(bodyMesh, root, { p: [0, bodyY, bodyZ], r: [bodyRotX, 0, 0], s: bodyScale, tex: bodyTex, outline: 0.034, flatFace: true });
 
     const shX = state.peeking ? 0.56 : mixP(0.54, 0.56, 0.46);
@@ -726,9 +733,9 @@ function createNekoChi3DEngine(canvas, shadowEl, opts = {}) {
       lRotX = -1.36; lRotZ = -0.42 + gripWiggle;
       rRotX = -1.36; rRotZ = 0.42 - gripWiggle;
     } else if (bW > 0.35) {
-      rRotZ = 2.32 + Math.sin(t * 2.0) * 0.06;
+      rRotZ = 2.32 + Math.sin(t * 1.1) * 0.045;
       rRotX = -0.34;
-      lRotZ = -1.78 + Math.sin(t * 2.9) * 0.22;
+      lRotZ = -1.78 + Math.sin(t * 1.4) * 0.14;
       lRotX = -0.32;
     } else if (state.pokeTimer > 0) {
       lRotZ = -2.35; rRotZ = 2.35; lRotX = -0.38; rRotX = -0.38;
@@ -776,7 +783,7 @@ function createNekoChi3DEngine(canvas, shadowEl, opts = {}) {
       const pawY = shY + cz * y1;
       const pawZ = shZ + z1;
 
-      const bSway = Math.sin(t * 1.85 + 0.4) * 0.14;
+      const bSway = Math.sin(t * 0.95 + 0.4) * 0.085;
       const bX = pawX + 0.42 + bSway;
       const bY = pawY + 2.68 * bW;
       const bZ = pawZ + 0.14;
@@ -788,8 +795,8 @@ function createNekoChi3DEngine(canvas, shadowEl, opts = {}) {
       for (let s = 0; s < stringSegs; s++) {
         const f0 = s / stringSegs;
         const f1 = (s + 1) / stringSegs;
-        const c0 = Math.sin(f0 * Math.PI) * 0.11 * Math.sin(t * 2.2);
-        const c1 = Math.sin(f1 * Math.PI) * 0.11 * Math.sin(t * 2.2);
+        const c0 = Math.sin(f0 * Math.PI) * 0.08 * Math.sin(t * 1.15);
+        const c1 = Math.sin(f1 * Math.PI) * 0.08 * Math.sin(t * 1.15);
         const x0 = pawX + (bX - pawX) * f0 + c0;
         const y0 = pawY + (knotY - pawY) * f0;
         const z0 = pawZ + (bZ - pawZ) * f0;
@@ -829,8 +836,8 @@ function createNekoChi3DEngine(canvas, shadowEl, opts = {}) {
       });
     }
 
-    const kickAmp = state.mood === 'panik' ? 0.28 : (bW > 0.3 ? 0.24 : (wD > 0.5 ? 0.06 : 0.10));
-    const kickL = Math.sin(t * (state.mood === 'panik' ? 18 : (bW > 0.3 ? 3.8 : 2.6))) * kickAmp;
+    const kickAmp = isDeskGrounded ? 0 : (state.mood === 'panik' ? 0.28 : (bW > 0.3 ? 0.14 : (wD > 0.5 ? 0.05 : 0.08)));
+    const kickL = Math.sin(t * (state.mood === 'panik' ? 18 : (bW > 0.3 ? 1.7 : 2.1))) * kickAmp;
     [-1, 1].forEach(side => {
       const k = side < 0 ? kickL : -kickL;
       if (wD > 0.04) {
@@ -931,6 +938,9 @@ function createNekoChi3DEngine(canvas, shadowEl, opts = {}) {
     },
     setPose(p) {
       if (p === 'duduk' || p === 'berdiri' || p === 'rebahan') state.pose = p;
+    },
+    setGrounded(g) {
+      state.grounded = Boolean(g);
     },
     setPeeking(p) {
       state.peeking = Boolean(p);

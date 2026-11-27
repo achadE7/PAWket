@@ -15,12 +15,83 @@ const DASHBOARD_STALE_MS = 60000;
 const BANK_KEYWORDS = ["bni", "bri", "bca", "mandiri", "bsi", "cimb", "seabank", "jago", "permata", "btn", "danamon", "blu", "ocbc", "jenius", "mega", "panin", "maybank", "neo", "allo", "superbank", "krom"];
 const EWALLET_KEYWORDS = ["gopay", "spay", "shopeepay", "dana", "ovo", "linkaja", "tapcash", "flazz", "emoney", "e-money", "brizzi", "jakcard", "astrapay", "sakuku", "isaku"];
 
+const CATEGORY_ICON_OPTIONS = [
+  { id: 'i-cat-food', label: 'Makan & Minum' },
+  { id: 'i-cat-coffee', label: 'Kopi & Jajan' },
+  { id: 'i-cat-cart', label: 'Belanja' },
+  { id: 'i-cat-paw', label: 'Anabul' },
+  { id: 'i-cat-fuel', label: 'Transportasi' },
+  { id: 'i-cat-ticket', label: 'Hiburan' },
+  { id: 'i-cat-baby', label: 'Anak & Keluarga' },
+  { id: 'i-cat-salary', label: 'Gaji & Masuk' },
+  { id: 'i-cat-gift', label: 'Bonus & Hadiah' },
+  { id: 'i-cat-vault', label: 'Simpanan' },
+  { id: 'i-cat-plane', label: 'Liburan' },
+  { id: 'i-cat-bag', label: 'Keperluan Lain' },
+  { id: 'i-cat-building', label: 'Admin & Kantor' },
+  { id: 'i-cat-home', label: 'Rumah & Tagihan' },
+  { id: 'i-cat-heart', label: 'Kesehatan' },
+  { id: 'i-cat-book', label: 'Pendidikan' },
+  { id: 'i-cat-tag', label: 'Umum' }
+];
+const VALID_CAT_ICON_IDS = new Set(CATEGORY_ICON_OPTIONS.map(o => o.id));
+
 const svgIcon = (id, cls = 'ico') => `<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
 const spinnerIcon = (cls = 'ico spin') => svgIcon('i-spinner', cls);
 
 const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(Number(angka) || 0);
-const cleanPosName = (str = '') => String(str).replace(/^[^a-zA-Z0-9]+/, '').trim();
+const stripCategoryEmoji = (str = '') => String(str)
+  .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2300}-\u{23FF}\u{FE0E}\u{FE0F}\u{200D}]/gu, '')
+  .replace(/\s+/g, ' ')
+  .trim();
+const cleanPosName = (str = '') => stripCategoryEmoji(str).replace(/^[^a-zA-Z0-9]+/, '').trim();
 const todayIso = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+
+function getSavedCategoryIcons() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem('pawketCatIcons_v1') || '{}');
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch (_) { return {}; }
+}
+
+function saveCategoryIconPref(rawName, iconId) {
+  const key = cleanPosName(rawName).toLowerCase();
+  if (!key || !VALID_CAT_ICON_IDS.has(iconId)) return;
+  const map = getSavedCategoryIcons();
+  map[key] = iconId;
+  try { localStorage.setItem('pawketCatIcons_v1', JSON.stringify(map)); } catch (_) {}
+}
+
+function getCategoryIconId(rawName = '') {
+  const raw = String(rawName || '');
+  const clean = cleanPosName(raw).toLowerCase();
+  const saved = getSavedCategoryIcons()[clean];
+  if (saved && VALID_CAT_ICON_IDS.has(saved)) return saved;
+
+  if (/🍔|🍜|🍛|🍕|🍽/.test(raw) || /makan|resto|warung|nasi|bakso|kuliner|food|sarapan|lunch|dinner/.test(clean)) return 'i-cat-food';
+  if (/☕|🧋/.test(raw) || /kopi|cafe|kafe|coffee|jajan|snack|teh|boba/.test(clean)) return 'i-cat-coffee';
+  if (/🛒/.test(raw) || /belanja|mart|supermarket|grocer|sembako|pasar/.test(clean)) return 'i-cat-cart';
+  if (/🐱|🐶|🐾/.test(raw) || /anabul|kucing|neko|pet|hewan|pasir|whiskas/.test(clean)) return 'i-cat-paw';
+  if (/⛽|🚗|🛵|🚌/.test(raw) || /transport|bensin|bbm|ojek|ojol|gojek|grab|parkir|tol|kereta|servis|motor|mobil/.test(clean)) return 'i-cat-fuel';
+  if (/🎬|🎮|🎉/.test(raw) || /hiburan|kencan|nonton|bioskop|film|game|musik|date|konser/.test(clean)) return 'i-cat-ticket';
+  if (/👶|🍼/.test(raw) || /bocil|anak|bayi|susu|popok|diaper|mainan/.test(clean)) return 'i-cat-baby';
+  if (/💰|💵/.test(raw) || /gaji|salary|upah|honor|pendapatan|komisi|jualan|omzet/.test(clean)) return 'i-cat-salary';
+  if (/🎁/.test(raw) || /bonus|hadiah|thr|kado|gift|cashback|angpao/.test(clean)) return 'i-cat-gift';
+  if (/🏦/.test(raw) || /simpanan|darurat|deposito|invest|emas|tabung/.test(clean)) return 'i-cat-vault';
+  if (/✈️|✈|🏖/.test(raw) || /liburan|wisata|travel|hotel|tiket|pesawat|jalan/.test(clean)) return 'i-cat-plane';
+  if (/🛍/.test(raw) || /keperluan lain|lainnya|baju|fashion|skincare|kosmetik/.test(clean)) return 'i-cat-bag';
+  if (/🏢/.test(raw) || /admin|bank|biaya|pajak|kantor|kerja/.test(clean)) return 'i-cat-building';
+  if (/🏠|⚡|💧/.test(raw) || /rumah|kost|sewa|listrik|pln|air|pdam|wifi|internet|pulsa|kuota|tagihan|cicilan|hutang|kpr/.test(clean)) return 'i-cat-home';
+  if (/💊|🏥|❤/.test(raw) || /sehat|kesehatan|obat|dokter|apotek|rs|klinik|vitamin|bpjs/.test(clean)) return 'i-cat-heart';
+  if (/📚|🎓/.test(raw) || /buku|kuliah|sekolah|kursus|les|pendidikan|unil|kampus/.test(clean)) return 'i-cat-book';
+  return 'i-cat-tag';
+}
+
+function renderCategoryWithIcon(rawName = '', extraCls = '') {
+  const iconId = getCategoryIconId(rawName);
+  const label = stripCategoryEmoji(rawName) || String(rawName || '').trim();
+  return `<span class="cat-label${extraCls ? ' ' + extraCls : ''}">${svgIcon(iconId, 'ico ico-sm cat-ico')}<span>${escapeHtml(label)}</span></span>`;
+}
 
 const escapeHtml = (str = '') => String(str)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')

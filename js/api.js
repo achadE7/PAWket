@@ -50,7 +50,7 @@ function showToast(pesan, tipe = 'info') {
   el.innerHTML = `
     ${svgIcon(iconId, 'ico')}
     <span style="flex:1;white-space:pre-line;line-height:1.4">${escapeHtml(pesan)}</span>
-    <button type="button" aria-label="Tutup notifikasi" style="background:none;border:0;color:inherit;padding:4px;min-width:36px;min-height:36px;display:inline-grid;place-items:center;flex-shrink:0">
+    <button type="button" aria-label="Tutup notifikasi" style="background:none;border:0;color:inherit;padding:4px;min-width:44px;min-height:44px;display:inline-grid;place-items:center;flex-shrink:0">
       ${svgIcon('i-close', 'ico ico-sm')}
     </button>
   `;

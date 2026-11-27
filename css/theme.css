@@ -22,6 +22,7 @@
   --focus: #2B2420;
   --focus-halo: #FBF6EC;
   --scrim: rgba(28, 23, 20, .58);
+  --app-max-w: 480px;
   --tab-h: 68px;
   --r-s: 8px;
   --r-m: 12px;
@@ -29,6 +30,12 @@
   --font-ui: "Nunito", system-ui, -apple-system, sans-serif;
   --font-hand: "Patrick Hand", "Comic Sans MS", cursive;
   color-scheme: light;
+}
+@media (min-width: 640px) {
+  :root { --app-max-w: 540px; }
+}
+@media (min-width: 1024px) {
+  :root { --app-max-w: 600px; }
 }
 
 html[data-theme="dark"] {
@@ -61,7 +68,7 @@ html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   font-family: var(--font-ui);
-  font-size: 0.96rem;
+  font-size: clamp(0.92rem, 0.89rem + 0.18vw, 1rem);
   line-height: 1.45;
   color: var(--ink);
   background: var(--paper-2);

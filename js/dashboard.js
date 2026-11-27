@@ -200,7 +200,7 @@ function openBudgetModal(prefillKat = '') {
     : ['Makan & Minum', 'Belanja Bulanan', 'Transportasi', 'Hiburan & Kencan', 'Keperluan Anabul'];
   const myBudgets = getMyBudgets();
   const allOpts = [...new Set([...keluarOpts, ...Object.keys(myBudgets)])];
-  sel.innerHTML = allOpts.map(k => `<option value="${escapeHtml(k)}">${escapeHtml(k)}</option>`).join('');
+  sel.innerHTML = allOpts.map(k => `<option value="${escapeHtml(k)}">${escapeHtml(stripCategoryEmoji(k) || k)}</option>`).join('');
   if (prefillKat) {
     const matched = allOpts.find(k => cleanPosName(k).toLowerCase() === cleanPosName(prefillKat).toLowerCase());
     if (matched) sel.value = matched;
@@ -227,7 +227,7 @@ function renderBudgetAktifList() {
   listEl.innerHTML = entries.map(([kat, nom]) => `
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--paper-2);border:1px solid var(--line);border-radius:10px;padding:8px 10px">
       <div style="min-width:0">
-        <p style="font-weight:800;font-size:.86rem;word-break:break-word">${escapeHtml(kat)}</p>
+        <p style="font-weight:800;font-size:.86rem;word-break:break-word">${renderCategoryWithIcon(kat)}</p>
         <p class="money small pen-reza">${formatRp(nom)} / bln</p>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
@@ -341,26 +341,29 @@ function terapkanDataDashboardKeUI(res) {
   renderMenuSaldo();
   renderMetodePembayaran();
 
+  latestDaftarHutang = Array.isArray(res.daftarHutang) ? res.daftarHutang : [];
+
   const tabObj = res.tabungan || {};
   const labelTabObj = res.labelTabungan || {};
   const tabKeys = Object.keys(tabObj);
   const sumTabungan = res.totalTabungan !== undefined
     ? Number(res.totalTabungan) || 0
     : tabKeys.reduce((acc, k) => acc + (Number(tabObj[k]) || 0), 0);
-  const totalHutang = Number(res.totalSisaHutang) || 0;
-  const netWorthVal = res.netWorth !== undefined
-    ? Number(res.netWorth) || 0
-    : ((Number(res.saldoUtama) || 0) + sumTabungan - totalHutang);
+  // Hutang aktif di dashboard khusus milik user aktif; total berdua tampil di laman Hutang.
+  const hutangPribadi = latestDaftarHutang
+    .filter(h => h.status === 'Aktif' && String(h.oleh).trim() === activeUser)
+    .reduce((acc, h) => acc + (Number(h.sisaHutang) || 0), 0);
+  const netWorthVal = (Number(res.saldoUtama) || 0) + sumTabungan - hutangPribadi;
 
   document.getElementById('dashTotalTabungan').innerText = formatRp(sumTabungan);
-  document.getElementById('dashTotalHutang').innerText = totalHutang > 0 ? `-${formatRp(totalHutang)}` : formatRp(0);
+  document.getElementById('dashTotalHutang').innerText = hutangPribadi > 0 ? `-${formatRp(hutangPribadi)}` : formatRp(0);
   document.getElementById('dashNetWorth').innerText = formatRp(netWorthVal);
 
   const tabContainer = document.getElementById('kantongTabunganContainer');
   if (tabKeys.length > 0) {
     tabContainer.innerHTML = tabKeys.map(key => `
       <div class="kantong-chip">
-        <p class="kname">${escapeHtml(labelTabObj[key] || key)}</p>
+        <p class="kname">${renderCategoryWithIcon(labelTabObj[key] || key)}</p>
         <span class="kval money">${formatRp(tabObj[key] || 0)}</span>
       </div>
     `).join('');
@@ -376,7 +379,7 @@ function terapkanDataDashboardKeUI(res) {
     ? sumTabungan
     : (tabObj[cleanPosName(latestTargetTabungan.pos)] ?? tabObj[latestTargetTabungan.pos] ?? 0);
   const persen = latestTargetTabungan.nominal > 0 ? Math.min(100, Math.max(0, Math.round((terkumpul / latestTargetTabungan.nominal) * 100))) : 0;
-  document.getElementById('targetPosText').innerText = latestTargetTabungan.pos;
+  document.getElementById('targetPosText').innerText = stripCategoryEmoji(latestTargetTabungan.pos) || latestTargetTabungan.pos;
   document.getElementById('targetTerkumpul').innerText = formatRp(terkumpul);
   document.getElementById('targetNominal').innerText = formatRp(latestTargetTabungan.nominal);
   document.getElementById('targetPersen').innerText = persen;
@@ -385,7 +388,6 @@ function terapkanDataDashboardKeUI(res) {
     ? 'Belum ada yang masuk. Isi lewat Catat, pilih Tabungan.'
     : (terkumpul >= latestTargetTabungan.nominal ? 'Target tercapai!' : `Kurang ${formatRp(latestTargetTabungan.nominal - terkumpul)} lagi.`);
 
-  latestDaftarHutang = Array.isArray(res.daftarHutang) ? res.daftarHutang : [];
   renderHutang();
   renderDueSoonBanner();
   renderKategoriDanBudget();
@@ -407,7 +409,7 @@ function terapkanDataDashboardKeUI(res) {
       const body = `
         <span class="trx-dir ${color}" aria-hidden="true">${svgIcon(iconId, 'ico ico-sm')}</span>
         <div style="min-width:0">
-          <p style="font-weight:800;font-size:.88rem;word-break:break-word">${escapeHtml(d.kategori)}${badgeMetode}</p>
+          <p style="font-weight:800;font-size:.88rem;word-break:break-word;display:flex;align-items:center;flex-wrap:wrap;gap:4px">${renderCategoryWithIcon(d.kategori)}${badgeMetode}</p>
           <p class="small muted">${escapeHtml(d.tanggal)} &bull; ${escapeHtml(d.oleh)}</p>
         </div>
         <div style="text-align:right">
@@ -508,7 +510,7 @@ function renderKategoriDanBudget() {
     return `
       <button type="button" data-kat="${escapeHtml(item.kategori)}" onclick="openBudgetModal(this.dataset.kat)" class="budget-btn">
         <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap">
-          <span style="font-weight:800;font-size:.88rem;word-break:break-word">${escapeHtml(item.kategori)}</span>
+          <span style="font-weight:800;font-size:.88rem;word-break:break-word">${renderCategoryWithIcon(item.kategori)}</span>
           <span class="small" style="flex-shrink:0">${amtHtml}</span>
         </div>
         <div class="budget-bar"><i class="${barCls}" style="width:${barW}%"></i></div>

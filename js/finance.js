@@ -50,7 +50,6 @@ function switchOwnerSaldo(ownerType) {
   document.getElementById('btnViewSaldoPasangan').setAttribute('aria-pressed', String(!isMe));
   document.getElementById('kartuHeaderSaldo').classList.toggle('is-partner', !isMe);
   document.getElementById('aksiSaldokuBox').classList.toggle('hide', !isMe);
-  document.getElementById('infoReadOnlySaldoBox').classList.toggle('hide', isMe);
   renderMenuSaldo();
 }
 
@@ -68,7 +67,7 @@ function renderMenuSaldo() {
   const totalUserSaldo = Object.values(saldoObj).reduce((acc, v) => acc + (Number(v) || 0), 0);
   document.getElementById('labelHeaderSaldo').innerText = isMe
     ? `Total saldoku (${(activeUser || '').split(' ')[0]})`
-    : `Total saldo ${(partnerFullName || 'Pasangan').split(' ')[0]} (hanya lihat)`;
+    : `Total saldo ${(partnerFullName || 'Pasangan').split(' ')[0]}`;
   document.getElementById('totalSemuaSaldo').innerText = formatRp(totalUserSaldo);
 
   const pinned = isMe ? getPinnedWalletsForUser(activeUser) : [];
@@ -110,7 +109,7 @@ function renderMenuSaldo() {
           <span class="name ${isMinus ? 'txt-err' : warnaIkon}">${svgIcon(iconId, 'ico ico-sm')}<span>${escapeHtml(item.nama)}</span></span>
           ${isMe
             ? `<button type="button" data-dompet="${escapeHtml(item.nama)}" data-nominal="${item.nominal}" onclick="openSesuaikanSaldoFromBtn(this)" class="icon-btn icon-btn-sm" style="margin:-6px -6px 0 0" aria-label="Sesuaikan saldo ${escapeHtml(item.nama)}" title="Sesuaikan Saldo">${svgIcon('i-pen', 'ico ico-sm')}</button>`
-            : `<span class="muted" title="Hanya Lihat">${svgIcon('i-lock', 'ico ico-sm')}</span>`}
+            : ''}
         </div>
         <div>
           <p class="money ${isMinus ? 'txt-err' : ''}" style="font-size:1rem">${formatRp(item.nominal)}</p>
@@ -178,6 +177,27 @@ async function simpanSesuaikanSaldo(event) {
   } else if (!res?.authError) showToast(res?.pesan || 'Gagal menyesuaikan saldo.', 'error');
 }
 
+let selectedMasterIconId = 'i-cat-tag';
+
+function renderAddMasterIconPicker(selectedId = 'i-cat-tag') {
+  selectedMasterIconId = VALID_CAT_ICON_IDS.has(selectedId) ? selectedId : 'i-cat-tag';
+  const grid = document.getElementById('addMasterIconGrid');
+  if (!grid) return;
+  grid.innerHTML = CATEGORY_ICON_OPTIONS.map(opt => `
+    <button type="button" class="icon-pick-btn" data-icon="${opt.id}" onclick="pilihAddMasterIcon('${opt.id}')" aria-pressed="${String(opt.id === selectedMasterIconId)}" aria-label="${escapeHtml(opt.label)}" title="${escapeHtml(opt.label)}">
+      ${svgIcon(opt.id, 'ico')}
+    </button>
+  `).join('');
+}
+
+function pilihAddMasterIcon(iconId) {
+  if (!VALID_CAT_ICON_IDS.has(iconId)) return;
+  selectedMasterIconId = iconId;
+  document.querySelectorAll('#addMasterIconGrid .icon-pick-btn').forEach(btn => {
+    btn.setAttribute('aria-pressed', String(btn.dataset.icon === iconId));
+  });
+}
+
 function openAddMasterModal({ tipe, title, label, placeholder, hint, onSuccess, quickOptions = [] }) {
   addMasterContext = { tipe, onSuccess };
   document.getElementById('addMasterTitle').innerText = title;
@@ -196,6 +216,12 @@ function openAddMasterModal({ tipe, title, label, placeholder, hint, onSuccess, 
   } else {
     quickChips.innerHTML = '';
     quickBox.classList.add('hide');
+  }
+  const iconBox = document.getElementById('addMasterIconBox');
+  const showIcons = tipe !== 'Dompet';
+  if (iconBox) {
+    iconBox.classList.toggle('hide', !showIcons);
+    if (showIcons) renderAddMasterIconPicker(tipe === 'Tabungan' ? 'i-cat-vault' : (tipe === 'Pemasukan' ? 'i-cat-salary' : 'i-cat-tag'));
   }
   openModalDialog('addMasterModal', closeAddMasterModal, input);
 }
@@ -232,7 +258,7 @@ async function simpanAddMaster(event) {
   event.preventDefault();
   const rawVal = document.getElementById('addMasterInput').value.trim();
   if (!rawVal) return showToast('Nama tidak boleh kosong.', 'error');
-  const namaKirim = addMasterContext.tipe === 'Dompet' ? cleanPosName(rawVal) : rawVal;
+  const namaKirim = addMasterContext.tipe === 'Dompet' ? cleanPosName(rawVal) : (stripCategoryEmoji(rawVal) || rawVal);
   if (addMasterContext.tipe === 'Dompet') {
     const existingMaster = getUniqueDompetList().find(d => d.toLowerCase() === namaKirim.toLowerCase());
     if (existingMaster) { aktifkanDompetCepat(existingMaster); return; }
@@ -246,6 +272,7 @@ async function simpanAddMaster(event) {
   if (res?.sukses) {
     listKategori = res;
     if (addMasterContext.tipe === 'Dompet') pinWalletForUser(activeUser, namaKirim);
+    else saveCategoryIconPref(namaKirim, selectedMasterIconId);
     closeAddMasterModal();
     showToast(`"${namaKirim}" berhasil ditambahkan.`, 'success');
     if (typeof addMasterContext.onSuccess === 'function') addMasterContext.onSuccess(namaKirim);
@@ -345,10 +372,32 @@ function renderHutang() {
   document.getElementById('countHutangku').innerText = hutangkuList.length;
   document.getElementById('countHutangPasangan').innerText = hutangPasanganList.length;
 
+  const totalAku = hutangkuList.reduce((acc, h) => acc + (Number(h.sisaHutang) || 0), 0);
+  const totalPasangan = hutangPasanganList.reduce((acc, h) => acc + (Number(h.sisaHutang) || 0), 0);
+  const cicilanAku = hutangkuList.reduce((acc, h) => acc + (Number(h.cicilanRutin) || 0), 0);
+  const cicilanPasangan = hutangPasanganList.reduce((acc, h) => acc + (Number(h.cicilanRutin) || 0), 0);
+  const myShort = (activeUser || 'Aku').split(' ')[0];
+  const partnerShort = (partnerFullName || 'Pasangan').split(' ')[0];
+
+  const elBerdua = document.getElementById('hutangTotalBerdua');
+  if (elBerdua) elBerdua.innerText = formatRp(totalAku + totalPasangan);
+  const elLabAku = document.getElementById('hutangLabelAku');
+  if (elLabAku) elLabAku.innerText = myShort;
+  const elTotAku = document.getElementById('hutangTotalAku');
+  if (elTotAku) elTotAku.innerText = formatRp(totalAku);
+  const elSubAku = document.getElementById('hutangSubAku');
+  if (elSubAku) elSubAku.innerText = cicilanAku > 0 ? `${hutangkuList.length} tagihan • ${formatRp(cicilanAku)}/bln` : `${hutangkuList.length} tagihan aktif`;
+  const elLabPas = document.getElementById('hutangLabelPasangan');
+  if (elLabPas) elLabPas.innerText = partnerShort;
+  const elTotPas = document.getElementById('hutangTotalPasangan');
+  if (elTotPas) elTotPas.innerText = formatRp(totalPasangan);
+  const elSubPas = document.getElementById('hutangSubPasangan');
+  if (elSubPas) elSubPas.innerText = cicilanPasangan > 0 ? `${hutangPasanganList.length} tagihan • ${formatRp(cicilanPasangan)}/bln` : `${hutangPasanganList.length} tagihan aktif`;
+
   const isMe = activeHutangOwner === 'me';
   const dataTampil = isMe ? hutangkuList : hutangPasanganList;
   if (dataTampil.length === 0) {
-    listUi.innerHTML = `<div class="empty"><p class="hand">${isMe ? 'Tidak ada tagihan atas namamu. Meja Neko bersih!' : `Tidak ada tagihan aktif milik ${(partnerFullName || 'Pasangan').split(' ')[0]}.`}</p></div>`;
+    listUi.innerHTML = `<div class="empty"><p class="hand">${isMe ? 'Tidak ada tagihan atas namamu. Meja Neko bersih!' : `Tidak ada tagihan aktif milik ${escapeHtml(partnerShort)}.`}</p></div>`;
     return;
   }
 
@@ -362,10 +411,10 @@ function renderHutang() {
            <button type="button" data-id="${safeId}" onclick="openEditHutangModal(this.dataset.id)" class="btn btn-sm">${svgIcon('i-pen', 'ico ico-sm')}<span>Edit</span></button>
            <button type="button" data-id="${safeId}" onclick="konfirmasiHapusCatatan(this.dataset.id)" aria-label="Hapus hutang ${escapeHtml(h.namaHutang)}" class="icon-btn icon-btn-sm txt-err">${svgIcon('i-trash', 'ico ico-sm')}</button>
          </div>`
-      : `<span class="small muted" style="font-weight:800;display:inline-flex;align-items:center;gap:4px">${svgIcon('i-lock', 'ico ico-sm')}<span>Hanya Lihat</span></span>`;
+      : '';
     const tombolBayar = isMe
       ? `<button type="button" data-id="${safeId}" onclick="bukaModalBayarHutang(this.dataset.id)" class="btn btn-primary btn-block">Bayar Tagihan / Cicilan</button>`
-      : `<p class="small muted" style="text-align:center;font-weight:700;display:flex;align-items:center;justify-content:center;gap:5px">${svgIcon('i-eye', 'ico ico-sm')}<span>Tagihan milik ${escapeHtml(h.oleh)}</span></p>`;
+      : '';
 
     return `
       <div class="bill">
@@ -469,22 +518,61 @@ async function konfirmasiBayarHutang(event) {
   else if (!res?.authError) showToast(res?.pesan || "Gagal mencatat pembayaran hutang.", 'error');
 }
 
+function syncKategoriPickerActive() {
+  const curVal = document.getElementById('inputKategori')?.value || '';
+  document.querySelectorAll('#kategoriPickerGrid .cat-pick-btn[data-val]').forEach(btn => {
+    btn.setAttribute('aria-pressed', String(btn.dataset.val === curVal));
+  });
+}
+
+function pilihKategoriPicker(val) {
+  const sel = document.getElementById('inputKategori');
+  if (!sel) return;
+  if (val === 'ADD_NEW') {
+    sel.value = 'ADD_NEW';
+    cekKategoriBaru();
+    return;
+  }
+  sel.value = val;
+  syncKategoriPickerActive();
+}
+
+function renderKategoriPickerGrid(items) {
+  const grid = document.getElementById('kategoriPickerGrid');
+  if (!grid) return;
+  const curVal = document.getElementById('inputKategori')?.value || '';
+  const addLabel = tipeAktif === 'Tabungan' ? 'Pos baru' : 'Kategori baru';
+  grid.innerHTML = [
+    ...items.map(it => {
+      const iconId = getCategoryIconId(it.raw);
+      const cleanLbl = stripCategoryEmoji(it.raw) || it.val;
+      const pressed = curVal === it.val;
+      return `<button type="button" class="cat-pick-btn" data-val="${escapeHtml(it.val)}" onclick="pilihKategoriPicker(this.dataset.val)" aria-pressed="${String(pressed)}">${svgIcon(iconId, 'ico ico-sm cat-ico')}<span>${escapeHtml(cleanLbl)}</span></button>`;
+    }),
+    `<button type="button" class="cat-pick-btn cat-pick-add" onclick="pilihKategoriPicker('ADD_NEW')">${svgIcon('i-plus', 'ico ico-sm')}<span>${addLabel}</span></button>`
+  ].join('');
+}
+
 function renderKategori() {
   const arr = tipeAktif === 'Pemasukan' ? listKategori.masuk : listKategori.keluar;
+  const items = (arr || []).map(k => ({ val: k, raw: k }));
   document.getElementById('inputKategori').innerHTML = [
     '<option value="" disabled selected>-- Pilih Kategori --</option>',
-    ...(arr || []).map(k => `<option value="${escapeHtml(k)}">${escapeHtml(k)}</option>`),
+    ...items.map(it => `<option value="${escapeHtml(it.val)}">${escapeHtml(stripCategoryEmoji(it.raw) || it.val)}</option>`),
     '<option value="ADD_NEW">+ Tambah Kategori Baru</option>'
   ].join('');
+  renderKategoriPickerGrid(items);
 }
 
 function renderKategoriTabungan() {
   const posList = listKategori.tabungan?.length > 0 ? listKategori.tabungan : ['Simpanan', 'Liburan', 'Keperluan Lainnya'];
+  const items = posList.map(k => ({ val: cleanPosName(k), raw: k }));
   document.getElementById('inputKategori').innerHTML = [
     '<option value="" disabled selected>-- Pilih Pos Tabungan --</option>',
-    ...posList.map(k => `<option value="${escapeHtml(cleanPosName(k))}">${escapeHtml(k)}</option>`),
+    ...items.map(it => `<option value="${escapeHtml(it.val)}">${escapeHtml(stripCategoryEmoji(it.raw) || it.val)}</option>`),
     '<option value="ADD_NEW">+ Tambah Pos Tabungan Baru</option>'
   ].join('');
+  renderKategoriPickerGrid(items);
 }
 
 function renderMetodePembayaran() {
@@ -589,8 +677,8 @@ function cekKategoriBaru() {
     placeholder: isTab ? 'Contoh: Rumah Impian' : 'Contoh: Sushi Berdua',
     hint: 'Nama kategori bebas sesuai kebutuhanmu.',
     onSuccess: (namaBaru) => {
-      if (isTab) { renderKategoriTabungan(); select.value = cleanPosName(namaBaru); loadDataDashboard(true); }
-      else { renderKategori(); select.value = namaBaru; }
+      if (isTab) { renderKategoriTabungan(); select.value = cleanPosName(namaBaru); syncKategoriPickerActive(); loadDataDashboard(true); }
+      else { renderKategori(); select.value = namaBaru; syncKategoriPickerActive(); }
     }
   });
 }
@@ -646,6 +734,7 @@ function terapkanHasilStrukKeForm(hasil) {
       }
     }
   }
+  syncKategoriPickerActive();
   cekInfoPaylater();
 }
 
@@ -729,6 +818,7 @@ async function simpanTransaksi(event) {
     document.getElementById('inputNominal').value = '';
     document.getElementById('inputCatatan').value = '';
     document.getElementById('inputKategori').value = '';
+    syncKategoriPickerActive();
     document.getElementById('inputTanggal').value = todayIso();
     cekInfoPaylater();
     await loadDataDashboard(true);
@@ -860,7 +950,7 @@ function renderListRekap() {
       <div class="trx-item">
         <span class="trx-dir ${color}" aria-hidden="true">${svgIcon(iconId, 'ico ico-sm')}</span>
         <div style="min-width:0">
-          <p style="font-weight:800;font-size:.9rem;word-break:break-word">${escapeHtml(d.Kategori)}${badgeMetode}</p>
+          <p style="font-weight:800;font-size:.9rem;word-break:break-word;display:flex;align-items:center;flex-wrap:wrap;gap:4px">${renderCategoryWithIcon(d.Kategori)}${badgeMetode}</p>
           <p class="small muted">${escapeHtml(d.Tanggal)} &bull; <strong class="${isOwner ? 'pen-reza' : 'pen-naghiya'}">${escapeHtml(d.Oleh)}</strong></p>
           ${d.Catatan ? `<p class="small muted" style="font-style:italic;word-break:break-word">${escapeHtml(d.Catatan)}</p>` : ''}
         </div>
@@ -906,7 +996,7 @@ function bukaEditTransaksiObj(item) {
 
   const currentKatVal = isTab ? cleanPosName(item.Kategori) : item.Kategori;
   if (currentKatVal && !katOptions.some(o => o.val === currentKatVal)) katOptions.unshift({ val: currentKatVal, label: item.Kategori || currentKatVal });
-  katSel.innerHTML = katOptions.map(o => `<option value="${escapeHtml(o.val)}">${escapeHtml(o.label)}</option>`).join('');
+  katSel.innerHTML = katOptions.map(o => `<option value="${escapeHtml(o.val)}">${escapeHtml(stripCategoryEmoji(o.label) || o.val)}</option>`).join('');
   katSel.value = currentKatVal;
   katSel.disabled = isTrf || isAdj || Boolean(item.isPayHutang);
 
