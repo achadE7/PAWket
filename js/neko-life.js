@@ -164,6 +164,8 @@ function placeNeko() {
 
   if (placement === 'none') {
     clearNekoSneakTimers();
+    seat.classList.remove('pos-meja');
+    hit.classList.remove('pos-meja');
     peekSlot.classList.add('hide');
     floatWrap.classList.add('hide');
     requestNekoRenderFrame();
@@ -172,6 +174,8 @@ function placeNeko() {
 
   if (placement === 'balon') {
     clearNekoSneakTimers();
+    seat.classList.remove('pos-meja');
+    hit.classList.remove('pos-meja');
     peekSlot.classList.add('hide');
     hit.classList.add('hide');
     bubble.classList.add('hide');
@@ -217,6 +221,8 @@ function placeNeko() {
       mainNekoNode.innerHTML = buildNekoMascotSvg('main', getActiveNekoMood(), nekoSpeechState === 'speaking', false);
     }
   } else {
+    seat.classList.remove('pos-meja');
+    hit.classList.remove('pos-meja');
     floatWrap.classList.add('hide');
     hit.classList.add('hide');
     bubble.classList.add('hide');
