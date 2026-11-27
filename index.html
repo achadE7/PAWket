@@ -29,9 +29,6 @@
     })();
   </script>
   <style>
-/* PAWket "Meja Neko" Production Theme
-   Cozy anime study-desk diorama + warm ledger-paper surfaces + auto day/night dark mode. */
-
 :root {
   --paper: #FBF6EC;
   --paper-2: #F1E6D3;
@@ -134,7 +131,7 @@ button:disabled, select:disabled, input:disabled, [aria-disabled="true"] { curso
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 10px; }
 
-/* Simetris kolom tanggal & bulan di iOS/mobile */
+/* Menjaga lebar input date/month simetris di Safari iOS. */
 input[type="date"], input[type="month"] {
   -webkit-appearance: none;
   appearance: none;
@@ -164,7 +161,6 @@ input[type="date"], input[type="month"] {
   }
 }
 
-/* ---------- App Frame ---------- */
 .app {
   max-width: 480px;
   margin: 0 auto;
@@ -179,7 +175,6 @@ input[type="date"], input[type="month"] {
   .app { box-shadow: 0 0 0 1px rgba(0, 0, 0, .28), 0 16px 48px rgba(0, 0, 0, .3); }
 }
 
-/* ---------- Buttons ---------- */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   min-height: 44px; padding: 10px 16px;
@@ -229,7 +224,6 @@ html[data-theme="dark"] .btn-danger { color: #1B1613; }
 .spin { animation: spin 0.9s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ---------- Top Bar ---------- */
 .topbar {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: 12px 16px 10px;
@@ -242,7 +236,6 @@ html[data-theme="dark"] .btn-danger { color: #1B1613; }
 .topbar h1 { font-size: 1.35rem; font-weight: 900; letter-spacing: -.015em; }
 .topbar .actions { display: flex; gap: 8px; flex-shrink: 0; }
 
-/* ---------- Paper Tag Motif ---------- */
 .tag {
   display: inline-flex; align-items: center; gap: 6px;
   font-family: var(--font-hand);
@@ -261,7 +254,6 @@ html[data-theme="dark"] .btn-danger { color: #1B1613; }
   border: 1.5px solid #2B2420; background: #E9DCC6;
 }
 
-/* ---------- Desk Diorama Scene ---------- */
 .scene {
   position: relative;
   aspect-ratio: 896 / 1200;
@@ -271,7 +263,6 @@ html[data-theme="dark"] .btn-danger { color: #1B1613; }
 }
 .scene-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
-/* Neko di Kursi (di balik tepi belakang meja) vs di Atas Meja (duduk/rebahan di kayu meja) */
 .neko-seat {
   position: absolute;
   pointer-events: none;
@@ -366,7 +357,6 @@ html[data-motion="off"] .neko-seat { transition: none; }
 .paper-btn:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 rgba(43, 36, 32, .85); }
 .paper-btn svg { width: 16px; height: 16px; }
 
-/* Desk Hotspots */
 .hot {
   position: absolute; z-index: 6;
   left: var(--x); top: var(--y); width: var(--w); height: var(--h);
@@ -382,7 +372,6 @@ html[data-motion="off"] .neko-seat { transition: none; }
 .hot:hover .tag, .hot:focus-visible .tag { transform: rotate(0deg) translateY(-2px); }
 .hot:active .tag { transform: rotate(0deg) translateY(1px); }
 
-/* Coffee Steam */
 .steam {
   position: absolute; left: 66.5%; top: 59%; width: 8%; height: 9%;
   pointer-events: none; opacity: .75; z-index: 5;
@@ -402,7 +391,6 @@ html[data-motion="off"] .neko-seat { transition: none; }
 }
 html[data-motion="off"] .steam span { animation: none; opacity: .45; transform: none; }
 
-/* ---------- Floating Balloon 3D Neko Companion ---------- */
 #floatingNekoWrap {
   position: fixed;
   z-index: 45;
@@ -459,7 +447,6 @@ html[data-motion="off"] .steam span { animation: none; opacity: .45; transform: 
 .float-ctrl-btn:active { transform: scale(.93); }
 .float-ctrl-btn.is-active { background: var(--amber); color: var(--on-amber); }
 
-/* ---------- Peeking Behind Bottom Tab Bar ---------- */
 .peek-slot {
   position: fixed;
   z-index: 25;
@@ -480,7 +467,6 @@ html[data-motion="off"] .peek-slot { transition: none; }
   pointer-events: auto;
 }
 
-/* ---------- Pages & Cards ---------- */
 main { padding-bottom: calc(var(--tab-h) + 84px + env(safe-area-inset-bottom)); }
 .view { display: none; }
 .view.is-active { display: block; }
@@ -506,7 +492,6 @@ main { padding-bottom: calc(var(--tab-h) + 84px + env(safe-area-inset-bottom)); 
 .txt-err { color: var(--err); }
 .txt-purple { color: var(--purple); }
 
-/* Banners */
 .banner {
   border-radius: var(--r-m);
   padding: 12px 14px;
@@ -518,7 +503,6 @@ main { padding-bottom: calc(var(--tab-h) + 84px + env(safe-area-inset-bottom)); 
 .banner-warn { background: var(--warn-bg); border-color: var(--warn); color: var(--warn); }
 .banner-info { background: var(--paper-2); border-color: var(--edge); color: var(--ink); }
 
-/* Ledger Sheet */
 .ledger {
   background-color: var(--paper);
   background-image: repeating-linear-gradient(to bottom, transparent 0 35px, var(--line) 35px 36px);
@@ -550,7 +534,6 @@ main { padding-bottom: calc(var(--tab-h) + 84px + env(safe-area-inset-bottom)); 
 .split .who::before { content: ""; width: 12px; height: 4px; border-radius: 2px; background: currentColor; flex-shrink: 0; }
 .split .money { font-size: 1.04rem; display: block; margin-top: 2px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; }
 
-/* Celengan Jar + Kantong Tabungan */
 .jar { display: grid; grid-template-columns: 62px 1fr; gap: 14px; align-items: center; }
 .jar-meter {
   width: 62px; height: 74px; border-radius: 24px 24px 16px 16px;
@@ -569,7 +552,6 @@ main { padding-bottom: calc(var(--tab-h) + 84px + env(safe-area-inset-bottom)); 
 .kantong-chip .kname { font-size: .78rem; font-weight: 800; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .kantong-chip .kval { font-size: .92rem; font-weight: 900; margin-top: 2px; display: block; }
 
-/* Segmented Controls */
 .seg {
   display: inline-flex; padding: 3px; gap: 3px; border-radius: var(--r-m);
   background: var(--paper-2); border: 1.5px solid var(--line);
@@ -592,7 +574,6 @@ main { padding-bottom: calc(var(--tab-h) + 84px + env(safe-area-inset-bottom)); 
 }
 .empty .hand { font-family: var(--font-hand); font-size: 1.15rem; }
 
-/* Budget & Category Bars */
 .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .budget-btn {
   width: 100%; text-align: left; background: transparent; border: 0;
@@ -607,7 +588,6 @@ main { padding-bottom: calc(var(--tab-h) + 84px + env(safe-area-inset-bottom)); 
 .bar-warn { background: var(--amber); }
 .bar-err { background: var(--err); }
 
-/* ---------- Saldo: Leather Wallet ---------- */
 .wallet {
   background: var(--wood); color: var(--on-wood);
   border-radius: var(--r-l); padding: 18px 16px 16px; position: relative;
@@ -632,7 +612,6 @@ main { padding-bottom: calc(var(--tab-h) + 84px + env(safe-area-inset-bottom)); 
 .bank-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 4px; }
 .bank-card .name { font-weight: 800; font-size: .86rem; word-break: break-word; }
 
-/* ---------- Catat: Receipt Slip ---------- */
 .receipt {
   background: var(--paper); border: 1.5px solid var(--line); border-bottom: 0;
   border-radius: var(--r-l) var(--r-l) 0 0; padding: 16px;
@@ -673,7 +652,6 @@ main { padding-bottom: calc(var(--tab-h) + 84px + env(safe-area-inset-bottom)); 
 .chip-btn:hover { border-color: var(--ink); background: var(--paper); }
 .chip-btn:active { transform: translateY(1px); }
 
-/* ---------- Hutang: Binder-Clipped Bills ---------- */
 .bill {
   background: var(--paper); border: 1.5px solid var(--edge); border-radius: 6px;
   padding: 18px 14px 12px; position: relative; margin-top: 6px;
@@ -690,7 +668,6 @@ main { padding-bottom: calc(var(--tab-h) + 84px + env(safe-area-inset-bottom)); 
   display: flex; justify-content: space-between; align-items: center; gap: 8px;
 }
 
-/* ---------- Rekap & Transactions ---------- */
 .sum-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .sum-box { border: 1.5px solid var(--line); border-radius: var(--r-m); padding: 12px; background: var(--paper-2); min-width: 0; }
 .sum-box .money { font-size: 1.05rem; display: block; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; }
@@ -719,7 +696,6 @@ button.trx-item:hover { background: var(--paper-2); }
 }
 .trx-actions { display: flex; gap: 4px; justify-content: flex-end; margin-top: 6px; }
 
-/* ---------- Tab Bar ---------- */
 .tabbar {
   position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; z-index: 30;
   width: min(100%, 480px);
@@ -753,7 +729,6 @@ button.trx-item:hover { background: var(--paper-2); }
 }
 .tabbar button.tab-catat[aria-current="page"]::before { display: none; }
 
-/* ---------- Modal Overlay / Bottom Sheets ---------- */
 .modal-backdrop {
   position: fixed; inset: 0; z-index: 95;
   background: var(--scrim); backdrop-filter: blur(4px);
@@ -779,7 +754,6 @@ button.trx-item:hover { background: var(--paper-2); }
 .sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; }
 .sheet-head h3 { font-size: 1.12rem; font-weight: 900; }
 
-/* Settings List Rows */
 .setting-row {
   width: 100%; min-height: 52px;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -793,7 +767,6 @@ button.trx-item:hover { background: var(--paper-2); }
 .setting-row-err { background: var(--err-bg); border-color: var(--err); color: var(--err); justify-content: center; font-weight: 900; }
 .opt-group { display: grid; gap: 6px; margin-bottom: 14px; }
 
-/* Wejangan Neko 3D Modal */
 #nekoModal { align-items: center; padding: 18px; }
 #nekoModalContent {
   position: relative; width: min(100%, 400px); margin-top: 76px;
@@ -814,7 +787,6 @@ button.trx-item:hover { background: var(--paper-2); }
 }
 .hand-text { font-family: var(--font-hand); font-size: 1.24rem; line-height: 1.38; }
 
-/* Equalizer bars when Neko speaks */
 .neko-wave { display: inline-flex; align-items: center; gap: 3px; }
 .neko-wave span {
   display: inline-block; width: 3px; height: 10px; border-radius: 999px;
@@ -824,7 +796,6 @@ button.trx-item:hover { background: var(--paper-2); }
 .neko-wave span:nth-child(3) { animation-delay: .3s; height: 8px; }
 @keyframes neko-wave-bar { 0%,100% { transform: scaleY(.45); } 50% { transform: scaleY(1.25); } }
 
-/* ---------- Login Screen ---------- */
 .login { position: relative; min-height: 100dvh; display: grid; align-content: end; }
 .login .scene { position: absolute; inset: 0; aspect-ratio: auto; border-radius: 0; }
 .login .scene::after {
@@ -839,7 +810,6 @@ button.trx-item:hover { background: var(--paper-2); }
 }
 .login-card h1 { font-size: 1.5rem; font-weight: 900; margin-top: 6px; }
 
-/* ---------- Toast Notification ---------- */
 #toastContainer {
   position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 130;
   width: min(calc(100% - 24px), 440px);
@@ -860,7 +830,6 @@ button.trx-item:hover { background: var(--paper-2); }
 html[data-theme="dark"] .toast-success,
 html[data-theme="dark"] .toast-error { color: #1B1613; }
 
-/* SVG Fallback Neko animations */
 .neko-svg { overflow: visible; user-select: none; }
 .neko-expr { display: none; }
 .neko-svg[data-mood="santai"] .neko-expr-santai,
@@ -876,7 +845,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
   </style>
 </head>
 <body>
-  <!-- SVG Icons untuk Tab Bar, Header & Desk -->
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <symbol id="i-lamp" viewBox="0 0 24 24"><path fill="currentColor" d="M14.6 2.4 21 6.1l-2.2 3.8-6.4-3.7zM12 7.2l1.6.9-4.1 7.2 1.7 1-.9 1.6L5 15.5l.9-1.6 1.8 1z"/><rect x="3" y="19" width="12" height="2.6" rx="1.3" fill="currentColor"/><path fill="currentColor" d="M18.4 10.6c.5 1.2.1 2.6-1 3.3l-2.3-4z" opacity=".55"/></symbol>
     <symbol id="i-wallet" viewBox="0 0 24 24"><path fill="currentColor" d="M4 6.5A2.5 2.5 0 0 1 6.5 4H17v3H6.5a.5.5 0 0 0 0 1H20a1 1 0 0 1 1 1v9.5a1.5 1.5 0 0 1-1.5 1.5h-13A2.5 2.5 0 0 1 4 17.5zm12.5 6a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/></symbol>
@@ -894,7 +862,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
   <div class="app" id="appShell">
     <div id="toastContainer" role="status" aria-live="polite"></div>
 
-    <!-- ================= SCREEN LOGIN ================= -->
     <section class="login" id="loginScreen" aria-labelledby="loginTitle">
       <div class="scene" aria-hidden="true">
         <img class="scene-img js-scene-img" alt="" fetchpriority="high">
@@ -916,7 +883,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       </form>
     </section>
 
-    <!-- ================= SCREEN MAIN APP ================= -->
     <div id="appScreen" class="hide">
       <header class="topbar">
         <div style="min-width:0">
@@ -934,7 +900,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       </header>
 
       <main id="mainContent" tabindex="-1">
-        <!-- Banner Error Global Dashboard -->
         <div id="dashboardErrorBox" class="hide" style="padding:0 14px 10px">
           <div class="banner banner-err" role="alert">
             <div style="display:flex;gap:8px;align-items:flex-start;min-width:0">
@@ -945,7 +910,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
           </div>
         </div>
 
-        <!-- ================= TAB 1: BERANDA (MEJA NEKO) ================= -->
         <section class="view is-active" id="tab-dashboard" aria-label="Meja Neko">
           <div class="scene" id="scene">
             <img class="scene-img js-scene-img" fetchpriority="high" alt="Ruang kerja Neko dengan meja kayu, laptop, buku besar, kopi, celengan, dompet, dan tumpukan tagihan.">
@@ -975,7 +939,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
               </button>
             </div>
 
-            <!-- 6 Benda Meja yang Bisa Diklik -->
             <button class="hot" type="button" onclick="switchTab('catat')" style="--x:3%;--y:56.5%;--w:36%;--h:25.5%;--tx:22%;--ty:52%;--tilt:-4deg">
               <span class="tag">Catat</span><span class="sr-only">: buka laptop untuk mencatat transaksi</span>
             </button>
@@ -997,7 +960,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
           </div>
 
           <div class="stack">
-            <!-- Pengingat Jatuh Tempo Hutang -->
             <div id="dueSoonBanner" class="hide banner banner-warn" role="status">
               <div style="display:flex;gap:10px;align-items:flex-start;min-width:0">
                 <i class="fa-solid fa-bell" style="margin-top:3px" aria-hidden="true"></i>
@@ -1009,7 +971,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
               <button type="button" onclick="switchTab('hutang')" class="btn btn-primary btn-sm" style="flex-shrink:0">Lihat</button>
             </div>
 
-            <!-- Lembar Kas -->
             <section class="card ledger" id="ledgerCard" aria-labelledby="hLedger">
               <div class="card-head">
                 <h2 id="hLedger">Lembar kas <span id="dashBulanLabel">Bulan Ini</span></h2>
@@ -1038,7 +999,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
               </div>
             </section>
 
-            <!-- Celengan Bersama & Kantong Tabungan -->
             <section class="card" aria-labelledby="hJar">
               <div class="card-head">
                 <h2 id="hJar">Celengan bersama</h2>
@@ -1055,7 +1015,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
               <div id="kantongTabunganContainer" class="kantong-grid"></div>
             </section>
 
-            <!-- Pengeluaran Bulan Ini & Budget -->
             <section class="card" id="kategoriBudgetCard" aria-labelledby="hBudget">
               <div class="card-head">
                 <h2 id="hBudget">Pengeluaran <span id="katBulanLabel">Bulan Ini</span></h2>
@@ -1073,7 +1032,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
               </div>
             </section>
 
-            <!-- Transaksi Terbaru -->
             <section class="card" aria-labelledby="hRecent">
               <div class="card-head">
                 <h2 id="hRecent">Transaksi terbaru</h2>
@@ -1087,7 +1045,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
           </div>
         </section>
 
-        <!-- ================= TAB 2: SALDO (DOMPET) ================= -->
         <section class="view" id="tab-saldo" aria-label="Rincian Saldo">
           <div class="page-head">
             <h2 class="tag">Dompet</h2>
@@ -1143,7 +1100,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
           </div>
         </section>
 
-        <!-- ================= TAB 3: CATAT (STRUK LAPTOP) ================= -->
         <section class="view" id="tab-catat" aria-label="Catat Transaksi">
           <div class="page-head">
             <h2 class="tag">Catat transaksi</h2>
@@ -1216,7 +1172,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
           </div>
         </section>
 
-        <!-- ================= TAB 4: HUTANG (TUMPUKAN TAGIHAN) ================= -->
         <section class="view" id="tab-hutang" aria-label="Daftar Hutang">
           <div class="page-head">
             <h2 class="tag">Tumpukan tagihan</h2>
@@ -1248,7 +1203,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
           </div>
         </section>
 
-        <!-- ================= TAB 5: REKAP (BUKU BESAR) ================= -->
         <section class="view" id="tab-rekap" aria-label="Rekap Bulanan">
           <div class="page-head">
             <h2 class="tag">Buku besar</h2>
@@ -1326,7 +1280,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
         </section>
       </main>
 
-      <!-- ================= BOTTOM TAB BAR ================= -->
       <nav id="bottomNav" class="tabbar" aria-label="Navigasi utama">
         <button type="button" id="nav-dashboard" onclick="switchTab('dashboard')" aria-current="page">
           <svg aria-hidden="true"><use href="#i-lamp"/></svg><span>Meja</span>
@@ -1345,14 +1298,12 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
         </button>
       </nav>
 
-      <!-- Slot Neko Mengintip di Balik Tab Bar -->
       <div class="peek-slot hide" id="peekSlot">
         <button class="peek-hit" type="button" id="peekHit" onclick="klikNekoMengintip()" aria-label="Neko sedang mengintip di balik tab. Ketuk untuk menyapa Neko"></button>
       </div>
     </div>
   </div>
 
-  <!-- ================= FLOATING 3D BALLOON NEKO ================= -->
   <div id="floatingNekoWrap" class="hide">
     <div id="floatingNekoBubble" class="bubble-hidden">
       <span id="floatingNekoBubbleText">Meong! Neko lagi terbang pakai balon~</span>
@@ -1368,7 +1319,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
     </div>
   </div>
 
-  <!-- ================= MODAL WEJANGAN NEKO 3D ================= -->
   <div id="nekoModal" role="dialog" aria-modal="true" aria-labelledby="nekoModalTitle" onclick="handleBackdropClose(event, closeNekoModal)" class="hide modal-backdrop z-high">
     <div id="nekoModalContent">
       <div id="nekoModal3dStage" class="neko-modal-stage-wrap" role="button" tabindex="0" aria-label="Maskot 3D Neko, klik untuk mulai atau hentikan suara, seret untuk putar 3D" title="Klik untuk bicara • Seret untuk putar 360°">
@@ -1391,7 +1341,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
     </div>
   </div>
 
-  <!-- ================= MODAL PENGATURAN & AKUN ================= -->
   <div id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle" onclick="handleBackdropClose(event, closeSettingsModal)" class="hide modal-backdrop">
     <div class="modal-sheet">
       <div class="sheet-head">
@@ -1444,7 +1393,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
     </div>
   </div>
 
-  <!-- ================= MODAL GANTI PASSWORD ================= -->
   <div id="changePassModal" role="dialog" aria-modal="true" aria-labelledby="changePassTitle" onclick="handleBackdropClose(event, closeChangePasswordModal)" class="hide modal-backdrop z-high">
     <form onsubmit="simpanGantiPassword(event)" class="modal-sheet">
       <div class="sheet-head">
@@ -1467,7 +1415,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
     </form>
   </div>
 
-  <!-- ================= MODAL ATUR BUDGET BULANAN ================= -->
   <div id="budgetModal" role="dialog" aria-modal="true" aria-labelledby="budgetModalTitle" onclick="handleBackdropClose(event, closeBudgetModal)" class="hide modal-backdrop">
     <form onsubmit="simpanBudgetKategori(event)" class="modal-sheet">
       <div class="sheet-head">
@@ -1494,7 +1441,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
     </form>
   </div>
 
-  <!-- ================= MODAL EDIT TRANSAKSI ================= -->
   <div id="editTrxModal" role="dialog" aria-modal="true" aria-labelledby="editTrxTitle" onclick="handleBackdropClose(event, closeEditTrxModal)" class="hide modal-backdrop">
     <form onsubmit="simpanEditTransaksi(event)" class="modal-sheet">
       <div class="sheet-head">
@@ -1537,7 +1483,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
     </form>
   </div>
 
-  <!-- ================= MODAL TRANSFER / TOP UP SALDO ================= -->
   <div id="transferModal" role="dialog" aria-modal="true" aria-labelledby="transferTitle" onclick="handleBackdropClose(event, closeTransferModal)" class="hide modal-backdrop">
     <form onsubmit="prosesTransferSaldo(event)" class="modal-sheet">
       <div class="sheet-head">
@@ -1575,7 +1520,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
     </form>
   </div>
 
-  <!-- ================= MODAL BAYAR HUTANG ================= -->
   <div id="bayarHutangModal" role="dialog" aria-modal="true" aria-labelledby="bayarHutangTitle" onclick="handleBackdropClose(event, closeBayarHutangModal)" class="hide modal-backdrop">
     <form onsubmit="konfirmasiBayarHutang(event)" class="modal-sheet">
       <div class="sheet-head">
@@ -1598,7 +1542,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
     </form>
   </div>
 
-  <!-- ================= MODAL EDIT HUTANG ================= -->
   <div id="editHutangModal" role="dialog" aria-modal="true" aria-labelledby="editHutangTitle" onclick="handleBackdropClose(event, closeEditHutangModal)" class="hide modal-backdrop">
     <form onsubmit="simpanEditHutang(event)" class="modal-sheet">
       <div class="sheet-head">
@@ -1632,7 +1575,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
     </form>
   </div>
 
-  <!-- ================= MODAL TARGET TABUNGAN (CELENGAN) ================= -->
   <div id="targetModal" role="dialog" aria-modal="true" aria-labelledby="targetModalTitle" onclick="handleBackdropClose(event, closeTargetModal)" class="hide modal-backdrop">
     <form onsubmit="simpanTargetBaru(event)" class="modal-sheet">
       <div class="sheet-head">
@@ -1657,7 +1599,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
     </form>
   </div>
 
-  <!-- ================= MODAL SESUAIKAN SALDO ================= -->
   <div id="sesuaikanSaldoModal" role="dialog" aria-modal="true" aria-labelledby="sesuaikanSaldoTitle" onclick="handleBackdropClose(event, closeSesuaikanSaldoModal)" class="hide modal-backdrop">
     <form onsubmit="simpanSesuaikanSaldo(event)" class="modal-sheet">
       <div class="sheet-head">
@@ -1680,7 +1621,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
     </form>
   </div>
 
-  <!-- ================= MODAL TAMBAH DOMPET / KATEGORI ================= -->
   <div id="addMasterModal" role="dialog" aria-modal="true" aria-labelledby="addMasterTitle" onclick="handleBackdropClose(event, closeAddMasterModal)" class="hide modal-backdrop">
     <form onsubmit="simpanAddMaster(event)" class="modal-sheet">
       <div class="sheet-head">
@@ -1700,7 +1640,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
     </form>
   </div>
 
-  <!-- ================= MODAL RESET CATATAN PER USER ================= -->
   <div id="resetUserModal" role="dialog" aria-modal="true" aria-labelledby="resetUserTitle" onclick="handleBackdropClose(event, closeResetUserModal)" class="hide modal-backdrop z-high">
     <form onsubmit="konfirmasiResetUser(event)" class="modal-sheet">
       <div class="sheet-head">
@@ -1722,7 +1661,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
     </form>
   </div>
 
-  <!-- ================= MODAL KONFIRMASI HAPUS ================= -->
   <div id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle" onclick="handleBackdropClose(event, closeConfirmModal)" class="hide modal-backdrop z-high">
     <div class="modal-sheet" style="max-width:360px">
       <h3 id="confirmModalTitle" style="font-size:1.1rem;font-weight:900;margin-bottom:6px">Konfirmasi Hapus</h3>
@@ -1845,7 +1783,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       return loadedScripts[src];
     }
 
-    // ================= SUASANA RUANGAN (PAGI / SIANG / SENJA / MALAM + AUTO DARK MODE) =================
     function detectAutoRoomTime() {
       const now = new Date();
       const h = now.getHours() + now.getMinutes() / 60;
@@ -1896,7 +1833,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       applyMotionPref();
     }
 
-    // ================= STATE APLIKASI =================
     let activeUser = "";
     let activeToken = "";
     let activeTab = "dashboard";
@@ -1962,7 +1898,7 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
     const nekoAudioCache = new Map();
 
     let wejanganState = {
-      mode: "me", // Strictly per person: "me" | "partner"
+      mode: "me", // Per orang: "me" | "partner"
       isAI: true,
       isLoading: false,
       debugPesan: "",
@@ -1973,7 +1909,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       namaPasangan: "Pasangan"
     };
 
-    // ================= TOAST & MODAL HELPERS =================
     function showToast(pesan, tipe = 'info') {
       const container = document.getElementById('toastContainer');
       const cls = tipe === 'success' ? 'toast-success' : (tipe === 'error' ? 'toast-error' : 'toast-info');
@@ -2034,7 +1969,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       pendingConfirmAction = null;
     }
 
-    // ================= API CLIENT =================
     async function callAPI(action, payload = {}) {
       try {
         const bodyObj = { ...payload, action };
@@ -2075,7 +2009,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       return `1 ${BULAN_INDO[targetDate.getUTCMonth()]} ${targetDate.getUTCFullYear()}`;
     };
 
-    // ================= SISTEM KEHIDUPAN NEKO 3D: KURSI <-> ATAS MEJA <-> MELAYANG BALON <-> NGINTIP TAB =================
     const NEKO_TAB_IDS = ['nav-dashboard', 'nav-saldo', 'nav-catat', 'nav-hutang', 'nav-rekap'];
     let mainNeko3D = null;
     let mainNekoNode = null;
@@ -2085,11 +2018,11 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
     const nekoLife = {
       loggedIn: false,
       mode: 'kursi',        // 'kursi' | 'meja' | 'balon'
-      userHidden: false,    // true = disembunyikan manual oleh user ke balik tab
+      userHidden: false,
       peekTabId: 'nav-rekap',
       sneakTimers: [],
       roaming: true,
-      deskPose: 'duduk',    // saat di atas meja: 'duduk' atau 'rebahan'
+      deskPose: 'duduk',    // 'duduk' | 'rebahan'
       balloonColorIdx: 0,
       x: 160,
       y: 180,
@@ -2164,18 +2097,13 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       }, 560));
     }
 
-    // Penentu lokasi Neko berdasarkan aturan user:
-    // - Jika user sembunyikan manual -> ngintip di balik tab
-    // - Jika mode === 'balon' -> MELAYANG memegang balon di SEMUA tab (termasuk saat pindah tab!)
-    // - Jika mode === 'kursi' atau 'meja':
-    //     * Di Beranda -> duduk di kursi atau di atas meja
-    //     * Di tab lain -> otomatis sembunyi & mengintip di balik tab bawah!
+    // Mode balon tetap melayang saat pindah tab; mode kursi/meja mengintip di balik tab.
     function getEffectiveNekoPlacement() {
       const modalOpen = !document.getElementById('nekoModal').classList.contains('hide');
       if (!nekoLife.loggedIn || modalOpen) return 'none';
       if (nekoLife.userHidden) return 'peek';
       if (nekoLife.mode === 'balon') return 'balon';
-      if (activeTab === 'dashboard') return nekoLife.mode; // 'kursi' | 'meja'
+      if (activeTab === 'dashboard') return nekoLife.mode;
       return 'peek';
     }
 
@@ -2246,7 +2174,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
           mainNekoNode.innerHTML = buildNekoMascotSvg('main', getActiveNekoMood(), nekoSpeechState === 'speaking', false);
         }
       } else {
-        // placement === 'peek' (mengintip di balik tab bar)
         floatWrap.classList.add('hide');
         hit.classList.add('hide');
         bubble.classList.add('hide');
@@ -2316,7 +2243,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
         nekoLife.peekTabId = pickRandomPeekTab(`nav-${activeTab}`);
         nekoLife.lastSneakAt = performance.now();
       } else {
-        // Saat dipanggil kembali di Beranda, kembalikan ke kursi atau meja
         if (activeTab === 'dashboard' && nekoLife.mode === 'balon') nekoLife.mode = 'kursi';
         nekoLife.lastLifeSwitchAt = performance.now();
       }
@@ -2353,7 +2279,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
     function setFloatingNekoLoggedIn(isLoggedIn) {
       nekoLife.loggedIn = Boolean(isLoggedIn);
       if (isLoggedIn) {
-        // Saat baru login, Neko duduk manis di kursinya di tengah layar
         nekoLife.mode = 'kursi';
         nekoLife.userHidden = false;
         nekoLife.lastLifeSwitchAt = performance.now();
@@ -2374,7 +2299,7 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       const savedRoam = localStorage.getItem('pawketNekoRoam');
       nekoLife.roaming = savedRoam === null ? true : savedRoam === '1';
 
-      // Buat 1 canvas utama yang berpindah mulus antar Kursi, Atas Meja, Balon Melayang, dan Ngintip Tab
+      // Satu konteks WebGL utama dipindah antar wadah agar hemat memori GPU.
       const c = document.createElement('canvas');
       c.id = 'nekoMainCanvas';
       c.setAttribute('aria-hidden', 'true');
@@ -2391,7 +2316,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
         mainNekoNode = fb;
       }
 
-      // Canvas 3D interaktif di dalam Modal Wejangan Neko
       modalNeko3D = createNekoChi3DEngine(
         document.getElementById('nekoModalCanvas'),
         null,
@@ -2402,7 +2326,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
         document.getElementById('nekoModalMascot').classList.remove('hide');
       }
 
-      // Interaksi seret & klik saat Neko melayang memakai balon
       const fStage = document.getElementById('floatingNekoStage');
       if (fStage) {
         fStage.addEventListener('pointerdown', (e) => {
@@ -2437,7 +2360,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
         });
       }
 
-      // Interaksi putar 360° & klik bicara di Modal Wejangan Neko
       const mStage = document.getElementById('nekoModal3dStage');
       if (mStage) {
         let mDrag = { active: false, moved: 0, lx: 0, ly: 0 };
@@ -2491,7 +2413,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
           } else if (nekoLife.loggedIn && mainNeko3D) {
             const placement = getEffectiveNekoPlacement();
 
-            // Pergantian posisi alami: Kursi <-> Atas Meja <-> Melayang Balon tiap ~22 detik
             const canAutoCycle = motionOn && !nekoLife.userHidden && !nekoLife.dragging && nekoSpeechState !== 'speaking';
             if (canAutoCycle && (now - nekoLife.lastLifeSwitchAt > 22000)) {
               if (activeTab === 'dashboard') {
@@ -2499,7 +2420,7 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
                 const nextMode = candidates[Math.floor(Math.random() * candidates.length)];
                 setNekoLifeMode(nextMode, true);
               } else if (nekoLife.mode === 'balon') {
-                // Tetap melayang dengan balon saat di tab lain!
+                // Reset timer agar mode balon tidak berpindah saat berada di tab lain.
                 nekoLife.lastLifeSwitchAt = now;
               }
             }
@@ -2534,7 +2455,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       requestAnimationFrame(loop3d);
     }
 
-    // ================= SUARA NEKO (GEMINI TTS CHIBI BOCAH 1.25x + RMS LIP-SYNC) =================
     function getActiveNekoMood() {
       if (wejanganState.isLoading) return 'berpikir';
       const m = wejanganState.mode === "me" ? wejanganState.moodKu : wejanganState.moodPasangan;
@@ -2790,7 +2710,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       }
     }
 
-    // ================= WEJANGAN NEKO AI (PER ORANG: AKU / PASANGAN) =================
     function bukaPopupNekoSekarang() {
       ensureNekoModalMascot();
       document.getElementById('nekoModal').classList.remove('hide');
@@ -2925,7 +2844,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       el.classList.toggle('pen-reza', !isPartnerColor);
     }
 
-    // ================= INISIALISASI, LOGIN, LOGOUT & PENGATURAN =================
     document.addEventListener("DOMContentLoaded", async () => {
       localStorage.removeItem('pawketPassword');
       localStorage.removeItem('pawketUsername');
@@ -3147,7 +3065,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       }
     }
 
-    // ================= BUDGET BULANAN =================
     function getMyBudgets() { return (latestBudgetPerUser && latestBudgetPerUser[activeUser]) ? latestBudgetPerUser[activeUser] : {}; }
 
     function openBudgetModal(prefillKat = '') {
@@ -3237,7 +3154,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       } else if (!res?.authError) showToast(res?.pesan || 'Gagal menghapus budget.', 'error');
     }
 
-    // ================= DASHBOARD =================
     async function loadDataDashboard(forceRefresh = false) {
       if (!activeToken) return false;
       const errBox = document.getElementById('dashboardErrorBox');
@@ -3534,7 +3450,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       });
     }
 
-    // ================= TAB SALDO =================
     function getPinnedWalletsForUser(user) {
       if (!user) return [];
       try {
@@ -3714,7 +3629,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       } else if (!res?.authError) showToast(res?.pesan || 'Gagal menyesuaikan saldo.', 'error');
     }
 
-    // ================= TAMBAH DOMPET / KATEGORI =================
     function openAddMasterModal({ tipe, title, label, placeholder, hint, onSuccess, quickOptions = [] }) {
       addMasterContext = { tipe, onSuccess };
       document.getElementById('addMasterTitle').innerText = title;
@@ -3791,7 +3705,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       } else if (!res?.authError) showToast(res?.pesan || 'Gagal menambahkan data.', 'error');
     }
 
-    // ================= TRANSFER & TARGET =================
     function openTransferModal() {
       const uniqueClean = getUniqueDompetList();
       const sortedDari = [...uniqueClean].sort((a, b) => getMyWalletBalance(b) - getMyWalletBalance(a));
@@ -3869,7 +3782,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       else if (!res?.authError) showToast(res?.pesan || 'Gagal memperbarui target.', 'error');
     }
 
-    // ================= TAB HUTANG =================
     function switchOwnerHutang(ownerType) {
       activeHutangOwner = ownerType;
       const isMe = ownerType === 'me';
@@ -4013,7 +3925,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       else if (!res?.authError) showToast(res?.pesan || "Gagal mencatat pembayaran hutang.", 'error');
     }
 
-    // ================= TAB CATAT + SCAN STRUK AI/OCR =================
     function renderKategori() {
       const arr = tipeAktif === 'Pemasukan' ? listKategori.masuk : listKategori.keluar;
       document.getElementById('inputKategori').innerHTML = [
@@ -4274,7 +4185,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       } else if (!res?.authError) showToast(res?.pesan || 'Gagal menyimpan transaksi.', 'error');
     }
 
-    // ================= NAVIGASI TAB =================
     function switchTab(tabId) {
       activeTab = tabId;
       ['dashboard', 'saldo', 'catat', 'hutang', 'rekap'].forEach(id => {
@@ -4284,9 +4194,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
         else navBtn.removeAttribute('aria-current');
       });
 
-      // Terapkan aturan Neko saat pindah tab:
-      // - Jika sedang melayang memakai balon -> tetap melayang dengan balon!
-      // - Jika sedang duduk di kursi atau di meja -> otomatis ngintip di balik tab!
       if (nekoLife.loggedIn) {
         const wasPeekingSameTab = (getEffectiveNekoPlacement() === 'peek') && (nekoLife.peekTabId === `nav-${tabId}`);
         placeNeko();
@@ -4307,7 +4214,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
 
-    // ================= TAB REKAP (BUKU BESAR) =================
     function switchOwnerRekap(ownerType) {
       activeRekapOwner = ownerType;
       rekapVisibleCount = REKAP_BATCH_SIZE;
@@ -4446,7 +4352,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       if (sisaCount > 0) btnLoadMore.innerText = `Tampilkan Lebih Banyak (${sisaCount} lagi)`;
     }
 
-    // ================= EDIT & HAPUS TRANSAKSI =================
     function bukaEditTransaksiById(idTrx) {
       const item = dataRekapBulanIni.find(it => String(it.id) === String(idTrx));
       if (!item) return showToast("Catatan tidak ditemukan.", 'error');
@@ -4561,7 +4466,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
       } else if (!res?.authError) showToast(res?.pesan || "Gagal menghapus catatan.", 'error');
     }
 
-    // ================= EXPORT EXCEL (.XLSX MULTI-SHEET) =================
     async function exportXLS() {
       if (dataRekapBulanIni.length === 0) return showToast("Tidak ada data untuk diexport.", 'error');
       const btn = document.getElementById('btnExport');
@@ -4604,7 +4508,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
     }
 
 
-    // ================= MASKOT 3D ANIME CHI + BALON 3D + DUDUK MEJA + NGINTIP TAB =================
     function buildNekoMascotSvg(uid = 'inline', mood = 'santai', isTalking = false, withBalloon = false) {
       const m = NEKO_MOOD_META[mood] ? mood : 'santai';
       const talkingAttr = isTalking ? 'true' : 'false';
@@ -4935,10 +4838,10 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
     }
 
     const NEKO_BALLOON_COLORS = [
-      [0.95, 0.36, 0.40], // Coral merah hangat
-      [0.95, 0.72, 0.25], // Kuning lampu meja
-      [0.36, 0.68, 0.95], // Biru langit pagi
-      [0.95, 0.54, 0.72]  // Merah muda pastel
+      [0.95, 0.36, 0.40], // coral
+      [0.95, 0.72, 0.25], // kuning
+      [0.36, 0.68, 0.95], // biru
+      [0.95, 0.54, 0.72]  // pink
     ];
 
     function createNekoChi3DEngine(canvas, shadowEl, opts = {}) {
@@ -5315,14 +5218,12 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
         root = m4.mul(root, m4.rotX(state.pitch));
         if (bW > 0.01) root = m4.mul(root, m4.rotZ(balloonSwing));
 
-        // 1. Tubuh 3D
         const bodyY = mixP(-1.04, -0.96, -0.96);
         const bodyZ = mixP(-0.08, -0.04, -0.60);
         const bodyRotX = mixP(-0.15, 0.0, 1.36) + (state.mood === 'panik' ? -0.14 * wD : 0);
         const bodyScale = [mixP(1.06, 1.0, 1.02), mixP(0.96, 1.0, 1.08), mixP(1.06, 1.0, 0.92)];
         drawPart(bodyMesh, root, { p: [0, bodyY, bodyZ], r: [bodyRotX, 0, 0], s: bodyScale, tex: bodyTex, outline: 0.034, flatFace: true });
 
-        // 2. Dua Tangan 3D Ekspresif + Paw Pads
         const shX = state.peeking ? 0.56 : mixP(0.54, 0.56, 0.46);
         const shY = state.peeking ? -0.28 : mixP(-0.74, -0.68, -0.96);
         const shZ = state.peeking ? 0.28 : mixP(0.16, 0.14, 0.04);
@@ -5333,7 +5234,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
           lRotX = -1.36; lRotZ = -0.42 + gripWiggle;
           rRotX = -1.36; rRotZ = 0.42 - gripWiggle;
         } else if (bW > 0.35) {
-          // Tangan kanan mengangkat ke samping & menggenggam tali balon, tangan kiri melambai gemas!
           rRotZ = 2.32 + Math.sin(t * 2.0) * 0.06;
           rRotX = -0.34;
           lRotZ = -1.78 + Math.sin(t * 2.9) * 0.22;
@@ -5375,7 +5275,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
         drawChiArm(root, [-shX, shY, shZ], lRotX, lRotZ);
         drawChiArm(root, [shX, shY, shZ], rRotX, rRotZ);
 
-        // 2b. Balon 3D Anime + Tali Terhubung Tepat ke Telapak Tangan Kanan!
         if (bW > 0.04) {
           const cx = Math.cos(rRotX), sx = Math.sin(rRotX);
           const y1 = -0.62 * cx - 0.02 * sx;
@@ -5392,7 +5291,7 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
           const knotY = bY - 0.88 * bW;
           const bCol = NEKO_BALLOON_COLORS[state.balloonColorIdx % NEKO_BALLOON_COLORS.length];
 
-          // Tali balon melengkung halus warna krem dengan outline gelap agar jelas di siang & malam
+          // Warna tali krem ber-outline gelap agar terbaca di tema terang maupun gelap.
           const stringSegs = 16;
           for (let s = 0; s < stringSegs; s++) {
             const f0 = s / stringSegs;
@@ -5418,7 +5317,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
             });
           }
 
-          // Simpul balon + Badan balon cel-shaded mengkilap + kilau putih anime
           drawPart(sphereMesh, root, { p: [bX, knotY, bZ], s: [0.13 * bW, 0.10 * bW, 0.13 * bW], col: bCol, outline: 0.022 * bW });
           drawPart(sphereMesh, root, {
             p: [bX, bY, bZ],
@@ -5439,7 +5337,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
           });
         }
 
-        // 3. Dua Kaki Belakang Putih (menggantung riang saat melayang pakai balon!)
         const kickAmp = state.mood === 'panik' ? 0.28 : (bW > 0.3 ? 0.24 : (wD > 0.5 ? 0.06 : 0.10));
         const kickL = Math.sin(t * (state.mood === 'panik' ? 18 : (bW > 0.3 ? 3.8 : 2.6))) * kickAmp;
         [-1, 1].forEach(side => {
@@ -5472,7 +5369,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
           }
         });
 
-        // 4. Ekor Belang Abu-Charcoal (11 segmen rapat menyambung mulus)
         const tailPuff = state.mood === 'panik' ? 1.28 : 1.0;
         for (let seg = 0; seg < 11; seg++) {
           const frac = seg / 10;
@@ -5487,7 +5383,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
           drawPart(sphereMesh, root, { p: [sx, sy, sz], s: [rad, rad, rad], col, outline: 0.025 });
         }
 
-        // 5. Kepala Bulat Chi + Telinga Segitiga + 6 Kumis 3D
         const headNod = state.talking ? Math.sin(t * 11) * 0.075 : Math.sin(t * 1.8) * 0.03;
         const headTilt = state.mood === 'berpikir' ? 0.14 : (state.mood === 'santai' ? Math.sin(t * 1.1) * 0.06 : (state.mood === 'marah_gemas' ? Math.sin(t * 16) * 0.05 : 0));
         let head = m4.mul(root, m4.trans(0, mixP(0.24, 0.34, -0.18), mixP(0.08, 0.05, 0.38)));
@@ -5512,7 +5407,6 @@ html[data-theme="dark"] .toast-error { color: #1B1613; }
           });
         });
 
-        // 6. Efek Komik 3D
         if (state.mood === 'marah_gemas') {
           const pulse = 1 + Math.sin(t * 12) * 0.16;
           drawPart(sphereMesh, head, { p: [0.58, 0.96, 0.48], r: [0, 0, 0.72], s: [0.20 * pulse, 0.052 * pulse, 0.052], col: [0.92, 0.18, 0.28], outline: 0.018 });
