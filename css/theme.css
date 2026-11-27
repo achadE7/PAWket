@@ -1,0 +1,162 @@
+:root {
+  --paper: #FBF6EC;
+  --paper-2: #F1E6D3;
+  --line: #E2D3BC;
+  --edge: #8C7258;
+  --ink: #2B2420;
+  --ink-2: #645446;
+  --wood: #7E4B27;
+  --on-wood: #FBF6EC;
+  --amber: #E8A33D;
+  --on-amber: #2B2420;
+  --reza: #2D54AC;
+  --naghiya: #A82D69;
+  --ok: #1E6B43;
+  --ok-bg: #E7F4EC;
+  --warn: #8B4E08;
+  --warn-bg: #FDF2DF;
+  --err: #9A2C17;
+  --err-bg: #FCEBE7;
+  --purple: #6D3B9E;
+  --purple-bg: #F2EBF9;
+  --focus: #2B2420;
+  --focus-halo: #FBF6EC;
+  --scrim: rgba(28, 23, 20, .58);
+  --tab-h: 68px;
+  --r-s: 8px;
+  --r-m: 12px;
+  --r-l: 18px;
+  --font-ui: "Nunito", system-ui, -apple-system, sans-serif;
+  --font-hand: "Patrick Hand", "Comic Sans MS", cursive;
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  --paper: #2A231E;
+  --paper-2: #1B1613;
+  --line: #3F352D;
+  --edge: #9C8873;
+  --ink: #F3EADB;
+  --ink-2: #C9B9A6;
+  --wood: #C98E57;
+  --on-wood: #1B1613;
+  --reza: #A3BCF6;
+  --naghiya: #F3A6CB;
+  --ok: #7EE0A8;
+  --ok-bg: #1B3326;
+  --warn: #F7C97E;
+  --warn-bg: #362814;
+  --err: #FFA48F;
+  --err-bg: #3C1E19;
+  --purple: #D2B2F5;
+  --purple-bg: #2D203B;
+  --focus: #F3EADB;
+  --focus-halo: #1B1613;
+  --scrim: rgba(0, 0, 0, .68);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.96rem;
+  line-height: 1.45;
+  color: var(--ink);
+  background: var(--paper-2);
+  font-variant-numeric: tabular-nums;
+  -webkit-tap-highlight-color: transparent;
+}
+body.modal-open { overflow: hidden; }
+img, canvas { display: block; max-width: 100%; }
+h1, h2, h3, h4, p { margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+
+a[href], button, summary, select, label[for],
+label:has(> input[type="checkbox"], > input[type="radio"]),
+[role="button"], [role="link"], [role="tab"], [role="menuitem"], [role="option"], [role="switch"],
+input[type="checkbox"], input[type="radio"], input[type="file"],
+input[type="submit"], input[type="button"], input[type="reset"], input[type="range"], input[type="color"] {
+  cursor: pointer;
+}
+:disabled, [aria-disabled="true"] { cursor: not-allowed; opacity: .58; }
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px var(--focus-halo);
+}
+
+.hide, [hidden] { display: none !important; }
+.num { font-variant-numeric: tabular-nums; letter-spacing: -0.015em; }
+.ico { width: 18px; height: 18px; flex-shrink: 0; display: inline-block; vertical-align: -3px; }
+.ico-sm { width: 15px; height: 15px; }
+.ico-lg { width: 22px; height: 22px; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.skip-link {
+  position: absolute; left: 8px; top: -64px; z-index: 150;
+  background: var(--ink); color: var(--paper); padding: 10px 14px; border-radius: var(--r-s);
+  text-decoration: none; font-weight: 800;
+}
+.skip-link:focus { top: 8px; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 10px; }
+
+/* Menjaga lebar input date/month simetris di Safari iOS. */
+input[type="date"], input[type="month"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  text-align: left;
+  min-height: 46px;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--line) 25%, var(--paper-2) 50%, var(--line) 75%);
+  background-size: 200% 100%;
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton { animation: pawket-shimmer 1.35s ease-in-out infinite; }
+  .spin { animation: spin 0.9s linear infinite; }
+  .neko-wave span { animation: neko-wave-bar .72s ease-in-out infinite; }
+  .steam span { animation: steam 3.4s ease-in-out infinite; }
+}
+
+@keyframes pawket-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes steam {
+  0% { transform: translateY(30%) scaleY(.5); opacity: 0; }
+  35% { opacity: .9; }
+  100% { transform: translateY(-40%) scaleY(1.1) skewX(10deg); opacity: 0; }
+}
+@keyframes neko-wave-bar {
+  0%, 100% { transform: scaleY(.45); }
+  50% { transform: scaleY(1.25); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html[data-motion="off"] .steam span { animation: none; opacity: .45; transform: none; }
+html[data-motion="off"] .neko-seat,
+html[data-motion="off"] .peek-slot { transition: none; }
