@@ -543,11 +543,20 @@ main { padding-bottom: calc(var(--tab-h) + 92px + env(safe-area-inset-bottom)); 
 .prefix .input { padding-left: 42px; font-size: 1.12rem; font-weight: 900; }
 
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.chips-nominal { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
 .chip-btn {
   min-height: 44px; padding: 8px 12px; border-radius: var(--r-s);
   border: 1.5px solid var(--edge); background: var(--paper-2); font-weight: 800; font-size: .82rem;
   color: var(--ink); transition: transform .1s ease, border-color .15s ease;
 }
+.chips-nominal .chip-btn {
+  width: 100%; padding: 8px 4px;
+  font-size: clamp(.74rem, 3.1vw, .82rem);
+  display: inline-flex; align-items: center; justify-content: center;
+  white-space: nowrap;
+}
+.chip-clear { background: var(--paper); border-style: dashed; color: var(--ink-2); }
+.chip-clear:hover { color: var(--ink); }
 .chip-btn:hover { border-color: var(--ink); background: var(--paper); }
 .chip-btn:active { transform: translateY(1px); }
 
@@ -746,6 +755,8 @@ html[data-theme="dark"] .mic-listening { color: #1B1613 !important; }
   .ledger { padding: 0 12px 12px 26px; }
   .ledger .split, .cards, .kantong-grid, .sum-grid, .tools, .cat-picker-grid, .chat-draft-grid { grid-template-columns: 1fr; }
   .ledger .split { min-height: calc(var(--rule) * 4); gap: 18px; }
+  .chips-nominal { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .chips-nominal .chip-clear { grid-column: span 2; }
 }
 @media (min-width: 640px) {
   .stack { padding: 16px 20px 0; gap: 18px; }
